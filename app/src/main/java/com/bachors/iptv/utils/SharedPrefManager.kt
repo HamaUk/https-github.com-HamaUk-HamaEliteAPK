@@ -30,4 +30,6 @@ class SharedPrefManager(context: Context) {
     fun getSpFiles(): String = sp.getString(SP_FILES, "[]") ?: "[]"
 
     fun getSpM3uDirect(): String = sp.getString(SP_M3U_DIRECT, "") ?: ""
+
+    fun getSpString(key: String): String = sp.getString(key, "") ?: ""
 }

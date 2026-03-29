@@ -218,7 +218,7 @@ class PlaylistActivity : AppCompatActivity() {
 
     private fun loadDirectM3u(url: String) {
         // Create a virtual category for direct M3U login
-        val dummy = PlaylistData("1", "MY PLAYLIST", url, "0")
+        val dummy = PlaylistData("MY PLAYLIST", url, "1")
         allData.clear()
         allData.add(dummy)
         categoryAdapter.clear()
