@@ -101,7 +101,6 @@ class PlayerActivity : AppCompatActivity() {
     private fun initPlayer(url: String, name: String) {
         try {
             // Destroy existing player if any to prevent memory leaks or audio overlap
-            mkPlayer?.stop()
             mkPlayer?.onDestroy() 
             
             mkPlayer = MKPlayer(this)
