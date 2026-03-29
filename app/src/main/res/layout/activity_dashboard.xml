@@ -41,17 +41,17 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="any"
+            android:text="HAMA"
             android:textColor="#FF3B3B"
-            android:textSize="54sp"
+            android:textSize="44sp"
             android:textStyle="bold" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="3dp"
-            android:text="tv"
+            android:text="UK"
             android:textColor="#FFFFFF"
-            android:textSize="28sp"
+            android:textSize="32sp"
             android:textStyle="bold" />
     </LinearLayout>
 
