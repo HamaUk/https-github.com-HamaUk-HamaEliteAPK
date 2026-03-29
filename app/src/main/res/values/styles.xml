@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Base application theme using Material 3 -->
-    <style name="AppTheme" parent="Theme.Material3.DynamicColors.Dark">
+    <!-- Base application theme — Material3 Dark WITHOUT DynamicColors (crashes on Android TV) -->
+    <style name="AppTheme" parent="Theme.Material3.Dark.NoActionBar">
         <item name="colorPrimary">@color/md_theme_primary</item>
         <item name="colorOnPrimary">@color/md_theme_on_primary</item>
         <item name="colorPrimaryContainer">@color/md_theme_primary_container</item>

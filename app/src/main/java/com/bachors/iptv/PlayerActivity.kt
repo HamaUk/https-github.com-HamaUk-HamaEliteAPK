@@ -402,10 +402,17 @@ class PlayerActivity : AppCompatActivity() {
     // ════════════════════════════════════════════════════════
     private fun toggleFullscreen() {
         isFullscreen = !isFullscreen
-        requestedOrientation = if (isFullscreen)
-            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-        else
-            ActivityInfo.SCREEN_ORIENTATION_SENSOR
+        // Only change orientation on phones/tablets — TV devices reject requestedOrientation
+        val uiMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_TYPE_MASK
+        val isTelevision = uiMode == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
+        if (!isTelevision) {
+            try {
+                requestedOrientation = if (isFullscreen)
+                    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                else
+                    ActivityInfo.SCREEN_ORIENTATION_SENSOR
+            } catch (_: Exception) { /* ignore on restricted devices */ }
+        }
         updateFullscreenIcon()
     }
 
