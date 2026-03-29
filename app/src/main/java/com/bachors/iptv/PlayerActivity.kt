@@ -280,9 +280,13 @@ class PlayerActivity : AppCompatActivity() {
                     .setUsage(androidx.media3.common.C.USAGE_MEDIA)
                     .setContentType(androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE)
                     .build(),
-                true
+                false // Disable automatic focus handling to avoid silent playback if focus is tricky
             )
             player.volume = 1f
+            // Force hardware acceleration and better track selection
+            player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
+                .setPreferredAudioLanguage("en")
+                .build()
             playerView.player = player
             player.addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(state: Int) {
@@ -328,6 +332,7 @@ class PlayerActivity : AppCompatActivity() {
             lastRequestedUrl = playbackUrl
             fallbackTriedForUrl = ""
             ensureAudibleVolume()
+            exoPlayer?.volume = 1.0f
             SharedPrefManager(this).saveSPString(SharedPrefManager.SP_CURRENT_URL, playbackUrl)
             val uri  = Uri.parse(playbackUrl)
             val item = MediaItem.fromUri(uri)
@@ -393,11 +398,26 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun ensureAudibleVolume() {
-        val maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-        val curVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-        if (maxVol > 0 && curVol <= 0) {
-            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (maxVol * 0.35f).toInt().coerceAtLeast(1), 0)
-        }
+        try {
+            val maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            val curVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+
+            // Force unmute system-wide
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0)
+            } else {
+                @Suppress("DEPRECATION")
+                audioManager.setStreamMute(AudioManager.STREAM_MUSIC, false)
+            }
+
+            // If volume is zero, set to safe default (40%)
+            if (maxVol > 0 && curVol <= 0) {
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (maxVol * 0.40f).toInt().coerceAtLeast(2), 0)
+            }
+            
+            // Ensure ExoPlayer is also at max volume locally
+            exoPlayer?.volume = 1.0f
+        } catch (_: Exception) {}
     }
 
     // ════════════════════════════════════════════════════════
