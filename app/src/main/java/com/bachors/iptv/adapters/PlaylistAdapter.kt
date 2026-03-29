@@ -59,7 +59,6 @@ class PlaylistAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
     fun getItem(position: Int): PlaylistData = allData[position]
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val tvNo: TextView = itemView.findViewById(R.id.no)
         val tvTitle: TextView = itemView.findViewById(R.id.title)
         val tvChannel: TextView = itemView.findViewById(R.id.channel)
     }

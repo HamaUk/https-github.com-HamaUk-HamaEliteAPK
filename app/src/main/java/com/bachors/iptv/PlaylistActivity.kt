@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bachors.iptv.adapters.PlaylistAdapter
+import com.bachors.iptv.adapters.ChannelsAdapter
 import com.bachors.iptv.databinding.ActivityPlaylistBinding
 import com.bachors.iptv.models.PlaylistData
 import com.bachors.iptv.utils.HttpHandler
@@ -88,7 +89,7 @@ class PlaylistActivity : AppCompatActivity() {
         }
 
         // Click Listeners
-        binding?.btnBack?.setOnClickListener { finish() }
+        findViewById<android.widget.ImageView>(R.id.btn_back).setOnClickListener { finish() }
 
         // Sidebar selection logic
         binding?.rvCategories?.addOnItemTouchListener(RecyclerTouchListener(this, binding!!.rvCategories, object : RecyclerTouchListener.ClickListener {
@@ -194,6 +195,28 @@ class PlaylistActivity : AppCompatActivity() {
             }
         }
         return ar
+    }
+
+    private fun loadPlaylists() {
+        // Sync logic from Dashboard or Main
+        val sharedPrefManager = SharedPrefManager(this)
+        val json = sharedPrefManager.getSpPlaylist()
+        if (json.isNotEmpty()) {
+            jsonToGson()
+            if (categoryAdapter.itemCount > 0) {
+                onCategorySelected(0)
+            }
+        }
+    }
+
+    private fun setupAk() {
+        // Standard background/system UI setup
+        val decorView = window.decorView
+        val wic = WindowInsetsControllerCompat(window, decorView)
+        wic.isAppearanceLightStatusBars = false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            decorView.isForceDarkAllowed = true
+        }
     }
 
     override fun onResume() {
