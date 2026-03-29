@@ -162,6 +162,8 @@ class PlaylistActivity : AppCompatActivity() {
                 val ar = parseM3U(stream ?: "")
                 channelAdapter.clear()
                 
+                sharedPrefManager.saveSPString(SharedPrefManager.SP_CHANNELS, ar.toString())
+
                 // Convert JSON to ChannelsData objects manually or use Gson
                 val gson = Gson()
                 val listType = object : TypeToken<List<com.bachors.iptv.models.ChannelsData>>() {}.type
