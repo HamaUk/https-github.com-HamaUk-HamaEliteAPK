@@ -5,64 +5,13 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- ExoPlayer PlayerView - supports Android 16, HLS, DASH, etc. -->
+    <!-- ExoPlayer surface -->
     <androidx.media3.ui.PlayerView
         android:id="@+id/player_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:use_controller="false"
         app:surface_type="surface_view" />
-
-    <!-- Overlay: Channel info bar at top -->
-    <LinearLayout
-        android:id="@+id/player_header"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="#CC000000"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:layout_gravity="top">
-
-        <ImageView
-            android:id="@+id/btn_back"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:padding="6dp"
-            android:src="@drawable/ic_back"
-            app:tint="#FFFFFF" />
-
-        <TextView
-            android:id="@+id/tv_current_channel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="CHANNEL NAME"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:ellipsize="end"
-            android:maxLines="1" />
-
-        <TextView
-            android:id="@+id/tv_current_epg"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="No Information"
-            android:textColor="#88FFFFFF"
-            android:textSize="11sp"
-            android:layout_marginEnd="12dp" />
-
-        <TextView
-            android:id="@+id/tv_clock"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="12:00"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp" />
-    </LinearLayout>
 
     <!-- Loading spinner -->
     <ProgressBar
@@ -79,9 +28,142 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Player encountered a small problem"
-        android:textColor="#FFFFFF"
-        android:textSize="14sp"
+        android:gravity="center"
+        android:text="Stream unavailable"
+        android:textColor="#AAFFFFFF"
+        android:textSize="15sp"
         android:visibility="gone" />
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!--  TOP INFO BAR                                   -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/player_top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_gravity="top"
+        android:background="#C0000000"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="8dp"
+        android:paddingEnd="16dp">
+
+        <!-- Back button -->
+        <ImageView
+            android:id="@+id/btn_back"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_back"
+            app:tint="#FFFFFF" />
+
+        <!-- Channel name -->
+        <TextView
+            android:id="@+id/tv_current_channel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="CHANNEL"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <!-- EPG info -->
+        <TextView
+            android:id="@+id/tv_current_epg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:text="No Information"
+            android:textColor="#80FFFFFF"
+            android:textSize="11sp" />
+
+        <!-- Clock -->
+        <TextView
+            android:id="@+id/tv_clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00"
+            android:textColor="#CCFFFFFF"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!--  BOTTOM CONTROL BAR                             -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/player_bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:layout_gravity="bottom"
+        android:background="#C0000000"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
+
+        <!-- Previous channel -->
+        <ImageView
+            android:id="@+id/btn_prev_channel"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_chevron_left_white"
+            android:contentDescription="Previous Channel"
+            app:tint="#FFFFFF" />
+
+        <!-- Play / Pause -->
+        <ImageView
+            android:id="@+id/btn_play_pause"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_pause_white"
+            android:contentDescription="Play / Pause"
+            app:tint="#FFFFFF" />
+
+        <!-- Next channel -->
+        <ImageView
+            android:id="@+id/btn_next_channel"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_chevron_right_white"
+            android:contentDescription="Next Channel"
+            app:tint="#FFFFFF" />
+
+        <!-- Seek bar (hidden for live TV, shown for VOD) -->
+        <SeekBar
+            android:id="@+id/seek_bar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:progressTint="#BB86FC"
+            android:thumbTint="#BB86FC"
+            android:visibility="gone" />
+
+        <!-- Spacer when no seekbar -->
+        <View
+            android:id="@+id/seek_spacer"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"
+            android:visibility="visible" />
+
+        <!-- Fullscreen toggle -->
+        <ImageView
+            android:id="@+id/btn_fullscreen"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_fullscreen_white"
+            android:contentDescription="Fullscreen"
+            app:tint="#FFFFFF" />
+    </LinearLayout>
 
 </FrameLayout>

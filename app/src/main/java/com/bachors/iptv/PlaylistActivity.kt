@@ -137,15 +137,30 @@ class PlaylistActivity : AppCompatActivity() {
 
     private fun jsonToGson() {
         try {
-            val ar = JSONArray(sharedPrefManager.getSpPlaylist())
-            val listType = object : TypeToken<List<PlaylistData>>() {}.type
+            val rawJson = sharedPrefManager.getSpPlaylist()
+            if (rawJson.isEmpty() || rawJson == "[]") return
+
             val gson = Gson()
-            val data: List<PlaylistData> = gson.fromJson(ar.getJSONArray(0).toString(), listType)
+            val listType = object : TypeToken<List<PlaylistData>>() {}.type
+
+            // The stored JSON can be either:
+            // A) A flat array:   [ {title, link, channel}, ... ]
+            // B) A wrapped array: [ [ {title, link, channel}, ... ] ]
+            // Try flat first, fall back to wrapped
+            val data: List<PlaylistData> = try {
+                gson.fromJson(rawJson, listType)
+            } catch (e: Exception) {
+                val outerArray = org.json.JSONArray(rawJson)
+                gson.fromJson(outerArray.getJSONArray(0).toString(), listType)
+            }
+
             allData.clear()
-            allData.addAll(data)
+            allData.addAll(data.filter { it.title.isNotEmpty() })
             categoryAdapter.clear()
             categoryAdapter.addAll(allData)
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     // ... rest of the loadChannels logic updated to update channelAdapter ...
