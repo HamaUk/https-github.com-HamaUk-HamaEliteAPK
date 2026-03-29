@@ -44,6 +44,7 @@ class PlaylistActivity : AppCompatActivity() {
 
     // All groups parsed from M3U — group title → channel list
     private val groupMap = mutableMapOf<String, MutableList<ChannelsData>>()
+    private val displayGroupMap = mutableMapOf<String, MutableList<ChannelsData>>()
     private val groupNames = mutableListOf<String>()
 
     // Currently displayed channels (can be filtered)
@@ -96,6 +97,12 @@ class PlaylistActivity : AppCompatActivity() {
         }
 
         channelAdapter = ChannelsAdapter(this)
+        channelAdapter.setOnBeforePlayListener {
+            sharedPrefManager.saveSPString(
+                SharedPrefManager.SP_CHANNELS,
+                Gson().toJson(currentGroupChannels)
+            )
+        }
         binding.rvChannels.apply {
             layoutManager = LinearLayoutManager(this@PlaylistActivity)
             adapter = channelAdapter
@@ -144,29 +151,8 @@ class PlaylistActivity : AppCompatActivity() {
             })
         )
 
-        // Channel click → launch PlayerActivity
-        binding.rvChannels.addOnItemTouchListener(
-            RecyclerTouchListener(this, binding.rvChannels, object : RecyclerTouchListener.ClickListener {
-                override fun onClick(view: View, position: Int) {
-                    val ch = channelAdapter.getItem(position)
-                    // Save all current channels for player sidebar navigation
-                    val gson = Gson()
-                    val allCurrent = currentGroupChannels
-                    sharedPrefManager.saveSPString(
-                        SharedPrefManager.SP_CHANNELS,
-                        gson.toJson(allCurrent)
-                    )
-                    val intent = Intent(this@PlaylistActivity, PlayerActivity::class.java)
-                    intent.putExtra("name", ch.name)
-                    intent.putExtra("url", ch.url)
-                    intent.putExtra("userAgent", ch.userAgent)
-                    intent.putExtra("referrer", ch.referrer)
-                    sharedPrefManager.saveSPString(SharedPrefManager.SP_CURRENT_URL, ch.url)
-                    startActivity(intent)
-                }
-                override fun onLongClick(view: View, position: Int) {}
-            })
-        )
+        // Channel clicks are handled by ChannelsAdapter's cardRoot.setOnClickListener
+        // which works with both touch and D-pad/remote OK button
     }
 
     // ── Data Loading ────────────────────────────────────────
@@ -274,23 +260,23 @@ class PlaylistActivity : AppCompatActivity() {
         groupNames.addAll(keysToShow.map { it.substringAfter("|") }.distinct().sorted())
 
         // Build a clean display map: display_name -> channels
-        val displayMap = mutableMapOf<String, MutableList<ChannelsData>>()
+        displayGroupMap.clear()
         for (key in keysToShow) {
             val displayName = key.substringAfter("|")
-            displayMap.getOrPut(displayName) { mutableListOf() }
+            displayGroupMap.getOrPut(displayName) { mutableListOf() }
                 .addAll(groupMap[key] ?: emptyList())
         }
 
         // Populate sidebar
         categoryAdapter.clear()
         val groupData = groupNames.map { name ->
-            PlaylistData(title = name, link = "", channel = (displayMap[name]?.size ?: 0).toString())
+            PlaylistData(title = name, link = "", channel = (displayGroupMap[name]?.size ?: 0).toString())
         }
         categoryAdapter.addAll(groupData)
 
         // Show first group
         if (groupNames.isNotEmpty()) {
-            showGroup(groupNames.first(), displayMap)
+            showGroup(groupNames.first())
         }
     }
 
@@ -329,13 +315,13 @@ class PlaylistActivity : AppCompatActivity() {
     }
 
     // ── Group Display ───────────────────────────────────────
-    private fun showGroup(name: String, source: Map<String, MutableList<ChannelsData>> = groupMap) {
-        val channels = source[name] ?: groupMap[name] ?: return
+    private fun showGroup(name: String) {
+        val channels = displayGroupMap[name] ?: groupMap[name] ?: return
         currentGroupChannels = channels.toMutableList()
         binding.tvHeaderTitle.text = name.uppercase()
-        binding.etSearchCategories.setText("")
+        binding.etSearchChannels.setText("")
         channelAdapter.clear()
-        channelAdapter.addAll(currentGroupChannels)
+        channelAdapter.addAll(applySorting(currentGroupChannels))
     }
 
     // ── Category filtering ───────────────────────────────────

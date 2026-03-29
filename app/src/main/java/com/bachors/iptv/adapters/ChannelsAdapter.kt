@@ -25,6 +25,11 @@ import org.json.JSONObject
 class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val allData = mutableListOf<ChannelsData>()
     private lateinit var sharedPrefManager: SharedPrefManager
+    private var onBeforePlay: (() -> Unit)? = null
+
+    fun setOnBeforePlayListener(listener: () -> Unit) {
+        onBeforePlay = listener
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val v1 = LayoutInflater.from(parent.context).inflate(R.layout.item_channels, parent, false)
@@ -80,7 +85,8 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
             }
         }
 
-        h.lnPlay.setOnClickListener {
+        val launchPlayer = View.OnClickListener {
+            onBeforePlay?.invoke()
             val intent = Intent(inContext, PlayerActivity::class.java)
             intent.putExtra("name", data.name)
             intent.putExtra("url", data.url)
@@ -89,6 +95,8 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
             sharedPrefManager.saveSPString(SharedPrefManager.SP_CURRENT_URL, data.url)
             inContext.startActivity(intent)
         }
+        h.cardRoot.setOnClickListener(launchPlayer)
+        h.lnPlay.setOnClickListener(launchPlayer)
 
         h.btFavorite.setOnClickListener {
             try {
