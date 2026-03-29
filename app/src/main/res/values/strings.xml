@@ -9,5 +9,7 @@
     <string name="iptvorg">IPTV-ORG</string>
     <string name="m3u">M3U FILE</string>
     <string name="favorite">FAVORITES</string>
+    <string name="hint_search_categories">Search categories…</string>
+    <string name="no_information">No Information</string>
 
 </resources>

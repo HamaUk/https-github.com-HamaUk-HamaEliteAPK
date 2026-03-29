@@ -23,34 +23,19 @@ class PlaylistAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
         val holder = holder as ViewHolder
 
         holder.tvTitle.text = data.title
-        "${data.channel} channels".also { holder.tvChannel.text = it }
     }
 
     override fun getItemCount(): Int = allData.size
 
-    fun add(r: PlaylistData) {
-        allData.add(r)
-        notifyItemInserted(allData.size - 1)
-    }
-
     fun addAll(semuaData: List<PlaylistData>) {
-        for (data in semuaData) {
-            add(data)
-        }
-    }
-
-    fun remove(r: PlaylistData) {
-        val position = allData.indexOf(r)
-        if (position > -1) {
-            allData.removeAt(position)
-            notifyItemRemoved(position)
-        }
+        allData.clear()
+        allData.addAll(semuaData)
+        notifyDataSetChanged()
     }
 
     fun clear() {
-        while (itemCount > 0) {
-            remove(getItem(0))
-        }
+        allData.clear()
+        notifyDataSetChanged()
     }
 
     fun isEmpty(): Boolean = itemCount == 0
@@ -59,6 +44,5 @@ class PlaylistAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvTitle: TextView = itemView.findViewById(R.id.title)
-        val tvChannel: TextView = itemView.findViewById(R.id.channel)
     }
 }

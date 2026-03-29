@@ -80,32 +80,44 @@
                 android:orientation="horizontal"
                 android:padding="2dp">
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_tab_sync"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="SYNC"
-                    android:textColor="#FFFFFF" />
+                    android:textColor="#FFFFFF"
+                    app:icon="@drawable/ic_load"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp"
+                    app:iconTint="#FFFFFF" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_tab_xtream"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="XTREAM"
-                    android:textColor="#FFFFFF" />
+                    android:textColor="#FFFFFF"
+                    app:icon="@drawable/ic_world"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp"
+                    app:iconTint="#FFFFFF" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_tab_m3u"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="M3U URL"
-                    android:textColor="#FFFFFF" />
+                    android:textColor="#FFFFFF"
+                    app:icon="@drawable/ic_file"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp"
+                    app:iconTint="#FFFFFF" />
             </LinearLayout>
 
             <!-- Method Specific Sub-groups -->

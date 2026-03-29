@@ -13,7 +13,6 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.GridLayoutManager
 import com.bachors.iptv.adapters.ChannelsAdapter
 import com.bachors.iptv.adapters.PlaylistAdapter
 import com.bachors.iptv.databinding.ActivityPlaylistBinding
@@ -91,15 +90,21 @@ class PlaylistActivity : AppCompatActivity() {
             adapter = categoryAdapter
         }
 
-        // Channel grid
         channelAdapter = ChannelsAdapter(this)
         binding.rvChannels.apply {
-            layoutManager = GridLayoutManager(this@PlaylistActivity, 3)
+            layoutManager = LinearLayoutManager(this@PlaylistActivity)
             adapter = channelAdapter
         }
 
-        // Back button
-        try { findViewById<View>(R.id.btn_back).setOnClickListener { finish() } } catch (_: Exception) {}
+        binding.tvHeaderTitle.text = when (currentType) {
+            "vod" -> "MOVIES"
+            "series" -> "SERIES"
+            else -> "LIVE TV"
+        }
+
+        try {
+            binding.btnBack.setOnClickListener { finish() }
+        } catch (_: Exception) { }
 
         // Search — filter channels by name
         binding.etSearchCategories.addTextChangedListener(object : TextWatcher {
@@ -109,13 +114,6 @@ class PlaylistActivity : AppCompatActivity() {
             }
             override fun afterTextChanged(s: Editable?) {}
         })
-
-        // Favorites icon
-        try {
-            findViewById<View>(R.id.btn_search).setOnClickListener {
-                binding.etSearchCategories.requestFocus()
-            }
-        } catch (_: Exception) {}
 
         // Category click
         binding.rvCategories.addOnItemTouchListener(
@@ -287,7 +285,7 @@ class PlaylistActivity : AppCompatActivity() {
     private fun showGroup(name: String, source: Map<String, MutableList<ChannelsData>> = groupMap) {
         val channels = source[name] ?: groupMap[name] ?: return
         currentGroupChannels = channels.toMutableList()
-        binding.tvCategoryTitle.text = name.uppercase()
+        binding.tvHeaderTitle.text = name.uppercase()
         binding.etSearchCategories.setText("")
         channelAdapter.clear()
         channelAdapter.addAll(currentGroupChannels)
@@ -334,7 +332,7 @@ class PlaylistActivity : AppCompatActivity() {
             // Load first category's channels via HTTP
             if (filtered.isNotEmpty()) {
                 val first = filtered.first()
-                binding.tvCategoryTitle.text = first.title.uppercase()
+                binding.tvHeaderTitle.text = first.title.uppercase()
                 loadXtreamChannels(first.link)
             }
         } catch (e: Exception) {

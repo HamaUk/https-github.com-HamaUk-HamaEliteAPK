@@ -16,6 +16,7 @@
     <color name="vu_purple">#7349EA</color>
     <color name="vu_accent">#7349EA</color>
     <color name="vu_bg_dark">#0D0A1C</color>
+    <color name="vu_bg_panel">#14141E</color>
     <color name="vu_sidebar_bg">#110E1C</color>
     <color name="vu_sidebar_selected">#9C27B0</color>
     <color name="vu_focused_card_stroke">#CE93D8</color>
