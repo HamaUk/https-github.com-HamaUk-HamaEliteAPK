@@ -81,7 +81,7 @@ class PlayerActivity : AppCompatActivity() {
         // Load channels from SharedPrefs (saved in PlaylistActivity)
         val sharedPrefManager = SharedPrefManager(this)
         val channelsJson = sharedPrefManager.getSpChannels()
-        if (channelsJson.isNotEmpty()) {
+        if (channelsJson.isNotEmpty() && channelsJson != "[]") {
             try {
                 val gson = Gson()
                 val listType = object : TypeToken<List<com.bachors.iptv.models.ChannelsData>>() {}.type
@@ -108,9 +108,13 @@ class PlayerActivity : AppCompatActivity() {
         try {
             mkPlayer?.play(url)
             mkPlayer?.setTitle(name)
+            mkPlayer?.setPlayerCallbacks(object : MKPlayer.playerCallbacks {
+                override fun onNextClick() {}
+                override fun onPreviousClick() {}
+            })
         } catch (e: Exception) {
-            Toast.makeText(this, "Player Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            finish()
+            // Log the error but DO NOT call finish() — the player will show "small problem" instead
+            e.printStackTrace()
         }
     }
 

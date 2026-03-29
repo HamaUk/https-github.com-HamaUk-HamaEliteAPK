@@ -165,10 +165,15 @@ class PlaylistActivity : AppCompatActivity() {
                 sharedPrefManager.saveSPString(SharedPrefManager.SP_CHANNELS, ar.toString())
 
                 // Convert JSON to ChannelsData objects manually or use Gson
-                val gson = Gson()
-                val listType = object : TypeToken<List<com.bachors.iptv.models.ChannelsData>>() {}.type
-                val channels: List<com.bachors.iptv.models.ChannelsData> = gson.fromJson(ar.toString(), listType)
-                channelAdapter.addAll(channels)
+                try {
+                    val gson = Gson()
+                    val listType = object : TypeToken<List<com.bachors.iptv.models.ChannelsData>>() {}.type
+                    val channels: List<com.bachors.iptv.models.ChannelsData> = gson.fromJson(ar.toString(), listType)
+                    channelAdapter.addAll(channels)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    android.widget.Toast.makeText(mcon, "Could not parse channels", android.widget.Toast.LENGTH_SHORT).show()
+                }
             }
         }.start()
     }
