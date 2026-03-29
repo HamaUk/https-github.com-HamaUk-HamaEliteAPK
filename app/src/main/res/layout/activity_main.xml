@@ -85,7 +85,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_tab_sync"
-                    style="@style/Widget.Material3.Button.TextButton"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -98,7 +98,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_tab_xtream"
-                    style="@style/Widget.Material3.Button.TextButton"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -111,7 +111,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_tab_m3u"
-                    style="@style/Widget.Material3.Button.TextButton"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
