@@ -115,17 +115,17 @@ class PlaylistActivity : AppCompatActivity() {
     private fun loadInitialData() {
         val builder2 = MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
         builder2.setCancelable(false)
-        builder2.setMessage("Syncing Playlists...")
+        builder2.setMessage("Loading...")
         loading = builder2.create()
 
-        if (sharedPrefManager.getSpPlaylist().isEmpty() || sharedPrefManager.getSpPlaylist() == "[]") {
+        val jsonPlaylist = sharedPrefManager.getSpPlaylist()
+        if (jsonPlaylist.isEmpty() || jsonPlaylist == "[]") {
             val directUrl = sharedPrefManager.getSpM3uDirect()
             if (directUrl.isNotEmpty()) {
                 // Direct M3U Mode
                 loadDirectM3u(directUrl)
             } else {
-                loading.show()
-                loadPlaylists()
+                android.widget.Toast.makeText(this, "No playlist data found. Please activate device.", android.widget.Toast.LENGTH_LONG).show()
             }
         } else {
             jsonToGson()
