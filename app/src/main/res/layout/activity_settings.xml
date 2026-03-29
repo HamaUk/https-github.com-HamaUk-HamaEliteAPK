@@ -29,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="SETTINGS"
+            android:text="SYSTEM SETTINGS"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -99,24 +99,23 @@
         app:layout_constraintStart_toEndOf="@+id/sidebar"
         app:layout_constraintTop_toBottomOf="@+id/settings_header">
 
-        <!-- Default: Account Info -->
+        <!-- General Section -->
         <ScrollView
+            android:id="@+id/layout_general"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
+            android:layout_height="match_parent"
+            android:visibility="visible">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="SUBSCRIPTION INFO"
+                    android:text="GENERAL SETTINGS"
                     android:textColor="@color/vu_purple"
                     android:textSize="14sp"
                     android:textStyle="bold" />
-
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -127,14 +126,102 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:padding="16dp">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Media Player Selection"
+                            android:textColor="#FFFFFF"
+                            android:textSize="16sp" />
+                        <RadioGroup
+                            android:id="@+id/rg_player"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp">
+                            <RadioButton
+                                android:id="@+id/rb_ijk"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="IJK Player (Hardware Optimized)"
+                                android:textColor="#B0B0C0" />
+                            <RadioButton
+                                android:id="@+id/rb_native"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Native Android Player"
+                                android:textColor="#B0B0C0" />
+                        </RadioGroup>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+        </ScrollView>
 
+        <!-- Content Section -->
+        <ScrollView
+            android:id="@+id/layout_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DATA &amp; CACHE"
+                    android:textColor="@color/vu_purple"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_clear_cache"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="20dp"
+                    android:text="CLEAR ALL APP CACHE"
+                    app:icon="@drawable/ic_download" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_refresh_data"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="12dp"
+                    android:text="REFRESH PLAYLIST DATA"
+                    app:icon="@drawable/ic_load" />
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Account Section -->
+        <ScrollView
+            android:id="@+id/layout_account"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SUBSCRIPTION INFO"
+                    android:textColor="@color/vu_purple"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    style="@style/VuCard">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
                         <TextView
                             android:id="@+id/tv_pkg"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="Package: HAMA UK PLAYER"
                             android:textColor="#FFFFFF" />
-
                         <TextView
                             android:id="@+id/tv_mac"
                             android:layout_width="match_parent"
@@ -142,7 +229,6 @@
                             android:layout_marginTop="8dp"
                             android:text="MAC: 00:00:00:00:00:00"
                             android:textColor="#FFFFFF" />
-
                         <TextView
                             android:id="@+id/tv_expiry"
                             android:layout_width="match_parent"
@@ -152,7 +238,6 @@
                             android:textColor="#FFFFFF" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-
             </LinearLayout>
         </ScrollView>
     </FrameLayout>

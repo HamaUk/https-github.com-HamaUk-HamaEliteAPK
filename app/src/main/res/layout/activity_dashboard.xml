@@ -7,13 +7,13 @@
     android:background="@color/vu_bg_dark"
     tools:context=".DashboardActivity">
 
-    <!-- Background Image -->
+    <!-- Background Image with deep blur effect (alpha simulation) -->
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
         android:src="@drawable/background"
-        android:alpha="0.2" />
+        android:alpha="0.15" />
 
     <!-- Top Bar -->
     <LinearLayout
@@ -21,7 +21,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
+        android:padding="20dp"
+        android:gravity="center_vertical"
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
@@ -33,7 +34,8 @@
                 android:layout_height="wrap_content"
                 android:text="HAMA"
                 android:textColor="#FFFFFF"
-                android:textSize="22sp"
+                android:textSize="26sp"
+                android:letterSpacing="0.1"
                 android:textStyle="bold" />
             <TextView
                 android:layout_width="wrap_content"
@@ -41,7 +43,8 @@
                 android:layout_marginStart="8dp"
                 android:text="UK"
                 android:textColor="@color/vu_purple"
-                android:textSize="22sp"
+                android:textSize="26sp"
+                android:letterSpacing="0.1"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -56,16 +59,17 @@
             android:layout_height="wrap_content"
             android:text="12:00 PM"
             android:textColor="#FFFFFF"
-            android:textSize="18sp"
+            android:textSize="20sp"
+            android:fontFamily="sans-serif-light"
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Main Grid Cards (Reduced Size) -->
+    <!-- Main Grid Cards (Premium Overhaul) -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:paddingStart="40dp"
-        android:paddingEnd="40dp"
+        android:paddingStart="60dp"
+        android:paddingEnd="60dp"
         app:layout_constraintBottom_toTopOf="@+id/footer"
         app:layout_constraintTop_toBottomOf="@+id/header">
 
@@ -80,28 +84,30 @@
                 android:id="@+id/card_live"
                 style="@style/VuCard"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_columnWeight="1"
-                android:layout_margin="8dp"
+                android:layout_margin="10dp"
                 android:clickable="true"
                 android:focusable="true">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
+                    android:background="@drawable/hk_gradient_card"
                     android:orientation="vertical">
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_live"
+                        app:tint="#FFFFFF" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📡"
-                        android:textSize="20sp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="12dp"
                         android:text="LIVE TV"
                         android:textColor="#FFFFFF"
-                        android:textSize="11sp"
+                        android:textSize="14sp"
+                        android:letterSpacing="0.05"
                         android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -110,28 +116,30 @@
                 android:id="@+id/card_vod"
                 style="@style/VuCard"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_columnWeight="1"
-                android:layout_margin="8dp"
+                android:layout_margin="10dp"
                 android:clickable="true"
                 android:focusable="true">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
+                    android:background="@drawable/hk_gradient_card"
                     android:orientation="vertical">
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_vod"
+                        app:tint="#FFFFFF" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🎬"
-                        android:textSize="20sp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="12dp"
                         android:text="MOVIES"
                         android:textColor="#FFFFFF"
-                        android:textSize="11sp"
+                        android:textSize="14sp"
+                        android:letterSpacing="0.05"
                         android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -140,28 +148,30 @@
                 android:id="@+id/card_series"
                 style="@style/VuCard"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_columnWeight="1"
-                android:layout_margin="8dp"
+                android:layout_margin="10dp"
                 android:clickable="true"
                 android:focusable="true">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
+                    android:background="@drawable/hk_gradient_card"
                     android:orientation="vertical">
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_series"
+                        app:tint="#FFFFFF" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🎭"
-                        android:textSize="20sp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="12dp"
                         android:text="SERIES"
                         android:textColor="#FFFFFF"
-                        android:textSize="11sp"
+                        android:textSize="14sp"
+                        android:letterSpacing="0.05"
                         android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -170,28 +180,30 @@
                 android:id="@+id/card_epg"
                 style="@style/VuCard"
                 android:layout_width="0dp"
-                android:layout_height="100dp"
+                android:layout_height="120dp"
                 android:layout_columnWeight="1"
-                android:layout_margin="8dp"
+                android:layout_margin="10dp"
                 android:clickable="true"
                 android:focusable="true">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
+                    android:background="@drawable/hk_gradient_card"
                     android:orientation="vertical">
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_heart"
+                        app:tint="#FFFFFF" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📅"
-                        android:textSize="20sp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="GUIDE"
+                        android:layout_marginTop="12dp"
+                        android:text="FAVORITES"
                         android:textColor="#FFFFFF"
-                        android:textSize="11sp"
+                        android:textSize="14sp"
+                        android:letterSpacing="0.05"
                         android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -200,31 +212,33 @@
                 android:id="@+id/card_settings"
                 style="@style/VuCard"
                 android:layout_width="0dp"
-                android:layout_height="60dp"
+                android:layout_height="70dp"
                 android:layout_columnWeight="1"
                 android:layout_columnSpan="2"
-                android:layout_margin="8dp"
+                android:layout_margin="10dp"
                 android:clickable="true"
                 android:focusable="true">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:paddingStart="32dp"
-                    android:paddingEnd="32dp"
+                    android:paddingStart="40dp"
+                    android:paddingEnd="40dp"
+                    android:background="#33FFFFFF"
                     android:orientation="horizontal">
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_settings"
+                        app:tint="#FFFFFF" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="⚙️"
-                        android:textSize="22sp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:text="SETTINGS"
+                        android:layout_marginStart="20dp"
+                        android:text="SYSTEM SETTINGS"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
+                        android:textSize="16sp"
+                        android:letterSpacing="0.05"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="0dp"
@@ -233,9 +247,10 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="v15.1.0"
-                        android:textColor="@color/vu_text_secondary"
-                        android:textSize="10sp" />
+                        android:text="v15.2.0 PREMIUM"
+                        android:textColor="@color/vu_purple"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -247,17 +262,17 @@
         android:id="@+id/footer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#99000000"
+        android:background="#CC000000"
         android:orientation="horizontal"
-        android:padding="12dp"
+        android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="HAMA UK ELITE PREMIUM"
+            android:text="HAMA UK PLAYER • ELITE EDITION"
             android:textColor="@color/vu_text_secondary"
-            android:textSize="11sp"
+            android:textSize="12sp"
             android:textStyle="bold" />
 
         <View
@@ -268,9 +283,9 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="ACCOUNT: ACTIVE"
+            android:text="CONNECTION: SECURE"
             android:textColor="@color/vu_purple"
-            android:textSize="11sp"
+            android:textSize="12sp"
             android:textStyle="bold" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

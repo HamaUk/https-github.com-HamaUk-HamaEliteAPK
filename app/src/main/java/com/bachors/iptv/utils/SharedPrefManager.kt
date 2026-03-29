@@ -10,6 +10,7 @@ class SharedPrefManager(context: Context) {
         const val SP_CHANNELS = "spChannels"
         const val SP_FAVORITES = "spFavorites"
         const val SP_FILES = "spFiles"
+        const val SP_M3U_DIRECT = "spM3uDirect"
     }
 
     private val sp: SharedPreferences = context.getSharedPreferences(SP_SS_APP, Context.MODE_PRIVATE)
@@ -27,4 +28,6 @@ class SharedPrefManager(context: Context) {
     fun getSpFavorites(): String = sp.getString(SP_FAVORITES, "[]") ?: "[]"
 
     fun getSpFiles(): String = sp.getString(SP_FILES, "[]") ?: "[]"
+
+    fun getSpM3uDirect(): String = sp.getString(SP_M3U_DIRECT, "") ?: ""
 }

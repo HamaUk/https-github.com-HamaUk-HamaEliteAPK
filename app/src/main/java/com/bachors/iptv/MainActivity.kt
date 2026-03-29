@@ -47,15 +47,15 @@ class MainActivity : AppCompatActivity() {
         // Pure 8-digit numeric code
         val prefs = getSharedPreferences("hk_prefs", Context.MODE_PRIVATE)
         deviceId = prefs.getString("hk_device_id", "") ?: ""
-        if (deviceId.isEmpty() || deviceId.length != 8) {
+        if (deviceId.isEmpty() || deviceId.length != 6) {
             val random = Random()
-            deviceId = (10000000 + random.nextInt(90000000)).toString()
+            deviceId = (100000 + random.nextInt(900000)).toString()
             prefs.edit().putString("hk_device_id", deviceId).apply()
         }
         
-        // Format as 1234 5678 for readability
-        val formattedCode = if (deviceId.length == 8) {
-            "${deviceId.substring(0, 4)} ${deviceId.substring(4)}"
+        // Format as 123 456 for readability
+        val formattedCode = if (deviceId.length == 6) {
+            "${deviceId.substring(0, 3)} ${deviceId.substring(3)}"
         } else {
             deviceId
         }
@@ -97,6 +97,7 @@ class MainActivity : AppCompatActivity() {
         binding.btnLoginM3u.setOnClickListener {
             val url = binding.etM3uUrl.text.toString()
             if (url.isNotEmpty()) {
+                sharedPrefManager.saveSPString(SharedPrefManager.SP_M3U_DIRECT, url)
                 navigateToDashboard()
             }
         }

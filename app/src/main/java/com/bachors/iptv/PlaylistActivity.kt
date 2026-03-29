@@ -119,8 +119,14 @@ class PlaylistActivity : AppCompatActivity() {
         loading = builder2.create()
 
         if (sharedPrefManager.getSpPlaylist().isEmpty() || sharedPrefManager.getSpPlaylist() == "[]") {
-            loading.show()
-            loadPlaylists()
+            val directUrl = sharedPrefManager.getSpM3uDirect()
+            if (directUrl.isNotEmpty()) {
+                // Direct M3U Mode
+                loadDirectM3u(directUrl)
+            } else {
+                loading.show()
+                loadPlaylists()
+            }
         } else {
             jsonToGson()
             if (categoryAdapter.itemCount > 0) {
@@ -206,6 +212,19 @@ class PlaylistActivity : AppCompatActivity() {
             if (categoryAdapter.itemCount > 0) {
                 onCategorySelected(0)
             }
+        }
+        loading.dismiss() // Always dismiss
+    }
+
+    private fun loadDirectM3u(url: String) {
+        // Create a virtual category for direct M3U login
+        val dummy = PlaylistData("1", "MY PLAYLIST", url, "0")
+        allData.clear()
+        allData.add(dummy)
+        categoryAdapter.clear()
+        categoryAdapter.addAll(allData)
+        if (categoryAdapter.itemCount > 0) {
+            onCategorySelected(0)
         }
     }
 
