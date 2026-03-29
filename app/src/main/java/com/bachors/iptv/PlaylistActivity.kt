@@ -1,29 +1,23 @@
 package com.bachors.iptv
 
-import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.ImageView
-import androidx.activity.OnBackPressedCallback
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
-import androidx.core.graphics.drawable.toDrawable
-import androidx.core.net.toUri
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.bachors.iptv.adapters.PlaylistAdapter
+import androidx.recyclerview.widget.GridLayoutManager
 import com.bachors.iptv.adapters.ChannelsAdapter
+import com.bachors.iptv.adapters.PlaylistAdapter
 import com.bachors.iptv.databinding.ActivityPlaylistBinding
+import com.bachors.iptv.models.ChannelsData
 import com.bachors.iptv.models.PlaylistData
 import com.bachors.iptv.utils.HttpHandler
 import com.bachors.iptv.utils.RecyclerTouchListener
@@ -31,237 +25,319 @@ import com.bachors.iptv.utils.SharedPrefManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import org.json.JSONArray
-import org.json.JSONObject
-import org.jsoup.Jsoup
 
 class PlaylistActivity : AppCompatActivity() {
+
     companion object {
-        private const val EXT_M3U = "#EXTM3U"
-        private const val EXT_INF = "#EXTINF:"
-        private const val EXT_LOGO = "tvg-logo"
-        private const val EXT_HTTP = "http://"
+        private const val EXT_M3U   = "#EXTM3U"
+        private const val EXT_INF   = "#EXTINF"
+        private const val EXT_HTTP  = "http://"
         private const val EXT_HTTPS = "https://"
     }
 
-    private var stream: String? = null
-    private var goLink: String? = null
-    private var goTitle: String? = null
-    private var goJson: String? = null
-    private lateinit var loading: AlertDialog
+    private lateinit var binding: ActivityPlaylistBinding
     private lateinit var sharedPrefManager: SharedPrefManager
-    private var key: Int = 0
-    private var index: Int = 0
-    private lateinit var mcon: Context
-    private val allData = mutableListOf<PlaylistData>()
-    private var searchData: List<PlaylistData>? = null
-    private var all = true
+    private lateinit var loading: AlertDialog
     private lateinit var categoryAdapter: PlaylistAdapter
     private lateinit var channelAdapter: ChannelsAdapter
-    var binding: ActivityPlaylistBinding? = null
+
+    // All groups parsed from M3U — group title → channel list
+    private val groupMap = mutableMapOf<String, MutableList<ChannelsData>>()
+    private val groupNames = mutableListOf<String>()
+
+    // Currently displayed channels (can be filtered)
+    private var currentGroupChannels = mutableListOf<ChannelsData>()
+    private var currentType = "live" // live | vod | series
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        goFullscreen()
         binding = ActivityPlaylistBinding.inflate(layoutInflater)
-        setContentView(binding?.root)
+        setContentView(binding.root)
         supportActionBar?.hide()
 
-        mcon = this
         sharedPrefManager = SharedPrefManager(this)
+        currentType = intent.getStringExtra("type") ?: "live"
 
+        setupLoadingDialog()
         setupUI()
-        loadInitialData()
+        loadData()
     }
 
+    // ── Fullscreen / TV ────────────────────────────────────
+    private fun goFullscreen() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val wic = WindowInsetsControllerCompat(window, window.decorView)
+        wic.hide(WindowInsetsCompat.Type.systemBars())
+        wic.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    }
+
+    override fun onResume() { super.onResume(); goFullscreen() }
+
+    // ── Loading dialog ─────────────────────────────────────
+    private fun setupLoadingDialog() {
+        loading = MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
+            .setCancelable(false)
+            .setMessage("Loading channels...")
+            .create()
+    }
+
+    // ── UI Setup ───────────────────────────────────────────
     private fun setupUI() {
-        // Categories Sidebar
+        // Category sidebar
         categoryAdapter = PlaylistAdapter(this)
-        binding?.rvCategories?.apply {
-            layoutManager = LinearLayoutManager(mcon)
+        binding.rvCategories.apply {
+            layoutManager = LinearLayoutManager(this@PlaylistActivity)
             adapter = categoryAdapter
         }
 
-        // Channels Grid
+        // Channel grid
         channelAdapter = ChannelsAdapter(this)
-        binding?.rvChannels?.apply {
-            layoutManager = androidx.recyclerview.widget.GridLayoutManager(mcon, 3)
+        binding.rvChannels.apply {
+            layoutManager = GridLayoutManager(this@PlaylistActivity, 3)
             adapter = channelAdapter
         }
 
-        // Click Listeners
-        findViewById<android.widget.ImageView>(R.id.btn_back).setOnClickListener { finish() }
+        // Back button
+        try { findViewById<View>(R.id.btn_back).setOnClickListener { finish() } } catch (_: Exception) {}
 
-        // Sidebar selection logic
-        binding?.rvCategories?.addOnItemTouchListener(RecyclerTouchListener(this, binding!!.rvCategories, object : RecyclerTouchListener.ClickListener {
-            override fun onClick(view: View, position: Int) {
-                onCategorySelected(position)
+        // Search — filter channels by name
+        binding.etSearchCategories.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterChannels(s?.toString() ?: "")
             }
-            override fun onLongClick(view: View, position: Int) {}
-        }))
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        // Favorites icon
+        try {
+            findViewById<View>(R.id.btn_search).setOnClickListener {
+                binding.etSearchCategories.requestFocus()
+            }
+        } catch (_: Exception) {}
+
+        // Category click
+        binding.rvCategories.addOnItemTouchListener(
+            RecyclerTouchListener(this, binding.rvCategories, object : RecyclerTouchListener.ClickListener {
+                override fun onClick(view: View, position: Int) {
+                    showGroup(groupNames.getOrNull(position) ?: return)
+                }
+                override fun onLongClick(view: View, position: Int) {}
+            })
+        )
+
+        // Channel click → launch PlayerActivity
+        binding.rvChannels.addOnItemTouchListener(
+            RecyclerTouchListener(this, binding.rvChannels, object : RecyclerTouchListener.ClickListener {
+                override fun onClick(view: View, position: Int) {
+                    val ch = channelAdapter.getItem(position)
+                    // Save all current channels for player sidebar navigation
+                    val gson = Gson()
+                    val allCurrent = currentGroupChannels
+                    sharedPrefManager.saveSPString(
+                        SharedPrefManager.SP_CHANNELS,
+                        gson.toJson(allCurrent)
+                    )
+                    val intent = Intent(this@PlaylistActivity, PlayerActivity::class.java)
+                    intent.putExtra("name", ch.name)
+                    intent.putExtra("url", ch.url)
+                    startActivity(intent)
+                }
+                override fun onLongClick(view: View, position: Int) {}
+            })
+        )
     }
 
-    private fun onCategorySelected(position: Int) {
-        index = position
-        val selectedData = categoryAdapter.getItem(position)
-        binding?.tvCategoryTitle?.text = selectedData.title.uppercase()
-        
-        // Load channels for this category
-        goLink = selectedData.link
-        goTitle = selectedData.title
-        loading.show()
-        loadChannels()
-    }
-
-    private fun loadInitialData() {
-        val builder2 = MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-        builder2.setCancelable(false)
-        builder2.setMessage("Loading...")
-        loading = builder2.create()
-
-        val jsonPlaylist = sharedPrefManager.getSpPlaylist()
-        if (jsonPlaylist.isEmpty() || jsonPlaylist == "[]") {
-            val directUrl = sharedPrefManager.getSpM3uDirect()
-            if (directUrl.isNotEmpty()) {
-                // Direct M3U Mode
-                loadDirectM3u(directUrl)
+    // ── Data Loading ────────────────────────────────────────
+    private fun loadData() {
+        val directData = sharedPrefManager.getSpM3uDirect()
+        if (directData.isNotEmpty()) {
+            if (directData.startsWith("file_content:")) {
+                // Local file content — parse directly without network
+                val content = directData.removePrefix("file_content:")
+                parseAndDisplay(content)
             } else {
-                android.widget.Toast.makeText(this, "No playlist data found. Please activate device.", android.widget.Toast.LENGTH_LONG).show()
+                // Remote M3U URL — fetch it
+                loading.show()
+                Thread {
+                    val result = HttpHandler().makeServiceCall(directData)
+                    runOnUiThread {
+                        loading.dismiss()
+                        if (result != null) {
+                            parseAndDisplay(result.replace("#EXTVLCOPT:(.*)".toRegex(), ""))
+                        } else {
+                            Toast.makeText(this, "Failed to load playlist", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }.start()
             }
         } else {
-            jsonToGson()
-            if (categoryAdapter.itemCount > 0) {
-                onCategorySelected(0) // Default to first category
-            }
+            // Xtream / JSON playlist mode
+            jsonToGroups()
         }
     }
 
-    private fun jsonToGson() {
+    // ── M3U Parsing ────────────────────────────────────────
+    private fun parseAndDisplay(content: String) {
+        groupMap.clear()
+        groupNames.clear()
+
+        val lines = content.lines()
+        var currentName  = ""
+        var currentLogo  = ""
+        var currentGroup = "General"
+
+        for (line in lines) {
+            val trimmed = line.trim()
+            when {
+                trimmed.startsWith("#EXTINF") -> {
+                    // Parse name, logo, group-title from the EXTINF line
+                    currentName  = ""
+                    currentLogo  = ""
+                    currentGroup = extractAttr(trimmed, "group-title") ?: "General"
+                    currentLogo  = extractAttr(trimmed, "tvg-logo") ?: ""
+                    // Channel display name is after the last comma
+                    val commaIdx = trimmed.lastIndexOf(',')
+                    if (commaIdx >= 0) currentName = trimmed.substring(commaIdx + 1).trim()
+                }
+                trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("rtsp://") || trimmed.startsWith("rtmp://") -> {
+                    if (currentName.isNotEmpty()) {
+                        val channel = ChannelsData(
+                            name = currentName,
+                            logo = currentLogo,
+                            url  = trimmed
+                        )
+                        groupMap.getOrPut(currentGroup) { mutableListOf() }.add(channel)
+                        currentName = ""
+                    }
+                }
+            }
+        }
+
+        // Filter by type from dashboard button
+        val filteredGroups = when (currentType) {
+            "vod"    -> groupMap.filter { (k, _) -> isVodGroup(k) }.toMutableMap()
+            "series" -> groupMap.filter { (k, _) -> isSeriesGroup(k) }.toMutableMap()
+            else     -> groupMap.filter { (k, _) -> !isVodGroup(k) && !isSeriesGroup(k) }.toMutableMap()
+                .ifEmpty { groupMap.toMutableMap() } // if nothing matches "live", show all
+        }
+
+        if (filteredGroups.isEmpty()) {
+            Toast.makeText(this, "No ${currentType.uppercase()} content found in this playlist", Toast.LENGTH_LONG).show()
+            groupNames.addAll(groupMap.keys.sorted())
+            groupMap.forEach { (k, v) -> /* keep all */ }
+        } else {
+            groupNames.addAll(filteredGroups.keys.sorted())
+        }
+
+        // Populate sidebar
+        categoryAdapter.clear()
+        val groupData = groupNames.map { name ->
+            val count = (filteredGroups[name] ?: groupMap[name])?.size ?: 0
+            PlaylistData(title = name, link = "", channel = count.toString())
+        }
+        categoryAdapter.addAll(groupData)
+
+        // Show first group
+        if (groupNames.isNotEmpty()) {
+            showGroup(groupNames.first(), filteredGroups)
+        }
+    }
+
+    private fun extractAttr(line: String, attr: String): String? {
+        val pattern = Regex("""$attr="([^"]*)"""")
+        return pattern.find(line)?.groupValues?.getOrNull(1)?.takeIf { it.isNotEmpty() }
+    }
+
+    private fun isVodGroup(group: String): Boolean {
+        val lower = group.lowercase()
+        return lower.contains("vod") || lower.contains("movie") || lower.contains("film") ||
+               lower.contains("cinema") || lower.contains("4k movie")
+    }
+
+    private fun isSeriesGroup(group: String): Boolean {
+        val lower = group.lowercase()
+        return lower.contains("series") || lower.contains("show") || lower.contains("episode") ||
+               lower.contains("season") || lower.contains("tv show")
+    }
+
+    // ── Group Display ───────────────────────────────────────
+    private fun showGroup(name: String, source: Map<String, MutableList<ChannelsData>> = groupMap) {
+        val channels = source[name] ?: groupMap[name] ?: return
+        currentGroupChannels = channels.toMutableList()
+        binding.tvCategoryTitle.text = name.uppercase()
+        binding.etSearchCategories.setText("")
+        channelAdapter.clear()
+        channelAdapter.addAll(currentGroupChannels)
+    }
+
+    // ── Search filtering ────────────────────────────────────
+    private fun filterChannels(query: String) {
+        if (query.isEmpty()) {
+            channelAdapter.clear()
+            channelAdapter.addAll(currentGroupChannels)
+        } else {
+            val filtered = currentGroupChannels.filter {
+                it.name.contains(query, ignoreCase = true)
+            }
+            channelAdapter.clear()
+            channelAdapter.addAll(filtered)
+        }
+    }
+
+    // ── Xtream / JSON fallback ──────────────────────────────
+    private fun jsonToGroups() {
         try {
             val rawJson = sharedPrefManager.getSpPlaylist()
-            if (rawJson.isEmpty() || rawJson == "[]") return
-
+            if (rawJson.isEmpty() || rawJson == "[]") {
+                Toast.makeText(this, "No playlist. Please login first.", Toast.LENGTH_LONG).show()
+                return
+            }
             val gson = Gson()
             val listType = object : TypeToken<List<PlaylistData>>() {}.type
-
-            // The stored JSON can be either:
-            // A) A flat array:   [ {title, link, channel}, ... ]
-            // B) A wrapped array: [ [ {title, link, channel}, ... ] ]
-            // Try flat first, fall back to wrapped
             val data: List<PlaylistData> = try {
                 gson.fromJson(rawJson, listType)
             } catch (e: Exception) {
-                val outerArray = org.json.JSONArray(rawJson)
-                gson.fromJson(outerArray.getJSONArray(0).toString(), listType)
+                val outer = org.json.JSONArray(rawJson)
+                gson.fromJson(outer.getJSONArray(0).toString(), listType)
             }
 
-            allData.clear()
-            allData.addAll(data.filter { it.title.isNotEmpty() })
+            val filtered = data.filter { it.title.isNotEmpty() }
+            groupNames.clear()
+            groupNames.addAll(filtered.map { it.title })
+
             categoryAdapter.clear()
-            categoryAdapter.addAll(allData)
+            categoryAdapter.addAll(filtered)
+
+            // Load first category's channels via HTTP
+            if (filtered.isNotEmpty()) {
+                val first = filtered.first()
+                binding.tvCategoryTitle.text = first.title.uppercase()
+                loadXtreamChannels(first.link)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
+            Toast.makeText(this, "Error loading playlist", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // ... rest of the loadChannels logic updated to update channelAdapter ...
-    private fun loadChannels() {
+    private fun loadXtreamChannels(url: String?) {
+        if (url.isNullOrEmpty()) return
+        loading.show()
         Thread {
-            val sh = HttpHandler()
-            val result = sh.makeServiceCall(goLink)
-            if (result != null) {
-                stream = result.replace("#EXTVLCOPT:(.*)".toRegex(), "")
-            }
-
+            val result = HttpHandler().makeServiceCall(url)
             runOnUiThread {
                 loading.dismiss()
-                val ar = parseM3U(stream ?: "")
-                channelAdapter.clear()
-                
-                sharedPrefManager.saveSPString(SharedPrefManager.SP_CHANNELS, ar.toString())
-
-                // Convert JSON to ChannelsData objects manually or use Gson
-                try {
-                    val gson = Gson()
-                    val listType = object : TypeToken<List<com.bachors.iptv.models.ChannelsData>>() {}.type
-                    val channels: List<com.bachors.iptv.models.ChannelsData> = gson.fromJson(ar.toString(), listType)
-                    channelAdapter.addAll(channels)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    android.widget.Toast.makeText(mcon, "Could not parse channels", android.widget.Toast.LENGTH_SHORT).show()
+                if (result != null) {
+                    try {
+                        val cleaned = result.replace("#EXTVLCOPT:(.*)".toRegex(), "")
+                        parseAndDisplay(cleaned)
+                    } catch (e: Exception) {
+                        Toast.makeText(this, "Failed to parse channels", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }.start()
-    }
-
-    private fun parseM3U(m3u: String): JSONArray {
-        val linesArray = m3u.split(EXT_INF)
-        val ar = JSONArray()
-        for (currLine in linesArray) {
-            if (!currLine.contains(EXT_M3U)) {
-                val ob = JSONObject()
-                val dataArray = currLine.split(",")
-                try {
-                    val name: String
-                    val url: String
-                    if (dataArray[1].contains(EXT_HTTPS)) {
-                        name = dataArray[1].substring(0, dataArray[1].indexOf(EXT_HTTPS)).replace("\n", "")
-                        url = dataArray[1].substring(dataArray[1].indexOf(EXT_HTTPS)).replace("\n", "").replace("\r", "")
-                    } else {
-                        name = dataArray[1].substring(0, dataArray[1].indexOf(EXT_HTTP)).replace("\n", "")
-                        url = dataArray[1].substring(dataArray[1].indexOf(EXT_HTTP)).replace("\n", "").replace("\r", "")
-                    }
-                    ob.put("name", name.trim())
-                    ob.put("url", url.trim())
-                    if (dataArray[0].contains(EXT_LOGO)) {
-                        val logo = dataArray[0].substring(dataArray[0].indexOf(EXT_LOGO) + EXT_LOGO.length).replace("=", "").replace("\"", "").replace("\n", "")
-                        ob.put("logo", logo.trim())
-                    } else {
-                        ob.put("logo", "")
-                    }
-                    ar.put(ob)
-                } catch (_: Exception) {}
-            }
-        }
-        return ar
-    }
-
-    private fun loadPlaylists() {
-        // Sync logic from Dashboard or Main
-        val sharedPrefManager = SharedPrefManager(this)
-        val json = sharedPrefManager.getSpPlaylist()
-        if (json.isNotEmpty()) {
-            jsonToGson()
-            if (categoryAdapter.itemCount > 0) {
-                onCategorySelected(0)
-            }
-        }
-        loading.dismiss() // Always dismiss
-    }
-
-    private fun loadDirectM3u(url: String) {
-        // Create a virtual category for direct M3U login
-        val dummy = PlaylistData("MY PLAYLIST", url, "1")
-        allData.clear()
-        allData.add(dummy)
-        categoryAdapter.clear()
-        categoryAdapter.addAll(allData)
-        if (categoryAdapter.itemCount > 0) {
-            onCategorySelected(0)
-        }
-    }
-
-    private fun setupAk() {
-        // Standard background/system UI setup
-        val decorView = window.decorView
-        val wic = WindowInsetsControllerCompat(window, decorView)
-        wic.isAppearanceLightStatusBars = false
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            decorView.isForceDarkAllowed = true
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        setupAk()
     }
 }

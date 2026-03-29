@@ -2,10 +2,12 @@ package com.bachors.iptv
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.bachors.iptv.databinding.ActivityMainBinding
 import com.bachors.iptv.utils.IptvService
@@ -17,6 +19,8 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.util.Random
 
 class MainActivity : AppCompatActivity() {
@@ -24,69 +28,60 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPrefManager: SharedPrefManager
     private var deviceId: String = ""
 
+    // File picker for M3U/M3U8 files
+    private val filePicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let { readM3uFile(it) }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        supportActionBar?.hide()
 
-        supportActionBar?.hide() // Fullscreen experience
         sharedPrefManager = SharedPrefManager(this)
-        
         setupDeviceId()
         setupTabs()
         setupClickListeners()
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                finish()
-            }
+            override fun handleOnBackPressed() { finish() }
         })
     }
 
     private fun setupDeviceId() {
-        // Pure 8-digit numeric code
         val prefs = getSharedPreferences("hk_prefs", Context.MODE_PRIVATE)
         deviceId = prefs.getString("hk_device_id", "") ?: ""
         if (deviceId.isEmpty() || deviceId.length != 6) {
-            val random = Random()
-            deviceId = (100000 + random.nextInt(900000)).toString()
+            deviceId = (100000 + Random().nextInt(900000)).toString()
             prefs.edit().putString("hk_device_id", deviceId).apply()
         }
-        
-        // Format as 123 456 for readability
-        val formattedCode = if (deviceId.length == 6) {
-            "${deviceId.substring(0, 3)} ${deviceId.substring(3)}"
-        } else {
-            deviceId
-        }
-        binding.tvDeviceCode.text = formattedCode
+        val formatted = "${deviceId.substring(0, 3)} ${deviceId.substring(3)}"
+        binding.tvDeviceCode.text = formatted
     }
 
     private fun setupTabs() {
-        binding.btnTabSync.setOnClickListener { showLayout("sync") }
+        binding.btnTabSync.setOnClickListener   { showLayout("sync") }
         binding.btnTabXtream.setOnClickListener { showLayout("xtream") }
-        binding.btnTabM3u.setOnClickListener { showLayout("m3u") }
+        binding.btnTabM3u.setOnClickListener    { showLayout("m3u") }
     }
 
     private fun showLayout(type: String) {
-        binding.layoutSync.visibility = if (type == "sync") View.VISIBLE else View.GONE
+        binding.layoutSync.visibility   = if (type == "sync")   View.VISIBLE else View.GONE
         binding.layoutXtream.visibility = if (type == "xtream") View.VISIBLE else View.GONE
-        binding.layoutM3u.visibility = if (type == "m3u") View.VISIBLE else View.GONE
-        
-        // Alpha feedback for active tab
-        binding.btnTabSync.alpha = if (type == "sync") 1.0f else 0.5f
+        binding.layoutM3u.visibility    = if (type == "m3u")    View.VISIBLE else View.GONE
+        binding.btnTabSync.alpha   = if (type == "sync")   1.0f else 0.5f
         binding.btnTabXtream.alpha = if (type == "xtream") 1.0f else 0.5f
-        binding.btnTabM3u.alpha = if (type == "m3u") 1.0f else 0.5f
+        binding.btnTabM3u.alpha    = if (type == "m3u")    1.0f else 0.5f
     }
 
     private fun setupClickListeners() {
         binding.btnRefreshSync.setOnClickListener { performSync() }
-        
+
         binding.btnLoginXtream.setOnClickListener {
-            val server = binding.etServer.text.toString()
-            val user = binding.etUsername.text.toString()
-            val pass = binding.etPassword.text.toString()
-            
+            val server = binding.etServer.text.toString().trim()
+            val user   = binding.etUsername.text.toString().trim()
+            val pass   = binding.etPassword.text.toString().trim()
             if (server.isNotEmpty() && user.isNotEmpty()) {
                 performXtreamLogin(server, user, pass)
             } else {
@@ -95,11 +90,39 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnLoginM3u.setOnClickListener {
-            val url = binding.etM3uUrl.text.toString()
+            val url = binding.etM3uUrl.text.toString().trim()
             if (url.isNotEmpty()) {
                 sharedPrefManager.saveSPString(SharedPrefManager.SP_M3U_DIRECT, url)
                 navigateToDashboard()
+            } else {
+                Toast.makeText(this, "Enter an M3U URL", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        // File picker button — opens file picker for .m3u / .m3u8
+        binding.btnPickFile.setOnClickListener {
+            filePicker.launch("*/*")
+        }
+    }
+
+    /** Read a picked M3U/M3U8 file from local storage and save its content */
+    private fun readM3uFile(uri: Uri) {
+        try {
+            val inputStream = contentResolver.openInputStream(uri) ?: return
+            val reader = BufferedReader(InputStreamReader(inputStream))
+            val content = reader.readText()
+            reader.close()
+
+            if (content.contains("#EXTM3U") || content.contains("#EXTINF")) {
+                // Store directly as raw M3U content, prefixed to distinguish from URL
+                sharedPrefManager.saveSPString(SharedPrefManager.SP_M3U_DIRECT, "file_content:$content")
+                Toast.makeText(this, "File loaded successfully!", Toast.LENGTH_SHORT).show()
+                navigateToDashboard()
+            } else {
+                Toast.makeText(this, "Invalid M3U file", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error reading file: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -113,14 +136,12 @@ class MainActivity : AppCompatActivity() {
         service.getSyncData(deviceId).enqueue(object : Callback<SyncData> {
             override fun onResponse(call: Call<SyncData>, response: Response<SyncData>) {
                 if (response.isSuccessful && response.body() != null) {
-                    val data = response.body()!!
                     Toast.makeText(this@MainActivity, "Sync Successful!", Toast.LENGTH_SHORT).show()
                     navigateToDashboard()
                 } else {
                     Toast.makeText(this@MainActivity, "No data found for this code", Toast.LENGTH_SHORT).show()
                 }
             }
-
             override fun onFailure(call: Call<SyncData>, t: Throwable) {
                 Toast.makeText(this@MainActivity, "Sync Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
@@ -128,13 +149,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun performXtreamLogin(server: String, user: String, pass: String) {
-        // Simple Xtream Login Check
         val baseUrl = if (server.endsWith("/")) server else "$server/"
         val retrofit = Retrofit.Builder()
             .baseUrl(baseUrl)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-
         val service = retrofit.create(IptvService::class.java)
         service.loginXtream(user, pass).enqueue(object : Callback<XtreamAuthResponse> {
             override fun onResponse(call: Call<XtreamAuthResponse>, response: Response<XtreamAuthResponse>) {
@@ -144,7 +163,6 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this@MainActivity, "Authentication Failed", Toast.LENGTH_SHORT).show()
                 }
             }
-
             override fun onFailure(call: Call<XtreamAuthResponse>, t: Throwable) {
                 Toast.makeText(this@MainActivity, "Login Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
@@ -152,8 +170,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToDashboard() {
-        val intent = Intent(this, DashboardActivity::class.java)
-        startActivity(intent)
+        startActivity(Intent(this, DashboardActivity::class.java))
         finish()
     }
 }

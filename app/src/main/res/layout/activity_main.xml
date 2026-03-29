@@ -232,9 +232,29 @@
                     android:id="@+id/btn_login_m3u"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="LOGIN"
+                    android:text="LOAD URL"
                     android:backgroundTint="@color/vu_purple"
-                    android:layout_marginTop="16dp" />
+                    android:layout_marginTop="12dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" android:background="#33FFFFFF" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:layout_marginEnd="12dp" android:text="OR" android:textColor="#66FFFFFF" android:textSize="11sp" />
+                    <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" android:background="#33FFFFFF" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btn_pick_file"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="📂  OPEN M3U / M3U8 FILE"
+                    android:backgroundTint="#33FFFFFF"
+                    android:textColor="#FFFFFF"
+                    android:layout_marginTop="8dp" />
             </LinearLayout>
 
         </LinearLayout>
