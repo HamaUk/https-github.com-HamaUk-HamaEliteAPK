@@ -5,18 +5,20 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- MKPlayer MUST be at root level so activity.findViewById() can find video_view and app_video_box -->
-    <include
-        layout="@layout/mk_player"
+    <!-- ExoPlayer PlayerView - supports Android 16, HLS, DASH, etc. -->
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/player_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        app:use_controller="false"
+        app:surface_type="surface_view" />
 
     <!-- Overlay: Channel info bar at top -->
     <LinearLayout
         android:id="@+id/player_header"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:background="#80000000"
+        android:background="#CC000000"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="12dp"
@@ -62,11 +64,24 @@
             android:textSize="12sp" />
     </LinearLayout>
 
-    <!-- Hidden RecyclerView for channel list (used by sidebar logic) -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_player_channels"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+    <!-- Loading spinner -->
+    <ProgressBar
+        android:id="@+id/player_loading"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:visibility="visible" />
+
+    <!-- Error message -->
+    <TextView
+        android:id="@+id/player_error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Player encountered a small problem"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
         android:visibility="gone" />
 
 </FrameLayout>

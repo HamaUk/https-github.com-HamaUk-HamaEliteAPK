@@ -42,5 +42,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "IPTV"
 include(":app")
-include(":app:libraries:mkvideoplayer")
-include(":app:libraries:ijkplayer-java")
