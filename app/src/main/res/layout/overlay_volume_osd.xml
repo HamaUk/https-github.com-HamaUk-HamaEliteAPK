@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="220dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_end"
+    android:layout_marginEnd="40dp"
+    android:background="@drawable/volume_osd_bg"
+    android:elevation="16dp"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- Volume Icon -->
+    <ImageView
+        android:id="@+id/osd_volume_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_volume_high"
+        android:tint="#BB86FC" />
+
+    <!-- Percentage -->
+    <TextView
+        android:id="@+id/osd_volume_percent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="75%"
+        android:textColor="#FFFFFF"
+        android:textSize="28sp"
+        android:textStyle="bold" />
+
+    <!-- Label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="VOLUME"
+        android:textColor="#80FFFFFF"
+        android:textSize="10sp"
+        android:letterSpacing="0.2"
+        android:layout_marginTop="2dp" />
+
+    <!-- Progress bar -->
+    <ProgressBar
+        android:id="@+id/osd_volume_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        android:layout_marginTop="12dp"
+        android:max="100"
+        android:progress="75"
+        android:progressTint="#BB86FC"
+        android:progressBackgroundTint="#40FFFFFF" />
+
+</LinearLayout>
