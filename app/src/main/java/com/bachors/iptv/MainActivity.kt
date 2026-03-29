@@ -45,9 +45,14 @@ class MainActivity : AppCompatActivity() {
         val alreadyLoggedIn = sharedPrefManager.getSpM3uDirect().isNotEmpty() ||
                               sharedPrefManager.getSpPlaylist().let { it.isNotEmpty() && it != "[]" }
         if (alreadyLoggedIn) {
-            startActivity(Intent(this, DashboardActivity::class.java))
-            finish()
-            return
+            runCatching {
+                startActivity(Intent(this, DashboardActivity::class.java))
+                finish()
+                return
+            }.onFailure {
+                // If auto-resume path is broken on this device, keep user on login instead of app-closing.
+                Toast.makeText(this, "Auto-resume failed, opening login screen.", Toast.LENGTH_SHORT).show()
+            }
         }
         // ────────────────────────────────────────────────────────
 

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bachors.iptv.databinding.ActivityDashboardBinding
 import java.text.SimpleDateFormat
@@ -15,12 +16,22 @@ class DashboardActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityDashboardBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        try {
+            binding = ActivityDashboardBinding.inflate(layoutInflater)
+            setContentView(binding.root)
 
-        supportActionBar?.hide()
-        setupClock()
-        setupClickListeners()
+            supportActionBar?.hide()
+            setupClock()
+            setupClickListeners()
+        } catch (t: Throwable) {
+            // TV sticks can fail on unexpected resource/runtime state; recover to login instead of hard crash.
+            t.printStackTrace()
+            Toast.makeText(this, "Recovered from startup issue. Please login again.", Toast.LENGTH_LONG).show()
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+        }
     }
 
     private fun setupClock() {
