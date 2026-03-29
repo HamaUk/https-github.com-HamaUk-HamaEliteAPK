@@ -160,8 +160,9 @@
                 const data = await response.json();
                 if (data) {
                     log("SUCCESS: Data received for code " + code);
-                    log("Server: " + (data.server || "N/A"));
-                    log("User: " + (data.user || "N/A"));
+                    log("Raw Data: " + JSON.stringify(data));
+                    log("Server: " + (data.server || data.url || "N/A"));
+                    log("User: " + (data.user || data.username || "N/A"));
                 } else {
                     log("PENDING: No data found for this code yet. Use the web portal to activate.");
                 }
