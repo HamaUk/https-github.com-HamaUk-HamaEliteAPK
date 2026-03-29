@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.bachors.iptv"
-    compileSdkVersion("android-36.1")
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.bachors.iptv"
         minSdk = 21
-        targetSdk = 33
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -39,8 +39,6 @@ android {
     buildFeatures {
         viewBinding = true
     }
-    buildToolsVersion = "36.1.0"
-    ndkVersion = "29.0.14206865"
 }
 
 dependencies {
@@ -59,7 +57,6 @@ dependencies {
     
     // API Support
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 

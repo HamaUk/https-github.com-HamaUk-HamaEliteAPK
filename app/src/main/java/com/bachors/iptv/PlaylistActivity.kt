@@ -88,12 +88,16 @@ class PlaylistActivity : AppCompatActivity() {
         binding.rvCategories.apply {
             layoutManager = LinearLayoutManager(this@PlaylistActivity)
             adapter = categoryAdapter
+            setHasFixedSize(true)
+            itemAnimator = null
         }
 
         channelAdapter = ChannelsAdapter(this)
         binding.rvChannels.apply {
             layoutManager = LinearLayoutManager(this@PlaylistActivity)
             adapter = channelAdapter
+            setHasFixedSize(true)
+            itemAnimator = null
         }
 
         binding.tvHeaderTitle.text = when (currentType) {
