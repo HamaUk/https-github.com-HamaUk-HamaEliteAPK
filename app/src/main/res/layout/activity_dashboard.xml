@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -6,7 +7,7 @@
     android:background="@color/vu_bg_dark"
     tools:context=".DashboardActivity">
 
-    <!-- Background Image (Optional, can reuse background.png with lower opacity) -->
+    <!-- Background Image -->
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -59,11 +60,12 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Main Grid Cards -->
+    <!-- Main Grid Cards (Reduced Size) -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:padding="20dp"
+        android:paddingStart="40dp"
+        android:paddingEnd="40dp"
         app:layout_constraintBottom_toTopOf="@+id/footer"
         app:layout_constraintTop_toBottomOf="@+id/header">
 
@@ -74,12 +76,11 @@
             android:columnCount="2"
             android:useDefaultMargins="true">
 
-            <!-- LIVE TV -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_live"
                 style="@style/VuCard"
                 android:layout_width="0dp"
-                android:layout_height="140dp"
+                android:layout_height="100dp"
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
                 android:clickable="true"
@@ -93,24 +94,23 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="📡"
-                        android:textSize="32sp" />
+                        android:textSize="20sp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="LIVE TV"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- MOVIES -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_vod"
                 style="@style/VuCard"
                 android:layout_width="0dp"
-                android:layout_height="140dp"
+                android:layout_height="100dp"
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
                 android:clickable="true"
@@ -124,24 +124,23 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="🎬"
-                        android:textSize="32sp" />
+                        android:textSize="20sp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="MOVIES"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- SERIES -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_series"
                 style="@style/VuCard"
                 android:layout_width="0dp"
-                android:layout_height="140dp"
+                android:layout_height="100dp"
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
                 android:clickable="true"
@@ -155,24 +154,23 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="🎭"
-                        android:textSize="32sp" />
+                        android:textSize="20sp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="SERIES"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- EPG -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_epg"
                 style="@style/VuCard"
                 android:layout_width="0dp"
-                android:layout_height="140dp"
+                android:layout_height="100dp"
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
                 android:clickable="true"
@@ -186,24 +184,23 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="📅"
-                        android:textSize="32sp" />
+                        android:textSize="20sp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="GUIDE"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- SETTINGS (NEW) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_settings"
                 style="@style/VuCard"
                 android:layout_width="0dp"
-                android:layout_height="80dp"
+                android:layout_height="60dp"
                 android:layout_columnWeight="1"
                 android:layout_columnSpan="2"
                 android:layout_margin="8dp"
@@ -220,14 +217,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="⚙️"
-                        android:textSize="24sp" />
+                        android:textSize="22sp" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:text="SETTINGS"
                         android:textColor="#FFFFFF"
-                        android:textSize="16sp"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
                     <View
                         android:layout_width="0dp"
@@ -236,7 +233,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Configure App"
+                        android:text="v15.1.0"
                         android:textColor="@color/vu_text_secondary"
                         android:textSize="10sp" />
                 </LinearLayout>
@@ -252,15 +249,15 @@
         android:layout_height="wrap_content"
         android:background="#99000000"
         android:orientation="horizontal"
-        android:padding="16dp"
+        android:padding="12dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="HAMA UK ELITE PREMIUM • v15.1.0"
+            android:text="HAMA UK ELITE PREMIUM"
             android:textColor="@color/vu_text_secondary"
-            android:textSize="12sp"
+            android:textSize="11sp"
             android:textStyle="bold" />
 
         <View
@@ -273,7 +270,7 @@
             android:layout_height="wrap_content"
             android:text="ACCOUNT: ACTIVE"
             android:textColor="@color/vu_purple"
-            android:textSize="12sp"
+            android:textSize="11sp"
             android:textStyle="bold" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

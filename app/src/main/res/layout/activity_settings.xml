@@ -22,7 +22,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:padding="8dp"
-            android:src="@drawable/abc_ic_ab_back_material"
+            android:src="@drawable/ic_back"
             app:tint="#FFFFFF" />
 
         <TextView
@@ -105,7 +105,6 @@
             android:layout_height="match_parent">
 
             <LinearLayout
-                android:id="@+id/layout_account_info"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
@@ -133,7 +132,7 @@
                             android:id="@+id/tv_pkg"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Package: HAMA UK ELITE"
+                            android:text="Package: HAMA UK PLAYER"
                             android:textColor="#FFFFFF" />
 
                         <TextView
@@ -157,5 +156,4 @@
             </LinearLayout>
         </ScrollView>
     </FrameLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
