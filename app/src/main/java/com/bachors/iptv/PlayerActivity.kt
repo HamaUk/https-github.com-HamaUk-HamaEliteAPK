@@ -60,6 +60,7 @@ class PlayerActivity : AppCompatActivity() {
         }
 
         setupUI(name)
+        mkPlayer = MKPlayer(this)
         initPlayer(url, name)
         startClock()
     }
@@ -81,10 +82,15 @@ class PlayerActivity : AppCompatActivity() {
         val sharedPrefManager = SharedPrefManager(this)
         val channelsJson = sharedPrefManager.getSpChannels()
         if (channelsJson.isNotEmpty()) {
-            val gson = Gson()
-            val listType = object : TypeToken<List<com.bachors.iptv.models.ChannelsData>>() {}.type
-            val channels: List<com.bachors.iptv.models.ChannelsData> = gson.fromJson(channelsJson, listType)
-            channelAdapter.addAll(channels)
+            try {
+                val gson = Gson()
+                val listType = object : TypeToken<List<com.bachors.iptv.models.ChannelsData>>() {}.type
+                val channels: List<com.bachors.iptv.models.ChannelsData> = gson.fromJson(channelsJson, listType)
+                channelAdapter.addAll(channels)
+            } catch (e: Exception) {
+                // Ignore parsing errors from old/corrupt caches, but prevent the crash!
+                e.printStackTrace()
+            }
         }
 
         // Sidebar Click
@@ -100,10 +106,6 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun initPlayer(url: String, name: String) {
         try {
-            // Destroy existing player if any to prevent memory leaks or audio overlap
-            mkPlayer?.onDestroy() 
-            
-            mkPlayer = MKPlayer(this)
             mkPlayer?.play(url)
             mkPlayer?.setTitle(name)
         } catch (e: Exception) {
