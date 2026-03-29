@@ -9,11 +9,13 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bachors.iptv.PlayerActivity
 import com.bachors.iptv.R
 import com.bachors.iptv.models.ChannelsData
 import com.bachors.iptv.utils.SharedPrefManager
+import com.google.android.material.card.MaterialCardView
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -34,11 +36,20 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
         h.tvName.text = data.name
         h.tvNumber.text = (position + 1).toString()
         h.tvSubline.text = streamIdOrNoInfo(data.url)
+        val currentUrl = sharedPrefManager.getSpCurrentUrl()
+        val isPlaying = currentUrl.isNotEmpty() && currentUrl == data.url
+        h.tvPlayingBadge.visibility = if (isPlaying) View.VISIBLE else View.GONE
+        h.cardRoot.strokeColor = ContextCompat.getColor(
+            inContext,
+            if (isPlaying) R.color.vu_purple else R.color.white_opacity_10
+        )
+        h.cardRoot.strokeWidth = if (isPlaying) 2 else 1
 
         h.lnPlay.setOnClickListener {
             val intent = Intent(inContext, PlayerActivity::class.java)
             intent.putExtra("name", data.name)
             intent.putExtra("url", data.url)
+            sharedPrefManager.saveSPString(SharedPrefManager.SP_CURRENT_URL, data.url)
             inContext.startActivity(intent)
         }
 
@@ -90,10 +101,12 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val cardRoot: MaterialCardView = itemView.findViewById(R.id.card_root)
         val lnPlay: LinearLayout = itemView.findViewById(R.id.play)
         val tvNumber: TextView = itemView.findViewById(R.id.ch_number)
         val tvName: TextView = itemView.findViewById(R.id.name)
         val tvSubline: TextView = itemView.findViewById(R.id.subline)
         val btFavorite: ImageView = itemView.findViewById(R.id.btn_favorite)
+        val tvPlayingBadge: TextView = itemView.findViewById(R.id.playing_badge)
     }
 }

@@ -20,6 +20,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -75,6 +76,8 @@ class PlayerActivity : AppCompatActivity() {
     private var currentIndex = 0
     private var controlsVisible = true
     private var isFullscreen = false
+    private var lastRequestedUrl: String = ""
+    private var fallbackTriedForUrl: String = ""
 
     private val handler = Handler(Looper.getMainLooper())
     private val hideControlsRunnable = Runnable { hideControls() }
@@ -291,6 +294,10 @@ class PlayerActivity : AppCompatActivity() {
                         Player.STATE_READY -> {
                             loadingBar.visibility = View.GONE
                             errorText.visibility  = View.GONE
+                            if (shouldFallbackForMissingAudio(player)) {
+                                retryWithAlternateLiveUrl()
+                                return
+                            }
                             updatePlayPauseIcon()
                             val hasDuration = player.duration > 0
                             seekBar.visibility    = if (hasDuration) View.VISIBLE else View.GONE
@@ -305,6 +312,7 @@ class PlayerActivity : AppCompatActivity() {
                 override fun onIsPlayingChanged(isPlaying: Boolean) = updatePlayPauseIcon()
 
                 override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                    if (retryWithAlternateLiveUrl()) return
                     loadingBar.visibility = View.GONE
                     errorText.visibility  = View.VISIBLE
                     errorText.text        = "Stream unavailable"
@@ -316,8 +324,11 @@ class PlayerActivity : AppCompatActivity() {
     private fun playUrl(url: String, name: String) {
         val factory = okHttpFactory ?: return
         try {
-            val playbackUrl = normalizeLivePlaybackUrl(url.trim())
+            val playbackUrl = url.trim()
+            lastRequestedUrl = playbackUrl
+            fallbackTriedForUrl = ""
             ensureAudibleVolume()
+            SharedPrefManager(this).saveSPString(SharedPrefManager.SP_CURRENT_URL, playbackUrl)
             val uri  = Uri.parse(playbackUrl)
             val item = MediaItem.fromUri(uri)
             val src  = if (playbackUrl.contains(".m3u8", ignoreCase = true)) {
@@ -338,12 +349,46 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun normalizeLivePlaybackUrl(url: String): String {
-        // Many Xtream /live/.../*.ts endpoints have better codec/audio compatibility via .m3u8 sibling.
-        return if (Regex("""/live/[^/]+/[^/]+/\d+\.ts(\?.*)?$""", RegexOption.IGNORE_CASE).containsMatchIn(url)) {
-            url.replace(Regex("""\.ts(\?.*)?$""", RegexOption.IGNORE_CASE), ".m3u8$1")
-        } else {
-            url
+    private fun shouldFallbackForMissingAudio(player: ExoPlayer): Boolean {
+        if (!Regex("""/live/""", RegexOption.IGNORE_CASE).containsMatchIn(lastRequestedUrl)) return false
+        if (fallbackTriedForUrl == lastRequestedUrl) return false
+        val hasAudioGroup = player.currentTracks.groups.any {
+            it.type == C.TRACK_TYPE_AUDIO && it.mediaTrackGroup.length > 0
+        }
+        return !hasAudioGroup
+    }
+
+    private fun retryWithAlternateLiveUrl(): Boolean {
+        val current = lastRequestedUrl
+        if (current.isBlank()) return false
+        if (fallbackTriedForUrl == current) return false
+        val alt = alternateLiveUrl(current) ?: return false
+        fallbackTriedForUrl = current
+        try {
+            val factory = okHttpFactory ?: return false
+            val uri = Uri.parse(alt)
+            val item = MediaItem.fromUri(uri)
+            val src = if (alt.contains(".m3u8", ignoreCase = true)) {
+                HlsMediaSource.Factory(factory).createMediaSource(item)
+            } else {
+                ProgressiveMediaSource.Factory(DefaultDataSource.Factory(this, factory))
+                    .createMediaSource(item)
+            }
+            exoPlayer?.run { stop(); setMediaSource(src); prepare(); playWhenReady = true }
+            SharedPrefManager(this).saveSPString(SharedPrefManager.SP_CURRENT_URL, alt)
+            return true
+        } catch (_: Exception) {
+            return false
+        }
+    }
+
+    private fun alternateLiveUrl(url: String): String? {
+        return when {
+            Regex("""/live/[^/]+/[^/]+/\d+\.ts(\?.*)?$""", RegexOption.IGNORE_CASE).containsMatchIn(url) ->
+                url.replace(Regex("""\.ts(\?.*)?$""", RegexOption.IGNORE_CASE), ".m3u8$1")
+            Regex("""/live/[^/]+/[^/]+/\d+\.m3u8(\?.*)?$""", RegexOption.IGNORE_CASE).containsMatchIn(url) ->
+                url.replace(Regex("""\.m3u8(\?.*)?$""", RegexOption.IGNORE_CASE), ".ts$1")
+            else -> null
         }
     }
 

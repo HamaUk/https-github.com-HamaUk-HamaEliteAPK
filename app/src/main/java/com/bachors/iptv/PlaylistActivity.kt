@@ -144,6 +144,7 @@ class PlaylistActivity : AppCompatActivity() {
                     val intent = Intent(this@PlaylistActivity, PlayerActivity::class.java)
                     intent.putExtra("name", ch.name)
                     intent.putExtra("url", ch.url)
+                    sharedPrefManager.saveSPString(SharedPrefManager.SP_CURRENT_URL, ch.url)
                     startActivity(intent)
                 }
                 override fun onLongClick(view: View, position: Int) {}

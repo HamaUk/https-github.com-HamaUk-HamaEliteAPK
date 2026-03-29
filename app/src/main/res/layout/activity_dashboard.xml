@@ -5,313 +5,295 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/premium_page_bg"
-    android:paddingStart="12dp"
-    android:paddingEnd="12dp"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp">
+    android:padding="20dp">
 
-    <!-- Avoid decoding large background bitmaps on low-memory TV sticks -->
+    <TextView
+        android:id="@+id/tv_clock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="12:00 PM"
+        android:textColor="#BBD3D6FF"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- ══════════════════════════════════════
-         TOP BAR
-    ══════════════════════════════════════ -->
+    <TextView
+        android:id="@+id/tv_device_code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="CODE: ----"
+        android:textColor="#96A7B9FF"
+        android:textSize="11sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_clock" />
+
     <LinearLayout
-        android:id="@+id/header"
-        android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:background="#CC000000"
-        android:gravity="center_vertical"
+        android:id="@+id/logo_box"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
         android:orientation="horizontal"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Logo -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="HAMA"
+            android:text="any"
+            android:textColor="#FF3B3B"
+            android:textSize="54sp"
+            android:textStyle="bold" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:text="tv"
             android:textColor="#FFFFFF"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.08" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:text="UK"
-            android:textColor="@color/vu_purple"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.08" />
-
-        <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
-
-        <!-- Device code badge -->
-        <TextView
-            android:id="@+id/tv_device_code"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#22BB86FC"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp"
-            android:text="CODE: ----"
-            android:textColor="@color/vu_purple"
-            android:textSize="11sp"
+            android:textSize="28sp"
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- ══════════════════════════════════════
-         BUTTON GRID — ALL FIT ON SCREEN
-    ══════════════════════════════════════ -->
-
-    <!--  ROW 1: 3 main cards  -->
     <LinearLayout
-        android:id="@+id/row1"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:id="@+id/menu_row"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="26dp"
+        android:gravity="center"
         android:orientation="horizontal"
-        android:paddingStart="32dp"
-        android:paddingEnd="32dp"
-        android:paddingTop="20dp"
-        android:paddingBottom="10dp"
-        android:weightSum="3"
-        app:layout_constraintTop_toBottomOf="@+id/header"
-        app:layout_constraintBottom_toTopOf="@+id/row2">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/logo_box">
 
-        <!-- LIVE TV -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_live"
-            style="@style/VuCard"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:clickable="true"
-            android:focusable="true">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:background="@drawable/hk_gradient_card"
-                android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_live"
+                android:layout_width="76dp"
+                android:layout_height="76dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="#2D1A2E"
+                app:cardCornerRadius="20dp"
+                app:strokeColor="@color/vu_purple"
+                app:strokeWidth="2dp">
                 <ImageView
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="18dp"
                     android:src="@drawable/ic_live"
-                    app:tint="#FFFFFF" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="LIVE TV"
-                    android:textColor="#FFFFFF"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.05" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                    app:tint="#FF4B4B" />
+            </com.google.android.material.card.MaterialCardView>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="LIVE TV"
+                android:textColor="#FF4B4B"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
-        <!-- MOVIES -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_vod"
-            style="@style/VuCard"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:clickable="true"
-            android:focusable="true">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:background="@drawable/hk_gradient_card"
-                android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_vod"
+                android:layout_width="76dp"
+                android:layout_height="76dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="#141A2A"
+                app:cardCornerRadius="20dp"
+                app:strokeColor="#80FFFFFF"
+                app:strokeWidth="1dp">
                 <ImageView
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="18dp"
                     android:src="@drawable/ic_vod"
                     app:tint="#FFFFFF" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="MOVIES"
-                    android:textColor="#FFFFFF"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.05" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+            </com.google.android.material.card.MaterialCardView>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="MOVIES"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
-        <!-- SERIES -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_series"
-            style="@style/VuCard"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:clickable="true"
-            android:focusable="true">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:background="@drawable/hk_gradient_card"
-                android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_series"
+                android:layout_width="76dp"
+                android:layout_height="76dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="#141A2A"
+                app:cardCornerRadius="20dp"
+                app:strokeColor="#80FFFFFF"
+                app:strokeWidth="1dp">
                 <ImageView
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="18dp"
                     android:src="@drawable/ic_series"
                     app:tint="#FFFFFF" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="SERIES"
-                    android:textColor="#FFFFFF"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.05" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+            </com.google.android.material.card.MaterialCardView>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="SERIES"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
-    </LinearLayout>
-
-    <!--  ROW 2: 2 secondary cards  -->
-    <LinearLayout
-        android:id="@+id/row2"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:orientation="horizontal"
-        android:paddingStart="32dp"
-        android:paddingEnd="32dp"
-        android:paddingTop="10dp"
-        android:paddingBottom="20dp"
-        android:weightSum="2"
-        app:layout_constraintTop_toBottomOf="@+id/row1"
-        app:layout_constraintBottom_toTopOf="@+id/footer">
-
-        <!-- FAVORITES -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_epg"
-            style="@style/VuCard"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:clickable="true"
-            android:focusable="true">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:background="#22BB86FC"
-                android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_epg"
+                android:layout_width="76dp"
+                android:layout_height="76dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="#141A2A"
+                app:cardCornerRadius="20dp"
+                app:strokeColor="#80FFFFFF"
+                app:strokeWidth="1dp">
                 <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="18dp"
                     android:src="@drawable/ic_heart"
-                    app:tint="@color/vu_purple" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="FAVORITES"
-                    android:textColor="#FFFFFF"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.05" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                    app:tint="#FFFFFF" />
+            </com.google.android.material.card.MaterialCardView>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="PLAYLISTS"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
-        <!-- SETTINGS -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_settings"
-            style="@style/VuCard"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:clickable="true"
-            android:focusable="true">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:background="#1AFFFFFF"
-                android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_settings"
+                android:layout_width="76dp"
+                android:layout_height="76dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="#141A2A"
+                app:cardCornerRadius="20dp"
+                app:strokeColor="#80FFFFFF"
+                app:strokeWidth="1dp">
                 <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="18dp"
                     android:src="@drawable/ic_settings"
-                    app:tint="#AAAAAA" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="SETTINGS"
-                    android:textColor="#AAAAAA"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.05" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="v15.2 PREMIUM"
-                    android:textColor="@color/vu_purple"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
+                    app:tint="#FFFFFF" />
+            </com.google.android.material.card.MaterialCardView>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="SETTINGS"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- ══════════════════════════════════════
-         FOOTER
-    ══════════════════════════════════════ -->
     <LinearLayout
-        android:id="@+id/footer"
-        android:layout_width="match_parent"
-        android:layout_height="44dp"
-        android:background="#CC000000"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/menu_row">
 
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@drawable/ic_load"
+            app:tint="#FFFFFF" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="HAMA UK PLAYER  •  ELITE EDITION"
-            android:textColor="@color/vu_text_secondary"
+            android:layout_marginStart="8dp"
+            android:text="RELOAD"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Version: 1.0.8"
+            android:textColor="#C5C5C5"
+            android:textSize="11sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Status: Activated"
+            android:textColor="#FFFFFF"
             android:textSize="11sp"
             android:textStyle="bold" />
+    </LinearLayout>
 
-        <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
-
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:text="● SECURE"
-            android:textColor="@color/vu_purple"
-            android:textSize="11sp"
-            android:textStyle="bold" />
-
+            android:text="Mac Address: 17:56:4d:0e:02:8a"
+            android:textColor="#C5C5C5"
+            android:textSize="11sp" />
         <TextView
-            android:id="@+id/tv_clock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="12:00 PM"
-            android:textColor="@color/vu_text_secondary"
+            android:text="Web Page: https://anytvplayer.com"
+            android:textColor="#C5C5C5"
             android:textSize="11sp" />
     </LinearLayout>
 
