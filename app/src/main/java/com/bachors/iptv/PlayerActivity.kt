@@ -1,26 +1,43 @@
 package com.bachors.iptv
 
 import android.content.Context
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
-import androidx.activity.OnBackPressedCallback
+import android.os.Handler
+import android.os.Looper
+import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.khizar1556.mkvideoplayer.MKPlayer
-import androidx.core.net.toUri
+import com.bachors.iptv.adapters.ChannelsAdapter
+import com.bachors.iptv.utils.RecyclerTouchListener
+import com.bachors.iptv.utils.SharedPrefManager
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.text.SimpleDateFormat
+import java.util.*
 
 class PlayerActivity : AppCompatActivity() {
     private lateinit var con: Context
-    private var mkplayer: MKPlayer? = null
+    private var mkPlayer: MKPlayer? = null
+    private lateinit var channelAdapter: ChannelsAdapter
+    private val handler = Handler(Looper.getMainLooper())
+    
+    private val clockRunnable = object : Runnable {
+        override fun run() {
+            updateClock()
+            handler.postDelayed(this, 1000 * 60) // Update every minute
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player)
-        supportActionBar?.elevation = 0f
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.hide()
 
         con = this
 
@@ -32,54 +49,80 @@ class PlayerActivity : AppCompatActivity() {
         }
 
         val b = intent.extras
-        val name = b?.getString("name")
-        val url = b?.getString("url")
+        val name = b?.getString("name") ?: "Channel"
+        val url = b?.getString("url") ?: ""
 
-        mkplayer = MKPlayer(this)
-        mkplayer?.play(url)
-        mkplayer?.setTitle(name)
-        mkplayer?.setPlayerCallbacks(object : MKPlayer.playerCallbacks {
-            override fun onNextClick() {}
-            override fun onPreviousClick() {}
-        })
-        mkplayer?.setFullScreenOnly(true)
+        setupUI(name)
+        initPlayer(url, name)
+        startClock()
+    }
 
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                finish()
+    private fun setupUI(currentName: String) {
+        findViewById<ImageView>(R.id.btn_back).setOnClickListener { finish() }
+        
+        // Metadata
+        findViewById<TextView>(R.id.tv_current_channel).text = currentName.uppercase()
+        findViewById<TextView>(R.id.tv_current_epg).text = "No Information"
+
+        // Sidebar Channels
+        channelAdapter = ChannelsAdapter(this)
+        val rv = findViewById<RecyclerView>(R.id.rv_player_channels)
+        rv.layoutManager = LinearLayoutManager(this)
+        rv.adapter = channelAdapter
+
+        // Load channels from SharedPrefs (saved in PlaylistActivity)
+        val sharedPrefManager = SharedPrefManager(this)
+        val channelsJson = sharedPrefManager.getSpChannels()
+        if (channelsJson.isNotEmpty()) {
+            val gson = Gson()
+            val listType = object : TypeToken<List<com.bachors.iptv.models.ChannelsData>>() {}.type
+            val channels: List<com.bachors.iptv.models.ChannelsData> = gson.fromJson(channelsJson, listType)
+            channelAdapter.addAll(channels)
+        }
+
+        // Sidebar Click
+        rv.addOnItemTouchListener(RecyclerTouchListener(this, rv, object : RecyclerTouchListener.ClickListener {
+            override fun onClick(view: View, position: Int) {
+                val data = channelAdapter.getItem(position)
+                initPlayer(data.url, data.name)
+                findViewById<TextView>(R.id.tv_current_channel).text = data.name.uppercase()
             }
-        })
+            override fun onLongClick(view: View, position: Int) {}
+        }))
+    }
+
+    private fun initPlayer(url: String, name: String) {
+        // Destroy existing player if any to prevent memory leaks or audio overlap
+        mkPlayer?.onDestroy() 
+        
+        mkPlayer = MKPlayer(this)
+        mkPlayer?.play(url)
+        mkPlayer?.setTitle(name)
+    }
+
+    private fun startClock() {
+        handler.post(clockRunnable)
+    }
+
+    private fun updateClock() {
+        val sdf = SimpleDateFormat("HH:mm a | MMM dd yyyy", Locale.getDefault())
+        val currentTime = sdf.format(Date())
+        findViewById<TextView>(R.id.tv_clock).text = currentTime
     }
 
     override fun onPause() {
         super.onPause()
-        mkplayer?.onPause()
+        mkPlayer?.onPause()
     }
 
     override fun onResume() {
         super.onResume()
-        mkplayer?.onResume()
+        mkPlayer?.onResume()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        mkplayer?.onDestroy()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_download, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == android.R.id.home) {
-            finish()
-            return true
-        }
-        if (item.itemId == R.id.download) {
-            val uri = "https://github.com/bachors/IPTV-Android".toUri()
-            startActivity(Intent(Intent.ACTION_VIEW, uri))
-        }
-        return super.onOptionsItemSelected(item)
+        mkPlayer?.onDestroy()
+        handler.removeCallbacks(clockRunnable)
     }
 }

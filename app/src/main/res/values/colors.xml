@@ -30,4 +30,10 @@
     <color name="black_opacity_60">#99000000</color>
     <color name="black_opacity_80">#CC000000</color>
     <color name="black_opacity_90">#E6000000</color>
+    <color name="vu_card_bg">#2A2A3A</color>
+    <color name="white_opacity_10">#1AFFFFFF</color>
+    <color name="white_opacity_20">#33FFFFFF</color>
+    <color name="vu_text_primary">#FFFFFF</color>
+    <color name="vu_text_secondary">#B0B0C0</color>
+    <color name="vu_divider">#2A2A3A</color>
 </resources>

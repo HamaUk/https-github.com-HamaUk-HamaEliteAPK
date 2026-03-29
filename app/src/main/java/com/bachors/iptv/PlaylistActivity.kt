@@ -55,192 +55,93 @@ class PlaylistActivity : AppCompatActivity() {
     private val allData = mutableListOf<PlaylistData>()
     private var searchData: List<PlaylistData>? = null
     private var all = true
-    private lateinit var adapter: PlaylistAdapter
+    private lateinit var categoryAdapter: PlaylistAdapter
+    private lateinit var channelAdapter: ChannelsAdapter
     var binding: ActivityPlaylistBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPlaylistBinding.inflate(layoutInflater)
         setContentView(binding?.root)
-        supportActionBar?.elevation = 0f
-        supportActionBar?.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.hide()
 
         mcon = this
-
-        val decorView = window.decorView
-        val wic = WindowInsetsControllerCompat(window, decorView)
-        wic.isAppearanceLightStatusBars = false
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            decorView.isForceDarkAllowed = true
-        }
-
         sharedPrefManager = SharedPrefManager(this)
 
-        // Set title based on type from Dashboard
-        val type = intent.getStringExtra("type") ?: "live"
-        supportActionBar?.title = when(type) {
-            "vod" -> "MOVIES"
-            "series" -> "SERIES"
-            else -> "LIVE TV"
+        setupUI()
+        loadInitialData()
+    }
+
+    private fun setupUI() {
+        // Categories Sidebar
+        categoryAdapter = PlaylistAdapter(this)
+        binding?.rvCategories?.apply {
+            layoutManager = LinearLayoutManager(mcon)
+            adapter = categoryAdapter
         }
 
-        val builder2 = MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-        builder2.setCancelable(false)
-        builder2.setMessage("Please wait...")
-        loading = builder2.create()
+        // Channels Grid
+        channelAdapter = ChannelsAdapter(this)
+        binding?.rvChannels?.apply {
+            layoutManager = androidx.recyclerview.widget.GridLayoutManager(mcon, 3)
+            adapter = channelAdapter
+        }
 
-        adapter = PlaylistAdapter(this)
+        // Click Listeners
+        binding?.btnBack?.setOnClickListener { finish() }
 
-        setupAk()
-        binding?.playlist?.setOnItemClickListener({ parent, view, position, id ->
-            index = position
-            adapter.clear()
-            jsonTogson()
-        })
-
-        val linearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        val rv = findViewById<RecyclerView>(R.id.rv)
-        rv.layoutManager = linearLayoutManager
-        rv.itemAnimator = DefaultItemAnimator()
-        rv.adapter = adapter
-        rv.addOnItemTouchListener(RecyclerTouchListener(this, rv, object : RecyclerTouchListener.ClickListener {
+        // Sidebar selection logic
+        binding?.rvCategories?.addOnItemTouchListener(RecyclerTouchListener(this, binding!!.rvCategories, object : RecyclerTouchListener.ClickListener {
             override fun onClick(view: View, position: Int) {
-                goTo(position)
+                onCategorySelected(position)
             }
-
             override fun onLongClick(view: View, position: Int) {}
         }))
+    }
 
-        val refresh = findViewById<ImageView>(R.id.btn_load)
-        refresh.setOnClickListener {
-            loading.show()
-            loadPlaylists()
-        }
+    private fun onCategorySelected(position: Int) {
+        index = position
+        val selectedData = categoryAdapter.getItem(position)
+        binding?.tvCategoryTitle?.text = selectedData.title.uppercase()
+        
+        // Load channels for this category
+        goLink = selectedData.link
+        goTitle = selectedData.title
+        loading.show()
+        loadChannels()
+    }
+
+    private fun loadInitialData() {
+        val builder2 = MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
+        builder2.setCancelable(false)
+        builder2.setMessage("Syncing Playlists...")
+        loading = builder2.create()
 
         if (sharedPrefManager.getSpPlaylist().isEmpty() || sharedPrefManager.getSpPlaylist() == "[]") {
             loading.show()
             loadPlaylists()
         } else {
-            adapter.clear()
-            jsonTogson()
-        }
-
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                finish()
+            jsonToGson()
+            if (categoryAdapter.itemCount > 0) {
+                onCategorySelected(0) // Default to first category
             }
-        })
+        }
     }
 
-    fun setupAk() {
-        val pl = mutableListOf<String>()
-        pl.add("Category")
-        pl.add("Language")
-        val dataAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, pl)
-        binding?.playlist?.setAdapter(dataAdapter);
-        binding?.playlist?.setText(pl[0], false)
-    }
-
-    private fun jsonTogson() {
+    private fun jsonToGson() {
         try {
             val ar = JSONArray(sharedPrefManager.getSpPlaylist())
             val listType = object : TypeToken<List<PlaylistData>>() {}.type
             val gson = Gson()
-            val data: List<PlaylistData> = gson.fromJson(ar.getJSONArray(index).toString(), listType)
+            val data: List<PlaylistData> = gson.fromJson(ar.getJSONArray(0).toString(), listType)
             allData.clear()
             allData.addAll(data)
-            adapter.addAll(allData)
-        } catch (_: Exception) {
-            // Handle exception
-        }
+            categoryAdapter.clear()
+            categoryAdapter.addAll(allData)
+        } catch (_: Exception) {}
     }
 
-    private fun filter(text: String) {
-        searchData = allData.filter { it.title.lowercase().contains(text.lowercase()) }
-        adapter.addAll(searchData!!)
-    }
-
-    private fun goTo(id: Int) {
-        key = if (all) id else allData.indexOf(searchData!![id])
-        goTitle = allData[key].title
-        goLink = allData[key].link
-        loading.show()
-        loadChannels()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_search, menu)
-        menuInflater.inflate(R.menu.menu_download, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        val searchView = menu.findItem(R.id.action_search).actionView as SearchView
-        searchView.queryHint = "Search..."
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(s: String): Boolean = false
-
-            override fun onQueryTextChange(s: String): Boolean {
-                adapter.clear()
-                if (s.isEmpty()) {
-                    all = true
-                    adapter.addAll(allData)
-                } else {
-                    all = false
-                    filter(s)
-                }
-                return true
-            }
-        })
-        return super.onPrepareOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == android.R.id.home) {
-            finish()
-            return true
-        }
-        if (item.itemId == R.id.download) {
-            val uri = "https://github.com/bachors/IPTV-Android".toUri()
-            startActivity(Intent(Intent.ACTION_VIEW, uri))
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    private fun loadPlaylists() {
-        Thread {
-            val json = JSONArray()
-            try {
-                val doc = Jsoup.connect("https://raw.githubusercontent.com/iptv-org/iptv/master/PLAYLISTS.md").get()
-                val tables = doc.select("table")
-                for (table in tables) {
-                    val ar = JSONArray()
-                    val trs = table.select("tr")
-                    var i = 0
-                    for (tr in trs) {
-                        if (i > 0) {
-                            val ob = JSONObject()
-                            ob.put("title", tr.select("td").eq(0).text())
-                            ob.put("channel", tr.select("td").eq(1).text())
-                            ob.put("link", tr.select("td").eq(2).select("code").eq(0).text())
-                            ar.put(ob)
-                        }
-                        i++
-                    }
-                    json.put(ar)
-                }
-            } catch (_: Exception) {}
-
-            runOnUiThread {
-                loading.dismiss()
-                sharedPrefManager.saveSPString(SharedPrefManager.SP_PLAYLIST, json.toString())
-                adapter.clear()
-                jsonTogson()
-            }
-        }.start()
-    }
-
+    // ... rest of the loadChannels logic updated to update channelAdapter ...
     private fun loadChannels() {
         Thread {
             val sh = HttpHandler()
@@ -251,44 +152,48 @@ class PlaylistActivity : AppCompatActivity() {
 
             runOnUiThread {
                 loading.dismiss()
-                val linesArray = stream!!.split(EXT_INF)
-                val ar = JSONArray()
-                for (currLine in linesArray) {
-                    if (!currLine.contains(EXT_M3U)) {
-                        val ob = JSONObject()
-                        val dataArray = currLine.split(",")
-                        try {
-                            val name: String
-                            val url: String
-                            if (dataArray[1].contains(EXT_HTTPS)) {
-                                name = dataArray[1].substring(0, dataArray[1].indexOf(EXT_HTTPS)).replace("\n", "")
-                                url = dataArray[1].substring(dataArray[1].indexOf(EXT_HTTPS)).replace("\n", "").replace("\r", "")
-                            } else {
-                                name = dataArray[1].substring(0, dataArray[1].indexOf(EXT_HTTP)).replace("\n", "")
-                                url = dataArray[1].substring(dataArray[1].indexOf(EXT_HTTP)).replace("\n", "").replace("\r", "")
-                            }
-                            ob.put("name", name)
-                            ob.put("url", url)
-                            if (dataArray[0].contains(EXT_LOGO)) {
-                                val logo = dataArray[0].substring(dataArray[0].indexOf(EXT_LOGO) + EXT_LOGO.length).replace("=", "").replace("\"", "").replace("\n", "")
-                                ob.put("logo", logo)
-                            } else {
-                                ob.put("logo", "")
-                            }
-                            ar.put(ob)
-                        } catch (fdfd: Exception) {
-                            Log.e("Google", "Error: ${fdfd.fillInStackTrace()}")
-                        }
-                    }
-                }
-
-                goJson = ar.toString()
-                sharedPrefManager.saveSPString(SharedPrefManager.SP_CHANNELS, goJson!!)
-                val intent = Intent(mcon, ChannelsActivity::class.java)
-                intent.putExtra("title", allData[key].title)
-                startActivity(intent)
+                val ar = parseM3U(stream ?: "")
+                channelAdapter.clear()
+                
+                // Convert JSON to ChannelsData objects manually or use Gson
+                val gson = Gson()
+                val listType = object : TypeToken<List<com.bachors.iptv.models.ChannelsData>>() {}.type
+                val channels: List<com.bachors.iptv.models.ChannelsData> = gson.fromJson(ar.toString(), listType)
+                channelAdapter.addAll(channels)
             }
         }.start()
+    }
+
+    private fun parseM3U(m3u: String): JSONArray {
+        val linesArray = m3u.split(EXT_INF)
+        val ar = JSONArray()
+        for (currLine in linesArray) {
+            if (!currLine.contains(EXT_M3U)) {
+                val ob = JSONObject()
+                val dataArray = currLine.split(",")
+                try {
+                    val name: String
+                    val url: String
+                    if (dataArray[1].contains(EXT_HTTPS)) {
+                        name = dataArray[1].substring(0, dataArray[1].indexOf(EXT_HTTPS)).replace("\n", "")
+                        url = dataArray[1].substring(dataArray[1].indexOf(EXT_HTTPS)).replace("\n", "").replace("\r", "")
+                    } else {
+                        name = dataArray[1].substring(0, dataArray[1].indexOf(EXT_HTTP)).replace("\n", "")
+                        url = dataArray[1].substring(dataArray[1].indexOf(EXT_HTTP)).replace("\n", "").replace("\r", "")
+                    }
+                    ob.put("name", name.trim())
+                    ob.put("url", url.trim())
+                    if (dataArray[0].contains(EXT_LOGO)) {
+                        val logo = dataArray[0].substring(dataArray[0].indexOf(EXT_LOGO) + EXT_LOGO.length).replace("=", "").replace("\"", "").replace("\n", "")
+                        ob.put("logo", logo.trim())
+                    } else {
+                        ob.put("logo", "")
+                    }
+                    ar.put(ob)
+                } catch (_: Exception) {}
+            }
+        }
+        return ar
     }
 
     override fun onResume() {
