@@ -22,7 +22,6 @@ class PlaylistAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
         val data = allData[position]
         val holder = holder as ViewHolder
 
-        (position + 1).toString().also { holder.tvNo.text = it }
         holder.tvTitle.text = data.title
         "${data.channel} channels".also { holder.tvChannel.text = it }
     }
