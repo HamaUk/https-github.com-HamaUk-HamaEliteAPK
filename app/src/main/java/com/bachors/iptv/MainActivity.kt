@@ -151,9 +151,15 @@ class MainActivity : AppCompatActivity() {
         val service = retrofit.create(IptvService::class.java)
         service.getSyncData(deviceId).enqueue(object : Callback<SyncData> {
             override fun onResponse(call: Call<SyncData>, response: Response<SyncData>) {
-                if (response.isSuccessful && response.body() != null) {
-                    Toast.makeText(this@MainActivity, "Sync Successful!", Toast.LENGTH_SHORT).show()
-                    navigateToDashboard()
+                val body = response.body()
+                if (response.isSuccessful && body != null) {
+                    val synced = applySyncedConfig(body)
+                    if (synced) {
+                        Toast.makeText(this@MainActivity, "Sync Successful!", Toast.LENGTH_SHORT).show()
+                        navigateToDashboard()
+                    } else {
+                        Toast.makeText(this@MainActivity, "Sync data is invalid", Toast.LENGTH_LONG).show()
+                    }
                 } else {
                     Toast.makeText(this@MainActivity, "No data found for this code", Toast.LENGTH_SHORT).show()
                 }
@@ -165,7 +171,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun performXtreamLogin(server: String, user: String, pass: String) {
-        val baseUrl = if (server.endsWith("/")) server else "$server/"
+        val normalizedServer = normalizeServer(server)
+        val baseUrl = if (normalizedServer.endsWith("/")) normalizedServer else "$normalizedServer/"
         val retrofit = Retrofit.Builder()
             .baseUrl(baseUrl)
             .addConverterFactory(GsonConverterFactory.create())
@@ -174,6 +181,9 @@ class MainActivity : AppCompatActivity() {
         service.loginXtream(user, pass).enqueue(object : Callback<XtreamAuthResponse> {
             override fun onResponse(call: Call<XtreamAuthResponse>, response: Response<XtreamAuthResponse>) {
                 if (response.isSuccessful && response.body()?.userInfo != null) {
+                    val m3uUrl = buildXtreamM3uUrl(normalizedServer, user, pass)
+                    sharedPrefManager.saveSPString(SharedPrefManager.SP_M3U_DIRECT, m3uUrl)
+                    sharedPrefManager.saveSPString(SharedPrefManager.SP_PLAYLIST, "[]")
                     navigateToDashboard()
                 } else {
                     Toast.makeText(this@MainActivity, "Authentication Failed", Toast.LENGTH_SHORT).show()
@@ -188,5 +198,47 @@ class MainActivity : AppCompatActivity() {
     private fun navigateToDashboard() {
         startActivity(Intent(this, DashboardActivity::class.java))
         finish()
+    }
+
+    private fun applySyncedConfig(data: SyncData): Boolean {
+        val method = data.method?.trim()?.lowercase() ?: ""
+        return when {
+            !data.content.isNullOrBlank() -> {
+                sharedPrefManager.saveSPString(
+                    SharedPrefManager.SP_M3U_DIRECT,
+                    "file_content:${data.content}"
+                )
+                sharedPrefManager.saveSPString(SharedPrefManager.SP_PLAYLIST, "[]")
+                true
+            }
+            method == "m3u" && !data.url.isNullOrBlank() -> {
+                sharedPrefManager.saveSPString(SharedPrefManager.SP_M3U_DIRECT, data.url.trim())
+                sharedPrefManager.saveSPString(SharedPrefManager.SP_PLAYLIST, "[]")
+                true
+            }
+            method == "xtream" && !data.server.isNullOrBlank() && !data.user.isNullOrBlank() && !data.pass.isNullOrBlank() -> {
+                val m3uUrl = buildXtreamM3uUrl(data.server, data.user, data.pass)
+                sharedPrefManager.saveSPString(SharedPrefManager.SP_M3U_DIRECT, m3uUrl)
+                sharedPrefManager.saveSPString(SharedPrefManager.SP_PLAYLIST, "[]")
+                true
+            }
+            !data.url.isNullOrBlank() -> {
+                sharedPrefManager.saveSPString(SharedPrefManager.SP_M3U_DIRECT, data.url.trim())
+                sharedPrefManager.saveSPString(SharedPrefManager.SP_PLAYLIST, "[]")
+                true
+            }
+            else -> false
+        }
+    }
+
+    private fun normalizeServer(server: String): String {
+        val trimmed = server.trim()
+        return if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) trimmed
+        else "http://$trimmed"
+    }
+
+    private fun buildXtreamM3uUrl(server: String, user: String, pass: String): String {
+        val cleanServer = normalizeServer(server).trimEnd('/')
+        return "$cleanServer/get.php?username=${Uri.encode(user)}&password=${Uri.encode(pass)}&type=m3u_plus&output=ts"
     }
 }
