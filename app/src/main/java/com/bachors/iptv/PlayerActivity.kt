@@ -27,6 +27,7 @@ import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.bachors.iptv.models.ChannelsData
 import com.bachors.iptv.utils.SharedPrefManager
@@ -262,6 +263,7 @@ class PlayerActivity : AppCompatActivity() {
     //  PLAYER
     // ════════════════════════════════════════════════════════
     private fun initPlayer() {
+        playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
         val okHttp = OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(20, TimeUnit.SECONDS)

@@ -275,6 +275,7 @@ class PlaylistActivity : AppCompatActivity() {
             lower.contains("/movie/")  || lower.contains("/movies/")  -> "vod"
             lower.contains("/series/") || lower.contains("/episode/") -> "series"
             lower.contains("/live/")   || lower.contains("/stream/")  -> "live"
+            lower.contains("output=mpegts") || lower.contains("output=ts") || lower.contains("type=m3u_plus") -> "live"
             // File extension convention
             lower.endsWith(".mp4") || lower.endsWith(".mkv") ||
             lower.endsWith(".avi") || lower.endsWith(".mov") ||
