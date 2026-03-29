@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/vu_bg_dark"
     tools:context=".MainActivity">
 
     <!-- Fullscreen Background Image -->
@@ -24,8 +25,10 @@
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_login"
         style="@style/VuCard"
-        android:layout_width="340dp"
+        android:layout_width="380dp"
         android:layout_height="wrap_content"
+        app:strokeColor="@color/white_opacity_20"
+        app:strokeWidth="1dp"
         app:cardBackgroundColor="@color/black_opacity_90"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -149,12 +152,15 @@
                     android:textStyle="bold"
                     android:layout_marginVertical="8dp"/>
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_refresh_sync"
+                    style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="REFRESH SYNC"
                     android:backgroundTint="@color/vu_purple"
+                    app:icon="@drawable/ic_load"
+                    app:iconPadding="8dp"
                     android:layout_marginTop="16dp" />
             </LinearLayout>
 
@@ -170,6 +176,11 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:boxBackgroundMode="filled"
+                    app:boxCornerRadiusTopStart="10dp"
+                    app:boxCornerRadiusTopEnd="10dp"
+                    app:boxCornerRadiusBottomStart="10dp"
+                    app:boxCornerRadiusBottomEnd="10dp"
                     app:hintEnabled="false"
                     app:boxBackgroundColor="@color/white_opacity_10">
                     <com.google.android.material.textfield.TextInputEditText
@@ -184,6 +195,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    app:boxBackgroundMode="filled"
+                    app:boxCornerRadiusTopStart="10dp"
+                    app:boxCornerRadiusTopEnd="10dp"
+                    app:boxCornerRadiusBottomStart="10dp"
+                    app:boxCornerRadiusBottomEnd="10dp"
                     app:hintEnabled="false"
                     app:boxBackgroundColor="@color/white_opacity_10">
                     <com.google.android.material.textfield.TextInputEditText
@@ -198,6 +214,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    app:boxBackgroundMode="filled"
+                    app:boxCornerRadiusTopStart="10dp"
+                    app:boxCornerRadiusTopEnd="10dp"
+                    app:boxCornerRadiusBottomStart="10dp"
+                    app:boxCornerRadiusBottomEnd="10dp"
                     app:hintEnabled="false"
                     app:boxBackgroundColor="@color/white_opacity_10">
                     <com.google.android.material.textfield.TextInputEditText
@@ -209,12 +230,15 @@
                         android:textColor="#FFFFFF" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_login_xtream"
+                    style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="LOGIN"
                     android:backgroundTint="@color/vu_purple"
+                    app:icon="@drawable/ic_world"
+                    app:iconPadding="8dp"
                     android:layout_marginTop="16dp" />
             </LinearLayout>
 
@@ -230,6 +254,11 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:boxBackgroundMode="filled"
+                    app:boxCornerRadiusTopStart="10dp"
+                    app:boxCornerRadiusTopEnd="10dp"
+                    app:boxCornerRadiusBottomStart="10dp"
+                    app:boxCornerRadiusBottomEnd="10dp"
                     app:hintEnabled="false"
                     app:boxBackgroundColor="@color/white_opacity_10">
                     <com.google.android.material.textfield.TextInputEditText
@@ -240,12 +269,15 @@
                         android:textColor="#FFFFFF" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_login_m3u"
+                    style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="LOAD URL"
                     android:backgroundTint="@color/vu_purple"
+                    app:icon="@drawable/ic_file"
+                    app:iconPadding="8dp"
                     android:layout_marginTop="12dp" />
 
                 <LinearLayout
@@ -259,13 +291,18 @@
                     <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" android:background="#33FFFFFF" />
                 </LinearLayout>
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_pick_file"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="📂  OPEN M3U / M3U8 FILE"
-                    android:backgroundTint="#33FFFFFF"
+                    android:text="OPEN M3U / M3U8 FILE"
+                    android:backgroundTint="@android:color/transparent"
                     android:textColor="#FFFFFF"
+                    app:icon="@drawable/ic_file"
+                    app:iconPadding="8dp"
+                    app:iconTint="#FFFFFF"
+                    app:strokeColor="@color/white_opacity_20"
                     android:layout_marginTop="8dp" />
             </LinearLayout>
 

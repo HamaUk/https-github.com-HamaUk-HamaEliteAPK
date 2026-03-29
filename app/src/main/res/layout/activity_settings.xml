@@ -3,14 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/vu_bg_dark">
+    android:background="@color/vu_bg_dark"
+    android:padding="12dp">
 
     <!-- Header -->
     <LinearLayout
         android:id="@+id/settings_header"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:background="#000000"
+        android:background="@drawable/hk_rounded_bg"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="20dp"
@@ -40,7 +41,8 @@
         android:id="@+id/sidebar"
         android:layout_width="200dp"
         android:layout_height="0dp"
-        android:background="#1AFFFFFF"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/hk_rounded_bg"
         android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -49,29 +51,44 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_general"
-            style="@style/Widget.Material3.Button.TonalButton"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
+            android:textColor="#FFFFFF"
             android:text="General"
+            app:icon="@drawable/ic_settings"
+            app:iconTint="#FFFFFF"
+            app:iconPadding="8dp"
+            app:iconGravity="textStart"
             android:textAlignment="viewStart" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_content"
-            style="@style/Widget.Material3.Button.TonalButton"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
+            android:textColor="#FFFFFF"
             android:text="Content"
+            app:icon="@drawable/ic_file"
+            app:iconTint="#FFFFFF"
+            app:iconPadding="8dp"
+            app:iconGravity="textStart"
             android:textAlignment="viewStart" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_account"
-            style="@style/Widget.Material3.Button.TonalButton"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
+            android:textColor="#FFFFFF"
             android:text="Account"
+            app:icon="@drawable/ic_heart"
+            app:iconTint="#FFFFFF"
+            app:iconPadding="8dp"
+            app:iconGravity="textStart"
             android:textAlignment="viewStart" />
 
         <View
@@ -81,7 +98,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_logout"
-            style="@style/Widget.Material3.Button.TonalButton"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="LOGOUT"
@@ -93,6 +110,9 @@
         android:id="@+id/settings_content"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginStart="12dp"
+        android:background="@drawable/hk_rounded_bg"
         android:padding="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -104,6 +124,7 @@
             android:id="@+id/layout_general"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:fillViewport="true"
             android:visibility="visible">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -120,6 +141,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    app:strokeColor="@color/white_opacity_10"
+                    app:strokeWidth="1dp"
                     style="@style/VuCard">
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -160,6 +183,7 @@
             android:id="@+id/layout_content"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:fillViewport="true"
             android:visibility="gone">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -174,16 +198,20 @@
                     android:textStyle="bold" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_clear_cache"
+                    style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
                     android:layout_marginTop="20dp"
+                    android:backgroundTint="@color/vu_purple"
                     android:text="CLEAR ALL APP CACHE"
                     app:icon="@drawable/ic_download" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_refresh_data"
+                    style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
                     android:layout_marginTop="12dp"
+                    android:backgroundTint="@color/vu_purple"
                     android:text="REFRESH PLAYLIST DATA"
                     app:icon="@drawable/ic_load" />
             </LinearLayout>
@@ -194,6 +222,7 @@
             android:id="@+id/layout_account"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:fillViewport="true"
             android:visibility="gone">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -210,6 +239,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    app:strokeColor="@color/white_opacity_10"
+                    app:strokeWidth="1dp"
                     style="@style/VuCard">
                     <LinearLayout
                         android:layout_width="match_parent"
