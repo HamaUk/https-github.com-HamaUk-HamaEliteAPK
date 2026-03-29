@@ -1,13 +1,14 @@
 package com.bachors.iptv
 
-import android.content.Intent
-import android.os.Build
+import android.animation.ObjectAnimator
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -24,33 +25,40 @@ import com.bachors.iptv.utils.SharedPrefManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.text.NumberFormat
 
 enum class SortMode { DEFAULT, NAME_AZ, NAME_ZA }
 
 class PlaylistActivity : AppCompatActivity() {
 
     companion object {
-        private const val EXT_M3U   = "#EXTM3U"
-        private const val EXT_INF   = "#EXTINF"
-        private const val EXT_HTTP  = "http://"
-        private const val EXT_HTTPS = "https://"
+        private const val PROGRESS_UPDATE_INTERVAL = 200L
     }
 
     private lateinit var binding: ActivityPlaylistBinding
     private lateinit var sharedPrefManager: SharedPrefManager
-    private lateinit var loading: AlertDialog
     private lateinit var categoryAdapter: PlaylistAdapter
     private lateinit var channelAdapter: ChannelsAdapter
+    private val handler = Handler(Looper.getMainLooper())
+    private val numberFormat = NumberFormat.getNumberInstance()
 
-    // All groups parsed from M3U — group title → channel list
     private val groupMap = mutableMapOf<String, MutableList<ChannelsData>>()
     private val displayGroupMap = mutableMapOf<String, MutableList<ChannelsData>>()
     private val groupNames = mutableListOf<String>()
 
-    // Currently displayed channels (can be filtered)
     private var currentGroupChannels = mutableListOf<ChannelsData>()
-    private var currentType = "live" // live | vod | series
+    private var currentType = "live"
     private var currentSortMode = SortMode.DEFAULT
+    private var lastProgressUpdate = 0L
+
+    // ── Loading overlay views ────────────────────────────────
+    private lateinit var loadingOverlay: View
+    private lateinit var loadingProgressFill: View
+    private lateinit var loadingPercent: android.widget.TextView
+    private lateinit var loadingStatus: android.widget.TextView
+    private lateinit var loadingTitle: android.widget.TextView
+    private lateinit var loadingChannelCount: android.widget.TextView
+    private lateinit var loadingIcon: android.widget.ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,12 +70,11 @@ class PlaylistActivity : AppCompatActivity() {
         sharedPrefManager = SharedPrefManager(this)
         currentType = intent.getStringExtra("type") ?: "live"
 
-        setupLoadingDialog()
+        bindLoadingOverlay()
         setupUI()
         loadData()
     }
 
-    // ── Fullscreen / TV ────────────────────────────────────
     private fun goFullscreen() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         val wic = WindowInsetsControllerCompat(window, window.decorView)
@@ -77,17 +84,103 @@ class PlaylistActivity : AppCompatActivity() {
 
     override fun onResume() { super.onResume(); goFullscreen() }
 
-    // ── Loading dialog ─────────────────────────────────────
-    private fun setupLoadingDialog() {
-        loading = MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-            .setCancelable(false)
-            .setMessage("Loading channels...")
-            .create()
+    // ════════════════════════════════════════════════════════
+    //  LOADING OVERLAY
+    // ════════════════════════════════════════════════════════
+    private fun bindLoadingOverlay() {
+        loadingOverlay = binding.loadingOverlay
+        loadingProgressFill = binding.loadingProgressFill
+        loadingPercent = binding.loadingPercent
+        loadingStatus = binding.loadingStatus
+        loadingTitle = binding.loadingTitle
+        loadingChannelCount = binding.loadingChannelCount
+        loadingIcon = binding.loadingIcon
     }
 
-    // ── UI Setup ───────────────────────────────────────────
+    private fun showLoadingOverlay(title: String) {
+        loadingTitle.text = title
+        loadingStatus.text = "Connecting to server..."
+        loadingPercent.text = "0%"
+        loadingChannelCount.text = ""
+        setProgressWidth(0f)
+        loadingOverlay.visibility = View.VISIBLE
+        loadingOverlay.alpha = 0f
+        loadingOverlay.animate().alpha(1f).setDuration(250).start()
+        startIconPulse()
+    }
+
+    private fun hideLoadingOverlay() {
+        stopIconPulse()
+        loadingOverlay.animate()
+            .alpha(0f)
+            .setDuration(300)
+            .withEndAction { loadingOverlay.visibility = View.GONE }
+            .start()
+    }
+
+    private fun updateDownloadProgress(bytesRead: Long, totalBytes: Long) {
+        val now = System.currentTimeMillis()
+        if (now - lastProgressUpdate < PROGRESS_UPDATE_INTERVAL) return
+        lastProgressUpdate = now
+
+        runOnUiThread {
+            if (totalBytes > 0) {
+                val pct = ((bytesRead * 100) / totalBytes).toInt().coerceIn(0, 100)
+                loadingPercent.text = "$pct%"
+                setProgressWidth(pct / 100f)
+                val mbRead = String.format("%.1f", bytesRead / 1_048_576.0)
+                val mbTotal = String.format("%.1f", totalBytes / 1_048_576.0)
+                loadingStatus.text = "Downloading playlist... ${mbRead}MB / ${mbTotal}MB"
+            } else {
+                val mbRead = String.format("%.1f", bytesRead / 1_048_576.0)
+                loadingStatus.text = "Downloading... ${mbRead}MB"
+                val pulse = ((bytesRead / 32768) % 100).toInt()
+                loadingPercent.text = "${pulse}%"
+                setProgressWidth(pulse / 100f)
+            }
+        }
+    }
+
+    private fun updateParseProgress(linesProcessed: Int, totalLines: Int, channelsFound: Int) {
+        val now = System.currentTimeMillis()
+        if (now - lastProgressUpdate < PROGRESS_UPDATE_INTERVAL) return
+        lastProgressUpdate = now
+
+        runOnUiThread {
+            val pct = if (totalLines > 0) ((linesProcessed * 100) / totalLines).coerceIn(0, 100) else 0
+            loadingPercent.text = "$pct%"
+            setProgressWidth(pct / 100f)
+            loadingStatus.text = "Parsing channels..."
+            loadingChannelCount.text = "${numberFormat.format(channelsFound)} channels found"
+        }
+    }
+
+    private fun setProgressWidth(fraction: Float) {
+        val parent = loadingProgressFill.parent as? ViewGroup ?: return
+        val params = loadingProgressFill.layoutParams
+        params.width = (parent.width * fraction.coerceIn(0f, 1f)).toInt().coerceAtLeast(0)
+        loadingProgressFill.layoutParams = params
+    }
+
+    private var iconAnimator: ObjectAnimator? = null
+
+    private fun startIconPulse() {
+        iconAnimator = ObjectAnimator.ofFloat(loadingIcon, View.ALPHA, 1f, 0.3f, 1f).apply {
+            duration = 1200
+            repeatCount = ObjectAnimator.INFINITE
+            start()
+        }
+    }
+
+    private fun stopIconPulse() {
+        iconAnimator?.cancel()
+        loadingIcon.alpha = 1f
+    }
+
+    // ════════════════════════════════════════════════════════
+    //  UI SETUP
+    // ════════════════════════════════════════════════════════
     private fun setupUI() {
-        // Category sidebar
         categoryAdapter = PlaylistAdapter(this)
         binding.rvCategories.apply {
             layoutManager = LinearLayoutManager(this@PlaylistActivity)
@@ -116,11 +209,8 @@ class PlaylistActivity : AppCompatActivity() {
             else -> "LIVE TV"
         }
 
-        try {
-            binding.btnBack.setOnClickListener { finish() }
-        } catch (_: Exception) { }
+        try { binding.btnBack.setOnClickListener { finish() } } catch (_: Exception) {}
 
-        // Search categories by name
         binding.etSearchCategories.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -129,7 +219,6 @@ class PlaylistActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        // Search channels by name
         binding.etSearchChannels.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -138,10 +227,8 @@ class PlaylistActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        // Sort button
         binding.btnSort.setOnClickListener { showSortDialog() }
 
-        // Category click
         binding.rvCategories.addOnItemTouchListener(
             RecyclerTouchListener(this, binding.rvCategories, object : RecyclerTouchListener.ClickListener {
                 override fun onClick(view: View, position: Int) {
@@ -150,103 +237,131 @@ class PlaylistActivity : AppCompatActivity() {
                 override fun onLongClick(view: View, position: Int) {}
             })
         )
-
-        // Channel clicks are handled by ChannelsAdapter's cardRoot.setOnClickListener
-        // which works with both touch and D-pad/remote OK button
     }
 
-    // ── Data Loading ────────────────────────────────────────
+    // ════════════════════════════════════════════════════════
+    //  DATA LOADING (with progress)
+    // ════════════════════════════════════════════════════════
     private fun loadData() {
         val directData = sharedPrefManager.getSpM3uDirect()
         if (directData.isNotEmpty()) {
             if (directData.startsWith("file_content:")) {
-                // Local file content — parse directly without network
                 val content = directData.removePrefix("file_content:")
-                parseAndDisplay(content)
+                showLoadingOverlay("PARSING PLAYLIST")
+                runOnUiThread { loadingStatus.text = "Reading local file..." }
+                parseInBackground(content)
             } else {
-                // Remote M3U URL — fetch it
-                loading.show()
+                showLoadingOverlay("LOADING CHANNELS")
                 Thread {
-                    val result = HttpHandler().makeServiceCall(directData)
-                    runOnUiThread {
-                        loading.dismiss()
-                        if (result != null) {
-                            parseAndDisplay(result)
-                        } else {
+                    val result = HttpHandler().makeServiceCallWithProgress(directData) { bytesRead, total ->
+                        updateDownloadProgress(bytesRead, total)
+                    }
+                    if (result != null) {
+                        runOnUiThread {
+                            loadingPercent.text = "100%"
+                            setProgressWidth(1f)
+                            loadingStatus.text = "Download complete. Parsing..."
+                        }
+                        parseInBackground(result)
+                    } else {
+                        runOnUiThread {
+                            hideLoadingOverlay()
                             Toast.makeText(this, "Failed to load playlist", Toast.LENGTH_LONG).show()
                         }
                     }
                 }.start()
             }
         } else {
-            // Xtream / JSON playlist mode
             jsonToGroups()
         }
     }
 
-    // ── M3U Parsing ────────────────────────────────────────
-    private fun parseAndDisplay(content: String) {
-        groupMap.clear()
-        groupNames.clear()
+    // ════════════════════════════════════════════════════════
+    //  M3U PARSING (background thread with progress)
+    // ════════════════════════════════════════════════════════
+    private fun parseInBackground(content: String) {
+        Thread {
+            runOnUiThread {
+                loadingTitle.text = "PARSING CHANNELS"
+                loadingStatus.text = "Analyzing playlist data..."
+                loadingPercent.text = "0%"
+                setProgressWidth(0f)
+            }
 
-        val lines = content.lines()
-        var currentName  = ""
-        var currentLogo  = ""
-        var currentGroup = "General"
-        var currentUserAgent = ""
-        var currentReferrer = ""
+            val lines = content.lines()
+            val totalLines = lines.size
+            groupMap.clear()
 
-        for (line in lines) {
-            val trimmed = line.trim()
-            when {
-                trimmed.startsWith("#EXTINF") -> {
-                    // Parse name, logo, group-title from the EXTINF line
-                    currentName  = ""
-                    currentLogo  = ""
-                    currentGroup = extractAttr(trimmed, "group-title") ?: "General"
-                    currentLogo  = extractAttr(trimmed, "tvg-logo") ?: ""
-                    currentUserAgent = ""
-                    currentReferrer = ""
-                    // Channel display name is after the last comma
-                    val commaIdx = trimmed.lastIndexOf(',')
-                    if (commaIdx >= 0) currentName = trimmed.substring(commaIdx + 1).trim()
-                }
-                trimmed.startsWith("#EXTVLCOPT:", ignoreCase = true) -> {
-                    parseVlcOpt(trimmed)?.let { (key, value) ->
-                        when (key) {
-                            "http-user-agent", "user-agent" -> currentUserAgent = value
-                            "http-referrer", "http-referer", "referrer", "referer" -> currentReferrer = value
+            var currentName = ""
+            var currentLogo = ""
+            var currentGroup = "General"
+            var currentUserAgent = ""
+            var currentReferrer = ""
+            var channelsFound = 0
+
+            for ((index, line) in lines.withIndex()) {
+                val trimmed = line.trim()
+                when {
+                    trimmed.startsWith("#EXTINF") -> {
+                        currentName = ""
+                        currentLogo = ""
+                        currentGroup = extractAttr(trimmed, "group-title") ?: "General"
+                        currentLogo = extractAttr(trimmed, "tvg-logo") ?: ""
+                        currentUserAgent = ""
+                        currentReferrer = ""
+                        val commaIdx = trimmed.lastIndexOf(',')
+                        if (commaIdx >= 0) currentName = trimmed.substring(commaIdx + 1).trim()
+                    }
+                    trimmed.startsWith("#EXTVLCOPT:", ignoreCase = true) -> {
+                        parseVlcOpt(trimmed)?.let { (key, value) ->
+                            when (key) {
+                                "http-user-agent", "user-agent" -> currentUserAgent = value
+                                "http-referrer", "http-referer", "referrer", "referer" -> currentReferrer = value
+                            }
+                        }
+                    }
+                    trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("rtsp://") || trimmed.startsWith("rtmp://") -> {
+                        if (currentName.isNotEmpty()) {
+                            val detectedType = detectTypeFromUrl(trimmed)
+                            val channel = ChannelsData(
+                                name = currentName,
+                                logo = currentLogo,
+                                url = trimmed,
+                                userAgent = currentUserAgent,
+                                referrer = currentReferrer
+                            )
+                            val key = "$detectedType|$currentGroup"
+                            groupMap.getOrPut(key) { mutableListOf() }.add(channel)
+                            channelsFound++
+                            currentName = ""
                         }
                     }
                 }
-                trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("rtsp://") || trimmed.startsWith("rtmp://") -> {
-                    if (currentName.isNotEmpty()) {
-                        val detectedType = detectTypeFromUrl(trimmed)
-                        val channel = ChannelsData(
-                            name = currentName,
-                            logo = currentLogo,
-                            url  = trimmed,
-                            userAgent = currentUserAgent,
-                            referrer = currentReferrer
-                        )
-                        // Key = "type|group" so we can filter by type accurately
-                        val key = "$detectedType|$currentGroup"
-                        groupMap.getOrPut(key) { mutableListOf() }.add(channel)
-                        currentName = ""
-                    }
-                }
+                updateParseProgress(index + 1, totalLines, channelsFound)
             }
-        }
 
-        // Filter by type: only show groups whose key starts with the selected type
-        // Keys are "type|group_name" — strip prefix for display
+            runOnUiThread {
+                loadingPercent.text = "100%"
+                setProgressWidth(1f)
+                loadingChannelCount.text = "${numberFormat.format(channelsFound)} channels ready"
+                loadingStatus.text = "Building channel list..."
+            }
+
+            val finalChannelsFound = channelsFound
+            runOnUiThread {
+                buildAndShowGroups()
+                handler.postDelayed({ hideLoadingOverlay() }, 400)
+            }
+        }.start()
+    }
+
+    private fun buildAndShowGroups() {
+        groupNames.clear()
         val matchingKeys = when (currentType) {
-            "vod"    -> groupMap.keys.filter { it.startsWith("vod|") }
+            "vod" -> groupMap.keys.filter { it.startsWith("vod|") }
             "series" -> groupMap.keys.filter { it.startsWith("series|") }
-            else     -> groupMap.keys.filter { it.startsWith("live|") }
+            else -> groupMap.keys.filter { it.startsWith("live|") }
         }
-
-        // If no type-specific content found, show everything
         val keysToShow = matchingKeys.ifEmpty { groupMap.keys.toList() }
 
         if (matchingKeys.isEmpty() && currentType != "live") {
@@ -255,11 +370,8 @@ class PlaylistActivity : AppCompatActivity() {
                 Toast.LENGTH_LONG).show()
         }
 
-        // Display names = strip "type|" prefix
-        groupNames.clear()
         groupNames.addAll(keysToShow.map { it.substringAfter("|") }.distinct().sorted())
 
-        // Build a clean display map: display_name -> channels
         displayGroupMap.clear()
         for (key in keysToShow) {
             val displayName = key.substringAfter("|")
@@ -267,14 +379,12 @@ class PlaylistActivity : AppCompatActivity() {
                 .addAll(groupMap[key] ?: emptyList())
         }
 
-        // Populate sidebar
         categoryAdapter.clear()
         val groupData = groupNames.map { name ->
             PlaylistData(title = name, link = "", channel = (displayGroupMap[name]?.size ?: 0).toString())
         }
         categoryAdapter.addAll(groupData)
 
-        // Show first group
         if (groupNames.isNotEmpty()) {
             showGroup(groupNames.first())
         }
@@ -295,26 +405,25 @@ class PlaylistActivity : AppCompatActivity() {
         return key to value
     }
 
-    // Detect type from URL — reliable for both Xtream Codes and direct M3U
     private fun detectTypeFromUrl(url: String): String {
         val lower = url.lowercase()
         return when {
-            // Xtream Codes path convention
-            lower.contains("/movie/")  || lower.contains("/movies/")  -> "vod"
+            lower.contains("/movie/") || lower.contains("/movies/") -> "vod"
             lower.contains("/series/") || lower.contains("/episode/") -> "series"
-            lower.contains("/live/")   || lower.contains("/stream/")  -> "live"
+            lower.contains("/live/") || lower.contains("/stream/") -> "live"
             lower.contains("output=mpegts") || lower.contains("output=ts") || lower.contains("type=m3u_plus") -> "live"
-            // File extension convention
             lower.endsWith(".mp4") || lower.endsWith(".mkv") ||
             lower.endsWith(".avi") || lower.endsWith(".mov") ||
             lower.endsWith(".wmv") || lower.endsWith(".flv") ||
-            lower.endsWith(".ts")  || lower.endsWith(".m4v")         -> "vod"
-            lower.endsWith(".m3u8")                                   -> "live"
-            else                                                       -> "live" // default
+            lower.endsWith(".ts") || lower.endsWith(".m4v") -> "vod"
+            lower.endsWith(".m3u8") -> "live"
+            else -> "live"
         }
     }
 
-    // ── Group Display ───────────────────────────────────────
+    // ════════════════════════════════════════════════════════
+    //  GROUP DISPLAY
+    // ════════════════════════════════════════════════════════
     private fun showGroup(name: String) {
         val channels = displayGroupMap[name] ?: groupMap[name] ?: return
         currentGroupChannels = channels.toMutableList()
@@ -324,37 +433,30 @@ class PlaylistActivity : AppCompatActivity() {
         channelAdapter.addAll(applySorting(currentGroupChannels))
     }
 
-    // ── Category filtering ───────────────────────────────────
     private fun filterCategories(query: String) {
         if (query.isEmpty()) {
             channelAdapter.clear()
             channelAdapter.addAll(applySorting(currentGroupChannels))
         } else {
-            val filtered = currentGroupChannels.filter {
-                it.name.contains(query, ignoreCase = true)
-            }
+            val filtered = currentGroupChannels.filter { it.name.contains(query, ignoreCase = true) }
             channelAdapter.clear()
             channelAdapter.addAll(applySorting(filtered))
         }
     }
 
-    // ── Search filtering ────────────────────────────────────
     private fun filterChannels(query: String) {
         if (query.isEmpty()) {
             channelAdapter.clear()
             channelAdapter.addAll(applySorting(currentGroupChannels))
         } else {
-            val filtered = currentGroupChannels.filter {
-                it.name.contains(query, ignoreCase = true)
-            }
+            val filtered = currentGroupChannels.filter { it.name.contains(query, ignoreCase = true) }
             channelAdapter.clear()
             channelAdapter.addAll(applySorting(filtered))
         }
     }
 
-    // ── Sorting ─────────────────────────────────────────────
     private fun showSortDialog() {
-        val options = arrayOf("Default Order", "Name A → Z", "Name Z → A")
+        val options = arrayOf("Default Order", "Name A \u2192 Z", "Name Z \u2192 A")
         val currentIdx = currentSortMode.ordinal
         MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
             .setTitle("Sort Channels")
@@ -376,7 +478,9 @@ class PlaylistActivity : AppCompatActivity() {
         SortMode.NAME_ZA -> list.sortedByDescending { it.name.lowercase() }
     }
 
-    // ── Xtream / JSON fallback ──────────────────────────────
+    // ════════════════════════════════════════════════════════
+    //  XTREAM / JSON FALLBACK (with overlay)
+    // ════════════════════════════════════════════════════════
     private fun jsonToGroups() {
         try {
             val rawJson = sharedPrefManager.getSpPlaylist()
@@ -400,7 +504,6 @@ class PlaylistActivity : AppCompatActivity() {
             categoryAdapter.clear()
             categoryAdapter.addAll(filtered)
 
-            // Load first category's channels via HTTP
             if (filtered.isNotEmpty()) {
                 val first = filtered.first()
                 binding.tvHeaderTitle.text = first.title.uppercase()
@@ -414,17 +517,17 @@ class PlaylistActivity : AppCompatActivity() {
 
     private fun loadXtreamChannels(url: String?) {
         if (url.isNullOrEmpty()) return
-        loading.show()
+        showLoadingOverlay("LOADING CHANNELS")
         Thread {
-            val result = HttpHandler().makeServiceCall(url)
-            runOnUiThread {
-                loading.dismiss()
-                if (result != null) {
-                    try {
-                        parseAndDisplay(result)
-                    } catch (e: Exception) {
-                        Toast.makeText(this, "Failed to parse channels", Toast.LENGTH_SHORT).show()
-                    }
+            val result = HttpHandler().makeServiceCallWithProgress(url) { bytesRead, total ->
+                updateDownloadProgress(bytesRead, total)
+            }
+            if (result != null) {
+                parseInBackground(result)
+            } else {
+                runOnUiThread {
+                    hideLoadingOverlay()
+                    Toast.makeText(this, "Failed to load channels", Toast.LENGTH_SHORT).show()
                 }
             }
         }.start()

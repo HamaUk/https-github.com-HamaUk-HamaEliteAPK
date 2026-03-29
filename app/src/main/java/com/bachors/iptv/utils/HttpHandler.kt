@@ -36,6 +36,50 @@ class HttpHandler {
         return response
     }
 
+    /**
+     * Downloads content from a URL while reporting progress via callback.
+     * @param onProgress called with (bytesRead, totalBytes). totalBytes is -1 if unknown.
+     */
+    fun makeServiceCallWithProgress(
+        reqUrl: String?,
+        onProgress: (bytesRead: Long, totalBytes: Long) -> Unit
+    ): String? {
+        var response: String? = null
+        try {
+            val url = URL(reqUrl)
+            val conn = url.openConnection() as HttpURLConnection
+            conn.requestMethod = "GET"
+            conn.connectTimeout = 30_000
+            conn.readTimeout = 60_000
+            conn.connect()
+
+            val totalBytes = conn.contentLength.toLong()
+            val inputStream = BufferedInputStream(conn.inputStream, 16384)
+            val sb = StringBuilder()
+            val buffer = ByteArray(8192)
+            var bytesRead: Long = 0
+
+            val reader = inputStream.buffered()
+            var chunkSize: Int
+            while (reader.read(buffer).also { chunkSize = it } != -1) {
+                sb.append(String(buffer, 0, chunkSize, Charsets.UTF_8))
+                bytesRead += chunkSize
+                onProgress(bytesRead, totalBytes)
+            }
+            inputStream.close()
+            response = sb.toString()
+        } catch (e: MalformedURLException) {
+            Log.e(TAG, "MalformedURLException: ${e.message}")
+        } catch (e: ProtocolException) {
+            Log.e(TAG, "ProtocolException: ${e.message}")
+        } catch (e: IOException) {
+            Log.e(TAG, "IOException: ${e.message}")
+        } catch (e: Exception) {
+            Log.e(TAG, "Exception: ${e.message}")
+        }
+        return response
+    }
+
     private fun convertStreamToString(inputStream: InputStream): String {
         val reader = BufferedReader(InputStreamReader(inputStream))
         val sb = StringBuilder()
