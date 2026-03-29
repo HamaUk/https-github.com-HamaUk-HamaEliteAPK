@@ -77,16 +77,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:alignmentMode="alignMargins"
-            android:columnCount="2"
+            android:columnCount="3"
             android:useDefaultMargins="true">
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_live"
                 style="@style/VuCard"
                 android:layout_width="0dp"
-                android:layout_height="120dp"
+                android:layout_height="75dp"
                 android:layout_columnWeight="1"
-                android:layout_margin="10dp"
+                android:layout_margin="8dp"
                 android:clickable="true"
                 android:focusable="true">
                 <LinearLayout
@@ -96,17 +96,17 @@
                     android:background="@drawable/hk_gradient_card"
                     android:orientation="vertical">
                     <ImageView
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:src="@drawable/ic_live"
                         app:tint="#FFFFFF" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="6dp"
                         android:text="LIVE TV"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         android:letterSpacing="0.05"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -116,9 +116,9 @@
                 android:id="@+id/card_vod"
                 style="@style/VuCard"
                 android:layout_width="0dp"
-                android:layout_height="120dp"
+                android:layout_height="75dp"
                 android:layout_columnWeight="1"
-                android:layout_margin="10dp"
+                android:layout_margin="6dp"
                 android:clickable="true"
                 android:focusable="true">
                 <LinearLayout
@@ -128,17 +128,17 @@
                     android:background="@drawable/hk_gradient_card"
                     android:orientation="vertical">
                     <ImageView
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:src="@drawable/ic_vod"
                         app:tint="#FFFFFF" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="6dp"
                         android:text="MOVIES"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         android:letterSpacing="0.05"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -148,9 +148,9 @@
                 android:id="@+id/card_series"
                 style="@style/VuCard"
                 android:layout_width="0dp"
-                android:layout_height="120dp"
+                android:layout_height="75dp"
                 android:layout_columnWeight="1"
-                android:layout_margin="10dp"
+                android:layout_margin="6dp"
                 android:clickable="true"
                 android:focusable="true">
                 <LinearLayout
@@ -160,17 +160,17 @@
                     android:background="@drawable/hk_gradient_card"
                     android:orientation="vertical">
                     <ImageView
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:src="@drawable/ic_series"
                         app:tint="#FFFFFF" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="6dp"
                         android:text="SERIES"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         android:letterSpacing="0.05"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -180,9 +180,9 @@
                 android:id="@+id/card_epg"
                 style="@style/VuCard"
                 android:layout_width="0dp"
-                android:layout_height="120dp"
+                android:layout_height="75dp"
                 android:layout_columnWeight="1"
-                android:layout_margin="10dp"
+                android:layout_margin="6dp"
                 android:clickable="true"
                 android:focusable="true">
                 <LinearLayout
@@ -192,17 +192,17 @@
                     android:background="@drawable/hk_gradient_card"
                     android:orientation="vertical">
                     <ImageView
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:src="@drawable/ic_heart"
                         app:tint="#FFFFFF" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="6dp"
                         android:text="FAVORITES"
                         android:textColor="#FFFFFF"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         android:letterSpacing="0.05"
                         android:textStyle="bold" />
                 </LinearLayout>

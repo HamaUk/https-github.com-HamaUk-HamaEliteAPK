@@ -52,6 +52,12 @@ class PlayerActivity : AppCompatActivity() {
         val name = b?.getString("name") ?: "Channel"
         val url = b?.getString("url") ?: ""
 
+        if (url.isEmpty()) {
+            Toast.makeText(this, "Error: Invalid playback URL", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+
         setupUI(name)
         initPlayer(url, name)
         startClock()
@@ -92,12 +98,18 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initPlayer(url: String, name: String) {
-        // Destroy existing player if any to prevent memory leaks or audio overlap
-        mkPlayer?.onDestroy() 
-        
-        mkPlayer = MKPlayer(this)
-        mkPlayer?.play(url)
-        mkPlayer?.setTitle(name)
+        try {
+            // Destroy existing player if any to prevent memory leaks or audio overlap
+            mkPlayer?.stop()
+            mkPlayer?.onDestroy() 
+            
+            mkPlayer = MKPlayer(this)
+            mkPlayer?.play(url)
+            mkPlayer?.setTitle(name)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Player Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            finish()
+        }
     }
 
     private fun startClock() {
