@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun performSync() {
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://hama-elite-sync.web.app/")
+            .baseUrl("https://hama-elite-sync-default-rtdb.firebaseio.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
