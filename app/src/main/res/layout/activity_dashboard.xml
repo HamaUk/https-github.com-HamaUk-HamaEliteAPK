@@ -10,13 +10,7 @@
     android:paddingTop="8dp"
     android:paddingBottom="8dp">
 
-    <!-- Subtle background image -->
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:src="@drawable/background"
-        android:alpha="0.08" />
+    <!-- Avoid decoding large background bitmaps on low-memory TV sticks -->
 
     <!-- ══════════════════════════════════════
          TOP BAR

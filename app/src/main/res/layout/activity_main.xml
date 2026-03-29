@@ -7,15 +7,7 @@
     android:background="@color/vu_bg_dark"
     tools:context=".MainActivity">
 
-    <!-- Fullscreen Background Image -->
-    <ImageView
-        android:id="@+id/img_bg"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:src="@drawable/background" />
-
-    <!-- Dark Overlay / Vignette -->
+    <!-- Lightweight dark background for low-memory TV sticks -->
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
