@@ -40,6 +40,17 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.hide()
 
         sharedPrefManager = SharedPrefManager(this)
+
+        // ── Auto-login: skip to Dashboard if already logged in ──
+        val alreadyLoggedIn = sharedPrefManager.getSpM3uDirect().isNotEmpty() ||
+                              sharedPrefManager.getSpPlaylist().let { it.isNotEmpty() && it != "[]" }
+        if (alreadyLoggedIn) {
+            startActivity(Intent(this, DashboardActivity::class.java))
+            finish()
+            return
+        }
+        // ────────────────────────────────────────────────────────
+
         setupDeviceId()
         setupTabs()
         setupClickListeners()
