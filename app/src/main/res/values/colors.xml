@@ -20,6 +20,10 @@
     <color name="vu_text_secondary">#928E99</color>
     <color name="redroid_red">#FF0000</color>
     
+    <!-- Legacy compatibility colors -->
+    <color name="colorList">@color/md_theme_surface</color>
+    <color name="colorBg">@color/md_theme_background</color>
+    
     <!-- Transparent Helpers -->
     <color name="white_opacity_10">#1AFFFFFF</color>
     <color name="white_opacity_20">#33FFFFFF</color>
