@@ -452,7 +452,12 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun toOrigin(url: String): String? {
         val httpUrl = url.toHttpUrlOrNull() ?: return null
-        return "${httpUrl.scheme}://${httpUrl.host}" + if (httpUrl.port != httpUrl.defaultPort) ":${httpUrl.port}" else ""
+        val defaultPort = when (httpUrl.scheme.lowercase(Locale.US)) {
+            "https" -> 443
+            "http" -> 80
+            else -> -1
+        }
+        return "${httpUrl.scheme}://${httpUrl.host}" + if (httpUrl.port != defaultPort) ":${httpUrl.port}" else ""
     }
 
     private fun alternateLiveUrl(url: String): String? {

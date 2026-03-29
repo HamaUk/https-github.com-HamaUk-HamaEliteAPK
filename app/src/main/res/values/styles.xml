@@ -1,27 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!--
-        Theme.MaterialComponents.DayNight.NoActionBar:
-        - Works with ALL Material widgets (MaterialCardView, TextInputLayout, etc.)
-        - Does NOT require DynamicColors / Google Play Services (TV-safe)
-        - Compatible with Android 5.0+ (API 21+)
-        - The original DynamicColors crash was because Fire TV doesn't have Google's color engine.
-          This theme avoids that entirely.
-    -->
     <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">#BB86FC</item>
-        <item name="colorPrimaryVariant">#6200EE</item>
-        <item name="colorOnPrimary">#000000</item>
-        <item name="colorSecondary">#BB86FC</item>
-        <item name="colorSecondaryVariant">#6200EE</item>
-        <item name="colorOnSecondary">#000000</item>
-        <item name="colorSurface">#1E1E2E</item>
+        <item name="colorPrimary">#E53935</item>
+        <item name="colorPrimaryVariant">#B71C1C</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#FF6E6E</item>
+        <item name="colorSecondaryVariant">#C62828</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="colorSurface">#121212</item>
         <item name="colorOnSurface">#FFFFFF</item>
-        <item name="android:colorBackground">#0D0D17</item>
+        <item name="android:colorBackground">#0A0A0A</item>
         <item name="colorOnBackground">#FFFFFF</item>
         <item name="android:textColorPrimary">#FFFFFF</item>
-        <item name="android:textColorSecondary">#AAAAAA</item>
+        <item name="android:textColorSecondary">#9E9E9E</item>
     </style>
 
     <style name="AppTheme.NoActionBar" parent="AppTheme">
@@ -45,7 +37,7 @@
     </style>
 
     <style name="MyDialogTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
-        <item name="colorSurface">@color/vu_sidebar_bg</item>
+        <item name="colorSurface">#1A1A1A</item>
         <item name="colorOnSurface">#FFFFFF</item>
     </style>
 

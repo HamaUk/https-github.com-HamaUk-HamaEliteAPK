@@ -5,14 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/premium_page_bg"
-    android:padding="20dp">
+    android:padding="24dp">
 
+    <!-- Clock top-right -->
     <TextView
         android:id="@+id/tv_clock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="12:00 PM"
-        android:textColor="#BBD3D6FF"
+        android:textColor="#80FFFFFF"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -21,13 +22,14 @@
         android:id="@+id/tv_device_code"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="4dp"
         android:text="CODE: ----"
-        android:textColor="#96A7B9FF"
+        android:textColor="#55FFFFFF"
         android:textSize="11sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_clock" />
 
+    <!-- Brand Logo -->
     <LinearLayout
         android:id="@+id/logo_box"
         android:layout_width="wrap_content"
@@ -36,36 +38,52 @@
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="HAMA"
-            android:textColor="#FF3B3B"
-            android:textSize="44sp"
-            android:textStyle="bold" />
+            android:textColor="#E53935"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-black" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="3dp"
+            android:layout_marginStart="4dp"
             android:text="UK"
             android:textColor="#FFFFFF"
-            android:textSize="32sp"
-            android:textStyle="bold" />
+            android:textSize="36sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-black" />
     </LinearLayout>
 
+    <!-- Thin red accent line -->
+    <View
+        android:id="@+id/accent_line"
+        android:layout_width="80dp"
+        android:layout_height="2dp"
+        android:layout_marginTop="8dp"
+        android:background="#E53935"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/logo_box" />
+
+    <!-- Menu Cards Row -->
     <LinearLayout
         android:id="@+id/menu_row"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="26dp"
+        android:layout_marginTop="28dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/logo_box">
+        app:layout_constraintTop_toBottomOf="@id/accent_line">
 
+        <!-- LIVE TV (active/highlighted) -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -73,168 +91,198 @@
             android:orientation="vertical">
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_live"
-                android:layout_width="76dp"
-                android:layout_height="76dp"
+                android:layout_width="84dp"
+                android:layout_height="84dp"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="#2D1A2E"
+                app:cardBackgroundColor="@android:color/transparent"
                 app:cardCornerRadius="20dp"
-                app:strokeColor="@color/vu_purple"
-                app:strokeWidth="2dp">
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_dashboard_card_active" />
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="18dp"
+                    android:padding="22dp"
                     android:src="@drawable/ic_live"
-                    app:tint="#FF4B4B" />
+                    app:tint="#E53935" />
             </com.google.android.material.card.MaterialCardView>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:text="LIVE TV"
-                android:textColor="#FF4B4B"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+                android:textColor="#E53935"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
         </LinearLayout>
 
+        <!-- MOVIES -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="18dp"
+            android:layout_marginStart="16dp"
             android:gravity="center_horizontal"
             android:orientation="vertical">
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_vod"
-                android:layout_width="76dp"
-                android:layout_height="76dp"
+                android:layout_width="84dp"
+                android:layout_height="84dp"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="#141A2A"
+                app:cardBackgroundColor="@android:color/transparent"
                 app:cardCornerRadius="20dp"
-                app:strokeColor="#80FFFFFF"
-                app:strokeWidth="1dp">
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_dashboard_card" />
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="18dp"
+                    android:padding="22dp"
                     android:src="@drawable/ic_vod"
                     app:tint="#FFFFFF" />
             </com.google.android.material.card.MaterialCardView>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:text="MOVIES"
-                android:textColor="#FFFFFF"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+                android:textColor="#BBBBBB"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
         </LinearLayout>
 
+        <!-- SERIES -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="18dp"
+            android:layout_marginStart="16dp"
             android:gravity="center_horizontal"
             android:orientation="vertical">
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_series"
-                android:layout_width="76dp"
-                android:layout_height="76dp"
+                android:layout_width="84dp"
+                android:layout_height="84dp"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="#141A2A"
+                app:cardBackgroundColor="@android:color/transparent"
                 app:cardCornerRadius="20dp"
-                app:strokeColor="#80FFFFFF"
-                app:strokeWidth="1dp">
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_dashboard_card" />
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="18dp"
+                    android:padding="22dp"
                     android:src="@drawable/ic_series"
                     app:tint="#FFFFFF" />
             </com.google.android.material.card.MaterialCardView>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:text="SERIES"
-                android:textColor="#FFFFFF"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+                android:textColor="#BBBBBB"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
         </LinearLayout>
 
+        <!-- PLAYLISTS -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="18dp"
+            android:layout_marginStart="16dp"
             android:gravity="center_horizontal"
             android:orientation="vertical">
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_epg"
-                android:layout_width="76dp"
-                android:layout_height="76dp"
+                android:layout_width="84dp"
+                android:layout_height="84dp"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="#141A2A"
+                app:cardBackgroundColor="@android:color/transparent"
                 app:cardCornerRadius="20dp"
-                app:strokeColor="#80FFFFFF"
-                app:strokeWidth="1dp">
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_dashboard_card" />
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="18dp"
+                    android:padding="22dp"
                     android:src="@drawable/ic_heart"
                     app:tint="#FFFFFF" />
             </com.google.android.material.card.MaterialCardView>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:text="PLAYLISTS"
-                android:textColor="#FFFFFF"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+                android:textColor="#BBBBBB"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
         </LinearLayout>
 
+        <!-- SETTINGS -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="18dp"
+            android:layout_marginStart="16dp"
             android:gravity="center_horizontal"
             android:orientation="vertical">
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_settings"
-                android:layout_width="76dp"
-                android:layout_height="76dp"
+                android:layout_width="84dp"
+                android:layout_height="84dp"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="#141A2A"
+                app:cardBackgroundColor="@android:color/transparent"
                 app:cardCornerRadius="20dp"
-                app:strokeColor="#80FFFFFF"
-                app:strokeWidth="1dp">
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_dashboard_card" />
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="18dp"
+                    android:padding="22dp"
                     android:src="@drawable/ic_settings"
                     app:tint="#FFFFFF" />
             </com.google.android.material.card.MaterialCardView>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:text="SETTINGS"
-                android:textColor="#FFFFFF"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+                android:textColor="#BBBBBB"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
         </LinearLayout>
     </LinearLayout>
 
+    <!-- Reload row -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
+        android:layout_marginTop="32dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
@@ -242,20 +290,22 @@
         app:layout_constraintTop_toBottomOf="@id/menu_row">
 
         <ImageView
-            android:layout_width="18dp"
-            android:layout_height="18dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:src="@drawable/ic_load"
-            app:tint="#FFFFFF" />
+            app:tint="#E53935" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="10dp"
             android:text="RELOAD"
             android:textColor="#FFFFFF"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05" />
     </LinearLayout>
 
+    <!-- Bottom-left info -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -266,34 +316,36 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Version: 1.0.8"
-            android:textColor="#C5C5C5"
+            android:textColor="#55FFFFFF"
             android:textSize="11sp" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Status: Activated"
-            android:textColor="#FFFFFF"
+            android:textColor="#E53935"
             android:textSize="11sp"
             android:textStyle="bold" />
     </LinearLayout>
 
+    <!-- Bottom-right info -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:gravity="end"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Mac Address: 17:56:4d:0e:02:8a"
-            android:textColor="#C5C5C5"
+            android:textColor="#44FFFFFF"
             android:textSize="11sp" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Web Page: https://anytvplayer.com"
-            android:textColor="#C5C5C5"
+            android:textColor="#44FFFFFF"
             android:textSize="11sp" />
     </LinearLayout>
 
