@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Base application theme — Material3 Dark WITHOUT DynamicColors (crashes on Android TV) -->
-    <style name="AppTheme" parent="Theme.Material3.Dark.NoActionBar">
-        <item name="colorPrimary">@color/md_theme_primary</item>
-        <item name="colorOnPrimary">@color/md_theme_on_primary</item>
-        <item name="colorPrimaryContainer">@color/md_theme_primary_container</item>
-        <item name="colorOnPrimaryContainer">@color/md_theme_on_primary_container</item>
-        <item name="colorSecondary">@color/md_theme_secondary</item>
-        <item name="colorOnSecondary">@color/md_theme_on_secondary</item>
-        <item name="colorSurface">@color/md_theme_surface</item>
-        <item name="colorOnSurface">@color/md_theme_on_surface</item>
-        <item name="android:colorBackground">@color/md_theme_background</item>
-        <item name="colorOnBackground">@color/md_theme_on_background</item>
+    <!-- AppCompat-based theme — works on ALL Android versions including Fire TV / Android TV boxes -->
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="colorPrimary">#BB86FC</item>
+        <item name="colorPrimaryDark">#6200EE</item>
+        <item name="colorAccent">#BB86FC</item>
+        <item name="android:windowBackground">@color/vu_bg_dark</item>
+        <item name="android:colorBackground">@color/vu_bg_dark</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColorSecondary">#AAAAAA</item>
     </style>
 
     <style name="AppTheme.NoActionBar" parent="AppTheme">
@@ -25,21 +22,19 @@
         <item name="android:windowContentOverlay">@null</item>
     </style>
 
-    <style name="VuCard" parent="Widget.Material3.CardView.Elevated">
+    <style name="VuCard" parent="Widget.MaterialComponents.CardView">
         <item name="cardBackgroundColor">@color/vu_card_bg</item>
-        <item name="cardCornerRadius">25dp</item>
+        <item name="cardCornerRadius">16dp</item>
         <item name="cardElevation">8dp</item>
-        <item name="strokeColor">@color/white_opacity_10</item>
-        <item name="strokeWidth">1dp</item>
     </style>
 
     <style name="spinnerTheme">
-        <item name="android:textColor">@color/md_theme_on_surface</item>
+        <item name="android:textColor">#FFFFFF</item>
     </style>
 
-    <style name="MyDialogTheme" parent="ThemeOverlay.Material3.MaterialAlertDialog">
-        <item name="colorSurface">@color/md_theme_surface</item>
-        <item name="colorOnSurface">@color/md_theme_on_surface</item>
+    <style name="MyDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:background">@color/vu_sidebar_bg</item>
+        <item name="android:textColor">#FFFFFF</item>
     </style>
 
 </resources>
