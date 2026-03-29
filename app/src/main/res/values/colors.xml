@@ -15,10 +15,17 @@
     <!-- HamaKoye Smarters Premium Interface Colors -->
     <color name="vu_purple">#7349EA</color>
     <color name="vu_accent">#7349EA</color>
-    <color name="vu_card_bg">#1C1236</color>
     <color name="vu_bg_dark">#0D0A1C</color>
-    <color name="vu_text_secondary">#928E99</color>
+    <color name="vu_sidebar_bg">#110E1C</color>
+    <color name="vu_sidebar_selected">#9C27B0</color>
+    <color name="vu_focused_card_stroke">#CE93D8</color>
     <color name="redroid_red">#FF0000</color>
+    
+    <!-- Premium Card & Text Tokens -->
+    <color name="vu_card_bg">#2A2A3A</color>
+    <color name="vu_text_primary">#FFFFFF</color>
+    <color name="vu_text_secondary">#B0B0C0</color>
+    <color name="vu_divider">#2A2A3A</color>
     
     <!-- Legacy compatibility colors -->
     <color name="colorList">@color/md_theme_surface</color>
@@ -30,10 +37,4 @@
     <color name="black_opacity_60">#99000000</color>
     <color name="black_opacity_80">#CC000000</color>
     <color name="black_opacity_90">#E6000000</color>
-    <color name="vu_card_bg">#2A2A3A</color>
-    <color name="white_opacity_10">#1AFFFFFF</color>
-    <color name="white_opacity_20">#33FFFFFF</color>
-    <color name="vu_text_primary">#FFFFFF</color>
-    <color name="vu_text_secondary">#B0B0C0</color>
-    <color name="vu_divider">#2A2A3A</color>
 </resources>
