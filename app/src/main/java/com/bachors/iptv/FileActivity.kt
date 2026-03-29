@@ -351,35 +351,48 @@ class FileActivity : AppCompatActivity() {
 
     private fun loadChannels() {
         val uri = goLink!!.toUri()
-        val stream = usingBufferedReader(uri).replace("#EXTVLCOPT:(.*)".toRegex(), "")
-
-        val linesArray = stream.split(EXT_INF)
+        val stream = usingBufferedReader(uri)
         val ar = JSONArray()
-        for (currLine in linesArray) {
-            if (!currLine.contains(EXT_M3U)) {
-                val ob = JSONObject()
-                val dataArray = currLine.split(",")
-                try {
-                    val name: String
-                    val url: String
-                    if (dataArray[1].contains(EXT_HTTPS)) {
-                        name = dataArray[1].substring(0, dataArray[1].indexOf(EXT_HTTPS)).replace("\n", "")
-                        url = dataArray[1].substring(dataArray[1].indexOf(EXT_HTTPS)).replace("\n", "").replace("\r", "")
-                    } else {
-                        name = dataArray[1].substring(0, dataArray[1].indexOf(EXT_HTTP)).replace("\n", "")
-                        url = dataArray[1].substring(dataArray[1].indexOf(EXT_HTTP)).replace("\n", "").replace("\r", "")
+        var currentName = ""
+        var currentLogo = ""
+        var currentUserAgent = ""
+        var currentReferrer = ""
+
+        for (line in stream.lines()) {
+            val trimmed = line.trim()
+            when {
+                trimmed.startsWith(EXT_M3U) -> Unit
+                trimmed.startsWith("#EXTINF") -> {
+                    currentName = ""
+                    currentLogo = extractExtInfAttr(trimmed, "tvg-logo") ?: ""
+                    currentUserAgent = ""
+                    currentReferrer = ""
+                    val commaIdx = trimmed.lastIndexOf(',')
+                    if (commaIdx >= 0) currentName = trimmed.substring(commaIdx + 1).trim()
+                }
+                trimmed.startsWith("#EXTVLCOPT:", ignoreCase = true) -> {
+                    parseVlcOpt(trimmed)?.let { (key, value) ->
+                        when (key) {
+                            "http-user-agent", "user-agent" -> currentUserAgent = value
+                            "http-referrer", "http-referer", "referrer", "referer" -> currentReferrer = value
+                        }
                     }
-                    ob.put("name", name)
-                    ob.put("url", url)
-                    if (dataArray[0].contains(EXT_LOGO)) {
-                        val logo = dataArray[0].substring(dataArray[0].indexOf(EXT_LOGO) + EXT_LOGO.length).replace("=", "").replace("\"", "").replace("\n", "")
-                        ob.put("logo", logo)
-                    } else {
-                        ob.put("logo", "")
+                }
+                trimmed.startsWith(EXT_HTTP) || trimmed.startsWith(EXT_HTTPS) ||
+                    trimmed.startsWith("rtsp://") || trimmed.startsWith("rtmp://") -> {
+                    if (currentName.isEmpty()) continue
+                    try {
+                        val ob = JSONObject()
+                        ob.put("name", currentName)
+                        ob.put("url", trimmed)
+                        ob.put("logo", currentLogo)
+                        ob.put("userAgent", currentUserAgent)
+                        ob.put("referrer", currentReferrer)
+                        ar.put(ob)
+                        currentName = ""
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error parsing channel entry: ${e.message}")
                     }
-                    ar.put(ob)
-                } catch (fdfd: Exception) {
-                    Log.e("Google", "Error: ${fdfd.fillInStackTrace()}")
                 }
             }
         }
@@ -389,5 +402,20 @@ class FileActivity : AppCompatActivity() {
         val intent = Intent(mcon, ChannelsActivity::class.java)
         intent.putExtra("title", allData[key].title)
         startActivity(intent)
+    }
+
+    private fun extractExtInfAttr(line: String, attr: String): String? {
+        val pattern = Regex("""$attr="([^"]*)"""")
+        return pattern.find(line)?.groupValues?.getOrNull(1)?.takeIf { it.isNotEmpty() }
+    }
+
+    private fun parseVlcOpt(line: String): Pair<String, String>? {
+        val body = line.substringAfter(":", "").trim()
+        val idx = body.indexOf('=')
+        if (idx <= 0 || idx >= body.length - 1) return null
+        val key = body.substring(0, idx).trim().lowercase()
+        val value = body.substring(idx + 1).trim().trim('"')
+        if (value.isEmpty()) return null
+        return key to value
     }
 }

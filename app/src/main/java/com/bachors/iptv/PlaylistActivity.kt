@@ -144,6 +144,8 @@ class PlaylistActivity : AppCompatActivity() {
                     val intent = Intent(this@PlaylistActivity, PlayerActivity::class.java)
                     intent.putExtra("name", ch.name)
                     intent.putExtra("url", ch.url)
+                    intent.putExtra("userAgent", ch.userAgent)
+                    intent.putExtra("referrer", ch.referrer)
                     sharedPrefManager.saveSPString(SharedPrefManager.SP_CURRENT_URL, ch.url)
                     startActivity(intent)
                 }
@@ -168,7 +170,7 @@ class PlaylistActivity : AppCompatActivity() {
                     runOnUiThread {
                         loading.dismiss()
                         if (result != null) {
-                            parseAndDisplay(result.replace("#EXTVLCOPT:(.*)".toRegex(), ""))
+                            parseAndDisplay(result)
                         } else {
                             Toast.makeText(this, "Failed to load playlist", Toast.LENGTH_LONG).show()
                         }
@@ -190,6 +192,8 @@ class PlaylistActivity : AppCompatActivity() {
         var currentName  = ""
         var currentLogo  = ""
         var currentGroup = "General"
+        var currentUserAgent = ""
+        var currentReferrer = ""
 
         for (line in lines) {
             val trimmed = line.trim()
@@ -200,9 +204,19 @@ class PlaylistActivity : AppCompatActivity() {
                     currentLogo  = ""
                     currentGroup = extractAttr(trimmed, "group-title") ?: "General"
                     currentLogo  = extractAttr(trimmed, "tvg-logo") ?: ""
+                    currentUserAgent = ""
+                    currentReferrer = ""
                     // Channel display name is after the last comma
                     val commaIdx = trimmed.lastIndexOf(',')
                     if (commaIdx >= 0) currentName = trimmed.substring(commaIdx + 1).trim()
+                }
+                trimmed.startsWith("#EXTVLCOPT:", ignoreCase = true) -> {
+                    parseVlcOpt(trimmed)?.let { (key, value) ->
+                        when (key) {
+                            "http-user-agent", "user-agent" -> currentUserAgent = value
+                            "http-referrer", "http-referer", "referrer", "referer" -> currentReferrer = value
+                        }
+                    }
                 }
                 trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("rtsp://") || trimmed.startsWith("rtmp://") -> {
                     if (currentName.isNotEmpty()) {
@@ -210,7 +224,9 @@ class PlaylistActivity : AppCompatActivity() {
                         val channel = ChannelsData(
                             name = currentName,
                             logo = currentLogo,
-                            url  = trimmed
+                            url  = trimmed,
+                            userAgent = currentUserAgent,
+                            referrer = currentReferrer
                         )
                         // Key = "type|group" so we can filter by type accurately
                         val key = "$detectedType|$currentGroup"
@@ -266,6 +282,16 @@ class PlaylistActivity : AppCompatActivity() {
     private fun extractAttr(line: String, attr: String): String? {
         val pattern = Regex("""$attr="([^"]*)"""")
         return pattern.find(line)?.groupValues?.getOrNull(1)?.takeIf { it.isNotEmpty() }
+    }
+
+    private fun parseVlcOpt(line: String): Pair<String, String>? {
+        val body = line.substringAfter(":", "").trim()
+        val idx = body.indexOf('=')
+        if (idx <= 0 || idx >= body.length - 1) return null
+        val key = body.substring(0, idx).trim().lowercase()
+        val value = body.substring(idx + 1).trim().trim('"')
+        if (value.isEmpty()) return null
+        return key to value
     }
 
     // Detect type from URL — reliable for both Xtream Codes and direct M3U
@@ -356,8 +382,7 @@ class PlaylistActivity : AppCompatActivity() {
                 loading.dismiss()
                 if (result != null) {
                     try {
-                        val cleaned = result.replace("#EXTVLCOPT:(.*)".toRegex(), "")
-                        parseAndDisplay(cleaned)
+                        parseAndDisplay(result)
                     } catch (e: Exception) {
                         Toast.makeText(this, "Failed to parse channels", Toast.LENGTH_SHORT).show()
                     }

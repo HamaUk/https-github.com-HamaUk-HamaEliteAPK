@@ -23,6 +23,7 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.util.Util
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
@@ -36,6 +37,7 @@ import com.bachors.iptv.utils.SharedPrefManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import okhttp3.OkHttpClient
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -48,7 +50,7 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var playerView: PlayerView
     private lateinit var loadingBar: ProgressBar
     private lateinit var errorText: TextView
-    private var okHttpFactory: OkHttpDataSource.Factory? = null
+    private var okHttpClient: OkHttpClient? = null
 
     // ── Controls ────────────────────────────────────────────
     private lateinit var topBar: View
@@ -78,6 +80,13 @@ class PlayerActivity : AppCompatActivity() {
     private var isFullscreen = false
     private var lastRequestedUrl: String = ""
     private var fallbackTriedForUrl: String = ""
+    private var sourceFallbackTriedForUrl: String = ""
+    private var forceHlsForCurrentUrl: Boolean? = null
+    private var currentChannelName: String = "Channel"
+    private var currentUserAgent: String = ""
+    private var currentReferrer: String = ""
+    private var intentUserAgent: String = ""
+    private var intentReferrer: String = ""
 
     private val handler = Handler(Looper.getMainLooper())
     private val hideControlsRunnable = Runnable { hideControls() }
@@ -104,6 +113,8 @@ class PlayerActivity : AppCompatActivity() {
 
         val name = intent.getStringExtra("name") ?: "Channel"
         val url  = intent.getStringExtra("url")  ?: ""
+        intentUserAgent = intent.getStringExtra("userAgent").orEmpty().trim()
+        intentReferrer = intent.getStringExtra("referrer").orEmpty().trim()
 
         if (url.isEmpty()) {
             Toast.makeText(this, "No stream URL", Toast.LENGTH_SHORT).show()
@@ -113,6 +124,7 @@ class PlayerActivity : AppCompatActivity() {
         loadChannelList(url)
         setupControls()
         initPlayer()
+        currentChannelName = name
         playUrl(url, name)
         handler.post(clockRunnable)
         scheduleHideControls()
@@ -272,7 +284,7 @@ class PlayerActivity : AppCompatActivity() {
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(20, TimeUnit.SECONDS)
             .build()
-        okHttpFactory = OkHttpDataSource.Factory(okHttp)
+        okHttpClient = okHttp
 
         exoPlayer = ExoPlayer.Builder(this).build().also { player ->
             player.setAudioAttributes(
@@ -283,10 +295,6 @@ class PlayerActivity : AppCompatActivity() {
                 false // Disable automatic focus handling to avoid silent playback if focus is tricky
             )
             player.volume = 1f
-            // Force hardware acceleration and better track selection
-            player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
-                .setPreferredAudioLanguage("en")
-                .build()
             playerView.player = player
             player.addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(state: Int) {
@@ -299,6 +307,7 @@ class PlayerActivity : AppCompatActivity() {
                             loadingBar.visibility = View.GONE
                             errorText.visibility  = View.GONE
                             if (shouldFallbackForMissingAudio(player)) {
+                                if (retryWithAlternateSourceType()) return
                                 retryWithAlternateLiveUrl()
                                 return
                             }
@@ -316,6 +325,7 @@ class PlayerActivity : AppCompatActivity() {
                 override fun onIsPlayingChanged(isPlaying: Boolean) = updatePlayPauseIcon()
 
                 override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                    if (retryWithAlternateSourceType()) return
                     if (retryWithAlternateLiveUrl()) return
                     loadingBar.visibility = View.GONE
                     errorText.visibility  = View.VISIBLE
@@ -326,22 +336,24 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun playUrl(url: String, name: String) {
-        val factory = okHttpFactory ?: return
+        currentChannelName = name
+        forceHlsForCurrentUrl = null
+        sourceFallbackTriedForUrl = ""
+        fallbackTriedForUrl = ""
+        val currentChannel = channelList.firstOrNull { it.url == url.trim() }
+        currentUserAgent = currentChannel?.userAgent?.trim().orEmpty().ifEmpty { intentUserAgent }
+        currentReferrer = currentChannel?.referrer?.trim().orEmpty().ifEmpty { intentReferrer }
+        startPlayback(url.trim(), name)
+    }
+
+    private fun startPlayback(playbackUrl: String, name: String) {
+        val client = okHttpClient ?: return
         try {
-            val playbackUrl = url.trim()
             lastRequestedUrl = playbackUrl
-            fallbackTriedForUrl = ""
             ensureAudibleVolume()
             exoPlayer?.volume = 1.0f
             SharedPrefManager(this).saveSPString(SharedPrefManager.SP_CURRENT_URL, playbackUrl)
-            val uri  = Uri.parse(playbackUrl)
-            val item = MediaItem.fromUri(uri)
-            val src  = if (playbackUrl.contains(".m3u8", ignoreCase = true)) {
-                HlsMediaSource.Factory(factory).createMediaSource(item)
-            } else {
-                ProgressiveMediaSource.Factory(DefaultDataSource.Factory(this, factory))
-                    .createMediaSource(item)
-            }
+            val src = buildMediaSource(playbackUrl, client, buildRequestHeaders())
             exoPlayer?.run { stop(); setMediaSource(src); prepare(); playWhenReady = true }
             tvChannel.text = name.uppercase()
             tvEpg.text     = "No Information"
@@ -355,12 +367,27 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun shouldFallbackForMissingAudio(player: ExoPlayer): Boolean {
-        if (!Regex("""/live/""", RegexOption.IGNORE_CASE).containsMatchIn(lastRequestedUrl)) return false
         if (fallbackTriedForUrl == lastRequestedUrl) return false
+        if (sourceFallbackTriedForUrl == lastRequestedUrl) return false
         val hasAudioGroup = player.currentTracks.groups.any {
             it.type == C.TRACK_TYPE_AUDIO && it.mediaTrackGroup.length > 0
         }
         return !hasAudioGroup
+    }
+
+    private fun retryWithAlternateSourceType(): Boolean {
+        val current = lastRequestedUrl
+        if (current.isBlank()) return false
+        if (sourceFallbackTriedForUrl == current) return false
+        val isCurrentlyHls = shouldUseHls(current)
+        sourceFallbackTriedForUrl = current
+        forceHlsForCurrentUrl = !isCurrentlyHls
+        return try {
+            startPlayback(current, currentChannelName)
+            true
+        } catch (_: Exception) {
+            false
+        }
     }
 
     private fun retryWithAlternateLiveUrl(): Boolean {
@@ -369,22 +396,63 @@ class PlayerActivity : AppCompatActivity() {
         if (fallbackTriedForUrl == current) return false
         val alt = alternateLiveUrl(current) ?: return false
         fallbackTriedForUrl = current
+        forceHlsForCurrentUrl = null
+        sourceFallbackTriedForUrl = ""
         try {
-            val factory = okHttpFactory ?: return false
-            val uri = Uri.parse(alt)
-            val item = MediaItem.fromUri(uri)
-            val src = if (alt.contains(".m3u8", ignoreCase = true)) {
-                HlsMediaSource.Factory(factory).createMediaSource(item)
-            } else {
-                ProgressiveMediaSource.Factory(DefaultDataSource.Factory(this, factory))
-                    .createMediaSource(item)
-            }
-            exoPlayer?.run { stop(); setMediaSource(src); prepare(); playWhenReady = true }
-            SharedPrefManager(this).saveSPString(SharedPrefManager.SP_CURRENT_URL, alt)
+            startPlayback(alt, currentChannelName)
             return true
         } catch (_: Exception) {
             return false
         }
+    }
+
+    private fun buildMediaSource(
+        playbackUrl: String,
+        client: OkHttpClient,
+        headers: Map<String, String>
+    ): androidx.media3.exoplayer.source.MediaSource {
+        val uri = Uri.parse(playbackUrl)
+        val item = MediaItem.fromUri(uri)
+        val dataFactory = OkHttpDataSource.Factory(client).apply {
+            val ua = headers["User-Agent"]
+            if (!ua.isNullOrEmpty()) setUserAgent(ua)
+            if (headers.isNotEmpty()) setDefaultRequestProperties(headers)
+        }
+        return if (shouldUseHls(playbackUrl)) {
+            HlsMediaSource.Factory(dataFactory).createMediaSource(item)
+        } else {
+            ProgressiveMediaSource.Factory(DefaultDataSource.Factory(this, dataFactory))
+                .createMediaSource(item)
+        }
+    }
+
+    private fun shouldUseHls(playbackUrl: String): Boolean {
+        forceHlsForCurrentUrl?.let { return it }
+        val lower = playbackUrl.lowercase(Locale.US)
+        if (lower.contains(".m3u8") || lower.contains(".m3u")) return true
+        if (lower.contains("type=m3u") || lower.contains("output=hls")) return true
+        return when (Util.inferContentType(Uri.parse(playbackUrl))) {
+            C.CONTENT_TYPE_HLS -> true
+            else -> false
+        }
+    }
+
+    private fun buildRequestHeaders(): Map<String, String> {
+        val headers = linkedMapOf<String, String>()
+        val ua = currentUserAgent.trim()
+        if (ua.isNotEmpty()) headers["User-Agent"] = ua
+
+        val ref = currentReferrer.trim()
+        if (ref.isNotEmpty()) {
+            headers["Referer"] = ref
+            toOrigin(ref)?.let { headers["Origin"] = it }
+        }
+        return headers
+    }
+
+    private fun toOrigin(url: String): String? {
+        val httpUrl = url.toHttpUrlOrNull() ?: return null
+        return "${httpUrl.scheme}://${httpUrl.host}" + if (httpUrl.port != httpUrl.defaultPort) ":${httpUrl.port}" else ""
     }
 
     private fun alternateLiveUrl(url: String): String? {

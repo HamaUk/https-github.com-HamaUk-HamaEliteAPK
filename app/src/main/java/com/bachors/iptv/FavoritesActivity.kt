@@ -100,6 +100,8 @@ class FavoritesActivity : AppCompatActivity() {
         val intent = Intent(mcon, PlayerActivity::class.java)
         intent.putExtra("name", allData[key].name)
         intent.putExtra("url", allData[key].url)
+        intent.putExtra("userAgent", allData[key].userAgent)
+        intent.putExtra("referrer", allData[key].referrer)
         startActivity(intent)
     }
 

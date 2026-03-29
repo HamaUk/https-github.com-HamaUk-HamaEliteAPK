@@ -14,5 +14,13 @@ data class ChannelsData(
 
     @SerializedName("url")
     @Expose
-    var url: String = ""
+    var url: String = "",
+
+    @SerializedName("userAgent")
+    @Expose
+    var userAgent: String = "",
+
+    @SerializedName("referrer")
+    @Expose
+    var referrer: String = ""
 )

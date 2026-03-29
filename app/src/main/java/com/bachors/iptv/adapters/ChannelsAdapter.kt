@@ -49,6 +49,8 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
             val intent = Intent(inContext, PlayerActivity::class.java)
             intent.putExtra("name", data.name)
             intent.putExtra("url", data.url)
+            intent.putExtra("userAgent", data.userAgent)
+            intent.putExtra("referrer", data.referrer)
             sharedPrefManager.saveSPString(SharedPrefManager.SP_CURRENT_URL, data.url)
             inContext.startActivity(intent)
         }
@@ -60,6 +62,8 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
                 ob.put("name", data.name)
                 ob.put("logo", data.logo)
                 ob.put("url", data.url)
+                ob.put("userAgent", data.userAgent)
+                ob.put("referrer", data.referrer)
                 ar.put(ob)
                 sharedPrefManager.saveSPString(SharedPrefManager.SP_FAVORITES, ar.toString())
                 Toast.makeText(inContext, "Saved to Favorites...", Toast.LENGTH_SHORT).show()
