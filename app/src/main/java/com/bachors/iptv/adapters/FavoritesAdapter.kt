@@ -1,6 +1,9 @@
 package com.bachors.iptv.adapters
 
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bachors.iptv.R
 import com.bachors.iptv.models.ChannelsData
+import com.google.android.material.card.MaterialCardView
 import com.squareup.picasso.Picasso
 
 class FavoritesAdapter(private val inContext: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -31,6 +35,34 @@ class FavoritesAdapter(private val inContext: Context) : RecyclerView.Adapter<Re
             .load(logo)
             .placeholder(ContextCompat.getDrawable(inContext, R.drawable.load)!!)
             .into(holder.tvLogo)
+
+        holder.cardRoot.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                holder.cardRoot.strokeColor = Color.parseColor("#E53935")
+                holder.cardRoot.strokeWidth = 2
+                holder.cardRoot.setCardBackgroundColor(Color.parseColor("#221111"))
+                AnimatorSet().apply {
+                    playTogether(
+                        ObjectAnimator.ofFloat(holder.cardRoot, View.SCALE_X, 1.02f),
+                        ObjectAnimator.ofFloat(holder.cardRoot, View.SCALE_Y, 1.02f)
+                    )
+                    duration = 150
+                    start()
+                }
+            } else {
+                holder.cardRoot.strokeColor = Color.parseColor("#1AFFFFFF")
+                holder.cardRoot.strokeWidth = 1
+                holder.cardRoot.setCardBackgroundColor(Color.parseColor("#141414"))
+                AnimatorSet().apply {
+                    playTogether(
+                        ObjectAnimator.ofFloat(holder.cardRoot, View.SCALE_X, 1.0f),
+                        ObjectAnimator.ofFloat(holder.cardRoot, View.SCALE_Y, 1.0f)
+                    )
+                    duration = 150
+                    start()
+                }
+            }
+        }
     }
 
     override fun getItemCount(): Int = allData.size
@@ -65,6 +97,7 @@ class FavoritesAdapter(private val inContext: Context) : RecyclerView.Adapter<Re
     fun getItem(position: Int): ChannelsData = allData[position]
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val cardRoot: MaterialCardView = itemView.findViewById(R.id.card_root)
         val tvName: TextView = itemView.findViewById(R.id.name)
         val tvLogo: ImageView = itemView.findViewById(R.id.logo)
     }

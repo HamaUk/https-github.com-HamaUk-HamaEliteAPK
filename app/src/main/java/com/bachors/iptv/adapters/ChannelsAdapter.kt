@@ -1,7 +1,10 @@
 package com.bachors.iptv.adapters
 
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,6 +47,38 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
             if (isPlaying) R.color.vu_purple else R.color.white_opacity_10
         )
         h.cardRoot.strokeWidth = if (isPlaying) 2 else 1
+
+        h.cardRoot.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                h.cardRoot.strokeColor = Color.parseColor("#E53935")
+                h.cardRoot.strokeWidth = 2
+                h.cardRoot.setCardBackgroundColor(Color.parseColor("#221111"))
+                AnimatorSet().apply {
+                    playTogether(
+                        ObjectAnimator.ofFloat(h.cardRoot, View.SCALE_X, 1.02f),
+                        ObjectAnimator.ofFloat(h.cardRoot, View.SCALE_Y, 1.02f)
+                    )
+                    duration = 150
+                    start()
+                }
+            } else {
+                val stillPlaying = sharedPrefManager.getSpCurrentUrl().let { it.isNotEmpty() && it == data.url }
+                h.cardRoot.strokeColor = ContextCompat.getColor(
+                    inContext,
+                    if (stillPlaying) R.color.vu_purple else R.color.white_opacity_10
+                )
+                h.cardRoot.strokeWidth = if (stillPlaying) 2 else 1
+                h.cardRoot.setCardBackgroundColor(Color.parseColor("#141414"))
+                AnimatorSet().apply {
+                    playTogether(
+                        ObjectAnimator.ofFloat(h.cardRoot, View.SCALE_X, 1.0f),
+                        ObjectAnimator.ofFloat(h.cardRoot, View.SCALE_Y, 1.0f)
+                    )
+                    duration = 150
+                    start()
+                }
+            }
+        }
 
         h.lnPlay.setOnClickListener {
             val intent = Intent(inContext, PlayerActivity::class.java)

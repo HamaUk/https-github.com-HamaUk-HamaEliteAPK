@@ -7,6 +7,10 @@ import android.os.Looper
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bachors.iptv.databinding.ActivityDashboardBinding
+import com.bachors.iptv.models.PlaylistData
+import com.bachors.iptv.utils.SharedPrefManager
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -23,8 +27,8 @@ class DashboardActivity : AppCompatActivity() {
             supportActionBar?.hide()
             setupClock()
             setupClickListeners()
+            updateCategoryCounts()
         } catch (t: Throwable) {
-            // TV sticks can fail on unexpected resource/runtime state; recover to login instead of hard crash.
             t.printStackTrace()
             Toast.makeText(this, "Recovered from startup issue. Please login again.", Toast.LENGTH_LONG).show()
             val intent = Intent(this, MainActivity::class.java)
@@ -32,6 +36,11 @@ class DashboardActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateCategoryCounts()
     }
 
     private fun setupClock() {
@@ -65,7 +74,6 @@ class DashboardActivity : AppCompatActivity() {
         }
 
         binding.cardEpg.setOnClickListener {
-            // EPG/Catchup usually filtered live
             val intent = Intent(this, PlaylistActivity::class.java)
             intent.putExtra("type", "live")
             intent.putExtra("epg", true)
@@ -76,6 +84,34 @@ class DashboardActivity : AppCompatActivity() {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
         }
+    }
+
+    private fun updateCategoryCounts() {
+        try {
+            val sp = SharedPrefManager(this)
+            val rawJson = sp.getSpPlaylist()
+            if (rawJson.isNotEmpty() && rawJson != "[]") {
+                val listType = object : TypeToken<List<PlaylistData>>() {}.type
+                val data: List<PlaylistData> = try {
+                    Gson().fromJson(rawJson, listType)
+                } catch (_: Exception) {
+                    val outer = org.json.JSONArray(rawJson)
+                    Gson().fromJson(outer.getJSONArray(0).toString(), listType)
+                }
+                val totalGroups = data.count { it.title.isNotEmpty() }
+                val totalChannels = data.sumOf { it.channel.toIntOrNull() ?: 0 }
+                binding.tvLabelLive.text = if (totalChannels > 0) "LIVE TV ($totalChannels)" else "LIVE TV"
+                binding.tvLabelPlaylists.text = if (totalGroups > 0) "PLAYLISTS ($totalGroups)" else "PLAYLISTS"
+            }
+
+            val favJson = sp.getSpFavorites()
+            if (favJson.isNotEmpty() && favJson != "[]") {
+                val favCount = org.json.JSONArray(favJson).length()
+                if (favCount > 0) {
+                    binding.tvLabelPlaylists.text = "FAVORITES ($favCount)"
+                }
+            }
+        } catch (_: Exception) {}
     }
 
     override fun onDestroy() {

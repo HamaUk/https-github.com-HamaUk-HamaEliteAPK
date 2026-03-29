@@ -4,11 +4,14 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.media3.ui.AspectRatioFrameLayout
 import com.bachors.iptv.databinding.ActivitySettingsBinding
 import com.bachors.iptv.utils.SharedPrefManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import org.json.JSONObject
 import java.io.File
 
 class SettingsActivity : AppCompatActivity() {
@@ -26,62 +29,194 @@ class SettingsActivity : AppCompatActivity() {
 
         setupUI()
         setupClickListeners()
-        showSection("general") // Default section
+        showSection("general")
     }
 
     private fun setupUI() {
         val prefs = getSharedPreferences("hk_prefs", Context.MODE_PRIVATE)
         val deviceId = prefs.getString("hk_device_id", "Unknown")
-        
+
         binding.tvPkg.text = "Package: HAMA UK ELITE"
         binding.tvMac.text = "Code ID: $deviceId"
         binding.tvExpiry.text = "Status: ACTIVE PREMIUM"
-        
-        // Load Player Preference
-        val isNative = sharedPrefManager.getSpString("player_mode") == "native"
-        if (isNative) binding.rbNative.isChecked = true else binding.rbIjk.isChecked = true
+
+        val savedResize = sharedPrefManager.getResizeMode()
+        when (savedResize) {
+            AspectRatioFrameLayout.RESIZE_MODE_FIT.toString() -> binding.rbFit.isChecked = true
+            AspectRatioFrameLayout.RESIZE_MODE_ZOOM.toString() -> binding.rbZoom.isChecked = true
+            AspectRatioFrameLayout.RESIZE_MODE_FILL.toString() -> binding.rbFill.isChecked = true
+            AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH.toString() -> binding.rbFixedWidth.isChecked = true
+            else -> binding.rbFit.isChecked = true
+        }
+
+        binding.switchAutoplay.isChecked = sharedPrefManager.getAutoplay()
+
+        when (sharedPrefManager.getBufferSize()) {
+            "low" -> binding.rbBufferLow.isChecked = true
+            "high" -> binding.rbBufferHigh.isChecked = true
+            else -> binding.rbBufferMedium.isChecked = true
+        }
+
+        binding.switchHwAccel.isChecked = sharedPrefManager.getHwAccel()
+
+        updateActivePlaylistLabel()
     }
 
     private fun setupClickListeners() {
         binding.btnBack.setOnClickListener { finish() }
 
-        // Sidebar Navigation
         binding.btnGeneral.setOnClickListener { showSection("general") }
+        binding.btnPlayerSection.setOnClickListener { showSection("player") }
         binding.btnContent.setOnClickListener { showSection("content") }
         binding.btnAccount.setOnClickListener { showSection("account") }
 
-        // Player Selection
-        binding.rgPlayer.setOnCheckedChangeListener { _, checkedId ->
-            val mode = if (checkedId == R.id.rb_native) "native" else "ijk"
-            sharedPrefManager.saveSPString("player_mode", mode)
-            Toast.makeText(this, "Player Engine Updated: $mode", Toast.LENGTH_SHORT).show()
+        binding.rgResizeMode.setOnCheckedChangeListener { _, checkedId ->
+            val mode = when (checkedId) {
+                R.id.rb_fit -> AspectRatioFrameLayout.RESIZE_MODE_FIT
+                R.id.rb_zoom -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+                R.id.rb_fill -> AspectRatioFrameLayout.RESIZE_MODE_FILL
+                R.id.rb_fixed_width -> AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
+                else -> AspectRatioFrameLayout.RESIZE_MODE_FIT
+            }
+            sharedPrefManager.saveSPString(SharedPrefManager.SP_RESIZE_MODE, mode.toString())
         }
 
-        // Content Actions
-        binding.btnClearCache.setOnClickListener {
-            clearAppCache()
+        binding.switchAutoplay.setOnCheckedChangeListener { _, isChecked ->
+            sharedPrefManager.saveSPBoolean(SharedPrefManager.SP_AUTOPLAY, isChecked)
         }
 
-        binding.btnRefreshData.setOnClickListener {
-            refreshPlaylistData()
+        binding.rgBuffer.setOnCheckedChangeListener { _, checkedId ->
+            val size = when (checkedId) {
+                R.id.rb_buffer_low -> "low"
+                R.id.rb_buffer_high -> "high"
+                else -> "medium"
+            }
+            sharedPrefManager.saveSPString(SharedPrefManager.SP_BUFFER_SIZE, size)
         }
 
-        binding.btnLogout.setOnClickListener {
-            showLogoutConfirmation()
+        binding.switchHwAccel.setOnCheckedChangeListener { _, isChecked ->
+            sharedPrefManager.saveSPBoolean(SharedPrefManager.SP_HW_ACCEL, isChecked)
         }
+
+        binding.btnClearCache.setOnClickListener { clearAppCache() }
+        binding.btnRefreshData.setOnClickListener { refreshPlaylistData() }
+        binding.btnLogout.setOnClickListener { showLogoutConfirmation() }
+
+        // Playlist management
+        binding.btnSavePlaylist.setOnClickListener { showSavePlaylistDialog() }
+        binding.btnLoadPlaylist.setOnClickListener { showLoadPlaylistDialog() }
+        binding.btnDeletePlaylist.setOnClickListener { showDeletePlaylistDialog() }
     }
 
     private fun showSection(section: String) {
         binding.layoutGeneral.visibility = if (section == "general") View.VISIBLE else View.GONE
+        binding.layoutPlayer.visibility = if (section == "player") View.VISIBLE else View.GONE
         binding.layoutContent.visibility = if (section == "content") View.VISIBLE else View.GONE
         binding.layoutAccount.visibility = if (section == "account") View.VISIBLE else View.GONE
-        
-        // Highlight active button
+
         binding.btnGeneral.alpha = if (section == "general") 1.0f else 0.6f
+        binding.btnPlayerSection.alpha = if (section == "player") 1.0f else 0.6f
         binding.btnContent.alpha = if (section == "content") 1.0f else 0.6f
         binding.btnAccount.alpha = if (section == "account") 1.0f else 0.6f
     }
 
+    // ── Playlist Management ─────────────────────────────────
+    private fun getPlaylistsJson(): JSONObject {
+        return try { JSONObject(sharedPrefManager.getSavedPlaylists()) } catch (_: Exception) { JSONObject() }
+    }
+
+    private fun updateActivePlaylistLabel() {
+        val name = sharedPrefManager.getActivePlaylistName()
+        binding.tvActivePlaylist.text = name.ifEmpty { "Default" }
+    }
+
+    private fun showSavePlaylistDialog() {
+        val input = EditText(this).apply {
+            hint = "Playlist name"
+            setTextColor(resources.getColor(android.R.color.white, null))
+            setHintTextColor(resources.getColor(android.R.color.darker_gray, null))
+            setPadding(48, 32, 48, 32)
+        }
+        MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
+            .setTitle("Save Current Playlist")
+            .setView(input)
+            .setPositiveButton("SAVE") { _, _ ->
+                val name = input.text.toString().trim()
+                if (name.isEmpty()) {
+                    Toast.makeText(this, "Name cannot be empty", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                val playlists = getPlaylistsJson()
+                val data = JSONObject()
+                data.put("playlist", sharedPrefManager.getSpPlaylist())
+                data.put("channels", sharedPrefManager.getSpChannels())
+                data.put("m3u", sharedPrefManager.getSpM3uDirect())
+                playlists.put(name, data)
+                sharedPrefManager.saveSPString(SharedPrefManager.SP_SAVED_PLAYLISTS, playlists.toString())
+                sharedPrefManager.saveSPString(SharedPrefManager.SP_ACTIVE_PLAYLIST_NAME, name)
+                updateActivePlaylistLabel()
+                Toast.makeText(this, "Playlist '$name' saved", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("CANCEL", null)
+            .show()
+    }
+
+    private fun showLoadPlaylistDialog() {
+        val playlists = getPlaylistsJson()
+        val names = playlists.keys().asSequence().toList()
+        if (names.isEmpty()) {
+            Toast.makeText(this, "No saved playlists", Toast.LENGTH_SHORT).show()
+            return
+        }
+        MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
+            .setTitle("Switch Playlist")
+            .setItems(names.toTypedArray()) { _, which ->
+                val name = names[which]
+                try {
+                    val data = playlists.getJSONObject(name)
+                    sharedPrefManager.saveSPString(SharedPrefManager.SP_PLAYLIST, data.optString("playlist", "[]"))
+                    sharedPrefManager.saveSPString(SharedPrefManager.SP_CHANNELS, data.optString("channels", "[]"))
+                    sharedPrefManager.saveSPString(SharedPrefManager.SP_M3U_DIRECT, data.optString("m3u", ""))
+                    sharedPrefManager.saveSPString(SharedPrefManager.SP_ACTIVE_PLAYLIST_NAME, name)
+                    updateActivePlaylistLabel()
+                    Toast.makeText(this, "Switched to '$name'", Toast.LENGTH_SHORT).show()
+                } catch (_: Exception) {
+                    Toast.makeText(this, "Failed to load playlist", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .show()
+    }
+
+    private fun showDeletePlaylistDialog() {
+        val playlists = getPlaylistsJson()
+        val names = playlists.keys().asSequence().toList()
+        if (names.isEmpty()) {
+            Toast.makeText(this, "No saved playlists", Toast.LENGTH_SHORT).show()
+            return
+        }
+        MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
+            .setTitle("Delete Playlist")
+            .setItems(names.toTypedArray()) { _, which ->
+                val name = names[which]
+                MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
+                    .setTitle("Delete '$name'?")
+                    .setMessage("This cannot be undone.")
+                    .setPositiveButton("DELETE") { _, _ ->
+                        playlists.remove(name)
+                        sharedPrefManager.saveSPString(SharedPrefManager.SP_SAVED_PLAYLISTS, playlists.toString())
+                        if (sharedPrefManager.getActivePlaylistName() == name) {
+                            sharedPrefManager.saveSPString(SharedPrefManager.SP_ACTIVE_PLAYLIST_NAME, "")
+                            updateActivePlaylistLabel()
+                        }
+                        Toast.makeText(this, "'$name' deleted", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNegativeButton("CANCEL", null)
+                    .show()
+            }
+            .show()
+    }
+
+    // ── Cache / Data ────────────────────────────────────────
     private fun clearAppCache() {
         try {
             val dir: File = cacheDir
@@ -95,7 +230,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun refreshPlaylistData() {
         sharedPrefManager.saveSPString(SharedPrefManager.SP_CHANNELS, "[]")
         Toast.makeText(this, "Data scheduled for refresh", Toast.LENGTH_SHORT).show()
-        finish() // Return to dashboard to trigger reload
+        finish()
     }
 
     private fun showLogoutConfirmation() {
@@ -112,7 +247,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun performLogout() {
         val prefs = getSharedPreferences("hk_prefs", Context.MODE_PRIVATE)
         prefs.edit().remove("hk_device_id").apply()
-        
+
         sharedPrefManager.saveSPString(SharedPrefManager.SP_PLAYLIST, "")
         sharedPrefManager.saveSPString(SharedPrefManager.SP_CHANNELS, "")
         sharedPrefManager.saveSPString(SharedPrefManager.SP_M3U_DIRECT, "")

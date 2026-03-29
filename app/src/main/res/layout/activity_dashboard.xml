@@ -111,6 +111,7 @@
                     app:tint="#E53935" />
             </com.google.android.material.card.MaterialCardView>
             <TextView
+                android:id="@+id/tv_label_live"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -150,6 +151,7 @@
                     app:tint="#FFFFFF" />
             </com.google.android.material.card.MaterialCardView>
             <TextView
+                android:id="@+id/tv_label_vod"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -189,6 +191,7 @@
                     app:tint="#FFFFFF" />
             </com.google.android.material.card.MaterialCardView>
             <TextView
+                android:id="@+id/tv_label_series"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -228,6 +231,7 @@
                     app:tint="#FFFFFF" />
             </com.google.android.material.card.MaterialCardView>
             <TextView
+                android:id="@+id/tv_label_playlists"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -327,26 +331,5 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Bottom-right info -->
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="end"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Mac Address: 17:56:4d:0e:02:8a"
-            android:textColor="#44FFFFFF"
-            android:textSize="11sp" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Web Page: https://anytvplayer.com"
-            android:textColor="#44FFFFFF"
-            android:textSize="11sp" />
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

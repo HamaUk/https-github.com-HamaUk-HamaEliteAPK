@@ -25,6 +25,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
+enum class SortMode { DEFAULT, NAME_AZ, NAME_ZA }
+
 class PlaylistActivity : AppCompatActivity() {
 
     companion object {
@@ -47,6 +49,7 @@ class PlaylistActivity : AppCompatActivity() {
     // Currently displayed channels (can be filtered)
     private var currentGroupChannels = mutableListOf<ChannelsData>()
     private var currentType = "live" // live | vod | series
+    private var currentSortMode = SortMode.DEFAULT
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,14 +113,26 @@ class PlaylistActivity : AppCompatActivity() {
             binding.btnBack.setOnClickListener { finish() }
         } catch (_: Exception) { }
 
-        // Search — filter channels by name
+        // Search categories by name
         binding.etSearchCategories.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterCategories(s?.toString() ?: "")
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        // Search channels by name
+        binding.etSearchChannels.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 filterChannels(s?.toString() ?: "")
             }
             override fun afterTextChanged(s: Editable?) {}
         })
+
+        // Sort button
+        binding.btnSort.setOnClickListener { showSortDialog() }
 
         // Category click
         binding.rvCategories.addOnItemTouchListener(
@@ -323,18 +338,56 @@ class PlaylistActivity : AppCompatActivity() {
         channelAdapter.addAll(currentGroupChannels)
     }
 
-    // ── Search filtering ────────────────────────────────────
-    private fun filterChannels(query: String) {
+    // ── Category filtering ───────────────────────────────────
+    private fun filterCategories(query: String) {
         if (query.isEmpty()) {
             channelAdapter.clear()
-            channelAdapter.addAll(currentGroupChannels)
+            channelAdapter.addAll(applySorting(currentGroupChannels))
         } else {
             val filtered = currentGroupChannels.filter {
                 it.name.contains(query, ignoreCase = true)
             }
             channelAdapter.clear()
-            channelAdapter.addAll(filtered)
+            channelAdapter.addAll(applySorting(filtered))
         }
+    }
+
+    // ── Search filtering ────────────────────────────────────
+    private fun filterChannels(query: String) {
+        if (query.isEmpty()) {
+            channelAdapter.clear()
+            channelAdapter.addAll(applySorting(currentGroupChannels))
+        } else {
+            val filtered = currentGroupChannels.filter {
+                it.name.contains(query, ignoreCase = true)
+            }
+            channelAdapter.clear()
+            channelAdapter.addAll(applySorting(filtered))
+        }
+    }
+
+    // ── Sorting ─────────────────────────────────────────────
+    private fun showSortDialog() {
+        val options = arrayOf("Default Order", "Name A → Z", "Name Z → A")
+        val currentIdx = currentSortMode.ordinal
+        MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
+            .setTitle("Sort Channels")
+            .setSingleChoiceItems(options, currentIdx) { dialog, which ->
+                currentSortMode = SortMode.entries[which]
+                channelAdapter.clear()
+                val query = binding.etSearchChannels.text?.toString() ?: ""
+                val base = if (query.isEmpty()) currentGroupChannels
+                else currentGroupChannels.filter { it.name.contains(query, ignoreCase = true) }
+                channelAdapter.addAll(applySorting(base))
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun applySorting(list: List<ChannelsData>): List<ChannelsData> = when (currentSortMode) {
+        SortMode.DEFAULT -> list
+        SortMode.NAME_AZ -> list.sortedBy { it.name.lowercase() }
+        SortMode.NAME_ZA -> list.sortedByDescending { it.name.lowercase() }
     }
 
     // ── Xtream / JSON fallback ──────────────────────────────
