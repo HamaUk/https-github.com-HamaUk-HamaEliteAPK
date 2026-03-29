@@ -203,45 +203,60 @@ class PlaylistActivity : AppCompatActivity() {
                 }
                 trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("rtsp://") || trimmed.startsWith("rtmp://") -> {
                     if (currentName.isNotEmpty()) {
+                        val detectedType = detectTypeFromUrl(trimmed)
                         val channel = ChannelsData(
                             name = currentName,
                             logo = currentLogo,
                             url  = trimmed
                         )
-                        groupMap.getOrPut(currentGroup) { mutableListOf() }.add(channel)
+                        // Key = "type|group" so we can filter by type accurately
+                        val key = "$detectedType|$currentGroup"
+                        groupMap.getOrPut(key) { mutableListOf() }.add(channel)
                         currentName = ""
                     }
                 }
             }
         }
 
-        // Filter by type from dashboard button
-        val filteredGroups = when (currentType) {
-            "vod"    -> groupMap.filter { (k, _) -> isVodGroup(k) }.toMutableMap()
-            "series" -> groupMap.filter { (k, _) -> isSeriesGroup(k) }.toMutableMap()
-            else     -> groupMap.filter { (k, _) -> !isVodGroup(k) && !isSeriesGroup(k) }.toMutableMap()
-                .ifEmpty { groupMap.toMutableMap() } // if nothing matches "live", show all
+        // Filter by type: only show groups whose key starts with the selected type
+        // Keys are "type|group_name" — strip prefix for display
+        val matchingKeys = when (currentType) {
+            "vod"    -> groupMap.keys.filter { it.startsWith("vod|") }
+            "series" -> groupMap.keys.filter { it.startsWith("series|") }
+            else     -> groupMap.keys.filter { it.startsWith("live|") }
         }
 
-        if (filteredGroups.isEmpty()) {
-            Toast.makeText(this, "No ${currentType.uppercase()} content found in this playlist", Toast.LENGTH_LONG).show()
-            groupNames.addAll(groupMap.keys.sorted())
-            groupMap.forEach { (k, v) -> /* keep all */ }
-        } else {
-            groupNames.addAll(filteredGroups.keys.sorted())
+        // If no type-specific content found, show everything
+        val keysToShow = matchingKeys.ifEmpty { groupMap.keys.toList() }
+
+        if (matchingKeys.isEmpty() && currentType != "live") {
+            Toast.makeText(this,
+                "No ${currentType.uppercase()} content detected in this playlist.",
+                Toast.LENGTH_LONG).show()
+        }
+
+        // Display names = strip "type|" prefix
+        groupNames.clear()
+        groupNames.addAll(keysToShow.map { it.substringAfter("|") }.distinct().sorted())
+
+        // Build a clean display map: display_name -> channels
+        val displayMap = mutableMapOf<String, MutableList<ChannelsData>>()
+        for (key in keysToShow) {
+            val displayName = key.substringAfter("|")
+            displayMap.getOrPut(displayName) { mutableListOf() }
+                .addAll(groupMap[key] ?: emptyList())
         }
 
         // Populate sidebar
         categoryAdapter.clear()
         val groupData = groupNames.map { name ->
-            val count = (filteredGroups[name] ?: groupMap[name])?.size ?: 0
-            PlaylistData(title = name, link = "", channel = count.toString())
+            PlaylistData(title = name, link = "", channel = (displayMap[name]?.size ?: 0).toString())
         }
         categoryAdapter.addAll(groupData)
 
         // Show first group
         if (groupNames.isNotEmpty()) {
-            showGroup(groupNames.first(), filteredGroups)
+            showGroup(groupNames.first(), displayMap)
         }
     }
 
@@ -250,16 +265,22 @@ class PlaylistActivity : AppCompatActivity() {
         return pattern.find(line)?.groupValues?.getOrNull(1)?.takeIf { it.isNotEmpty() }
     }
 
-    private fun isVodGroup(group: String): Boolean {
-        val lower = group.lowercase()
-        return lower.contains("vod") || lower.contains("movie") || lower.contains("film") ||
-               lower.contains("cinema") || lower.contains("4k movie")
-    }
-
-    private fun isSeriesGroup(group: String): Boolean {
-        val lower = group.lowercase()
-        return lower.contains("series") || lower.contains("show") || lower.contains("episode") ||
-               lower.contains("season") || lower.contains("tv show")
+    // Detect type from URL — reliable for both Xtream Codes and direct M3U
+    private fun detectTypeFromUrl(url: String): String {
+        val lower = url.lowercase()
+        return when {
+            // Xtream Codes path convention
+            lower.contains("/movie/")  || lower.contains("/movies/")  -> "vod"
+            lower.contains("/series/") || lower.contains("/episode/") -> "series"
+            lower.contains("/live/")   || lower.contains("/stream/")  -> "live"
+            // File extension convention
+            lower.endsWith(".mp4") || lower.endsWith(".mkv") ||
+            lower.endsWith(".avi") || lower.endsWith(".mov") ||
+            lower.endsWith(".wmv") || lower.endsWith(".flv") ||
+            lower.endsWith(".ts")  || lower.endsWith(".m4v")         -> "vod"
+            lower.endsWith(".m3u8")                                   -> "live"
+            else                                                       -> "live" // default
+        }
     }
 
     // ── Group Display ───────────────────────────────────────
