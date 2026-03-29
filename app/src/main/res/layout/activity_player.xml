@@ -21,7 +21,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:padding="8dp"
-            android:src="@drawable/abc_ic_ab_back_material"
+            android:src="@drawable/ic_back"
             app:tint="#FFFFFF" />
 
         <TextView
@@ -74,8 +74,7 @@
             android:gravity="center"
             android:text="CATEGORY NAME"
             android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:selected="true" />
+            android:textStyle="bold" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_player_channels"
