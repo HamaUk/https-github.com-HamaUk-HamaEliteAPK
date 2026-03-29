@@ -38,10 +38,15 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
 
         val logo = data.logo
         holder.tvName.text = data.name
-        Picasso.get()
-            .load(logo)
-            .placeholder(ContextCompat.getDrawable(inContext, R.drawable.load)!!)
-            .into(holder.tvLogo)
+        if (logo.isNotEmpty()) {
+            Picasso.get()
+                .load(logo)
+                .placeholder(ContextCompat.getDrawable(inContext, R.drawable.load)!!)
+                .error(ContextCompat.getDrawable(inContext, R.drawable.load)!!)
+                .into(holder.tvLogo)
+        } else {
+            holder.tvLogo.setImageDrawable(ContextCompat.getDrawable(inContext, R.drawable.load))
+        }
 
         holder.lnPlay.setOnClickListener {
             val intent = Intent(inContext, PlayerActivity::class.java)
