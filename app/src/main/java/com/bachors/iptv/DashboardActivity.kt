@@ -54,9 +54,15 @@ class DashboardActivity : AppCompatActivity() {
         }
 
         binding.cardEpg.setOnClickListener {
-            // EPG/Catchup not fully implemented in master yet
-            // Just redirect to playlist for now
+            // EPG/Catchup usually filtered live
             val intent = Intent(this, PlaylistActivity::class.java)
+            intent.putExtra("type", "live")
+            intent.putExtra("epg", true)
+            startActivity(intent)
+        }
+
+        binding.cardSettings.setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
         }
     }

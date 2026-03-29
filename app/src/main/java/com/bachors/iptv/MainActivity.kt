@@ -44,14 +44,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupDeviceId() {
-        // Simple 6-digit code simulation like React app
+        // Pure 8-digit numeric code
         val prefs = getSharedPreferences("hk_prefs", Context.MODE_PRIVATE)
         deviceId = prefs.getString("hk_device_id", "") ?: ""
-        if (deviceId.isEmpty()) {
-            deviceId = (100000 + Random().nextInt(900000)).toString()
+        if (deviceId.isEmpty() || deviceId.length != 8) {
+            val random = Random()
+            deviceId = (10000000 + random.nextInt(90000000)).toString()
             prefs.edit().putString("hk_device_id", deviceId).apply()
         }
-        binding.tvDeviceCode.text = "HAMA-$deviceId"
+        
+        // Format as 1234 5678 for readability
+        val formattedCode = if (deviceId.length == 8) {
+            "${deviceId.substring(0, 4)} ${deviceId.substring(4)}"
+        } else {
+            deviceId
+        }
+        binding.tvDeviceCode.text = formattedCode
     }
 
     private fun setupTabs() {
@@ -96,7 +104,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun performSync() {
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://hama-elite-sync-default-rtdb.firebaseio.com/")
+            .baseUrl("https://hama-elite-sync.web.app/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 

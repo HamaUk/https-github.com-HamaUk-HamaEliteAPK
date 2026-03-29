@@ -77,6 +77,14 @@ class PlaylistActivity : AppCompatActivity() {
 
         sharedPrefManager = SharedPrefManager(this)
 
+        // Set title based on type from Dashboard
+        val type = intent.getStringExtra("type") ?: "live"
+        supportActionBar?.title = when(type) {
+            "vod" -> "MOVIES"
+            "series" -> "SERIES"
+            else -> "LIVE TV"
+        }
+
         val builder2 = MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
         builder2.setCancelable(false)
         builder2.setMessage("Please wait...")
