@@ -239,6 +239,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildXtreamM3uUrl(server: String, user: String, pass: String): String {
         val cleanServer = normalizeServer(server).trimEnd('/')
-        return "$cleanServer/get.php?username=${Uri.encode(user)}&password=${Uri.encode(pass)}&type=m3u_plus&output=ts"
+        return "$cleanServer/get.php?username=${Uri.encode(user)}&password=${Uri.encode(pass)}&type=m3u_plus&output=mpegts"
     }
 }

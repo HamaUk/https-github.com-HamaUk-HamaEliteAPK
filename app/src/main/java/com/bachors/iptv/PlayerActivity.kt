@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.media3.common.AudioAttributes
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -271,6 +272,14 @@ class PlayerActivity : AppCompatActivity() {
         okHttpFactory = OkHttpDataSource.Factory(okHttp)
 
         exoPlayer = ExoPlayer.Builder(this).build().also { player ->
+            player.setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(androidx.media3.common.C.USAGE_MEDIA)
+                    .setContentType(androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE)
+                    .build(),
+                true
+            )
+            player.volume = 1f
             playerView.player = player
             player.addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(state: Int) {
@@ -307,9 +316,11 @@ class PlayerActivity : AppCompatActivity() {
     private fun playUrl(url: String, name: String) {
         val factory = okHttpFactory ?: return
         try {
-            val uri  = Uri.parse(url.trim())
+            val playbackUrl = normalizeLivePlaybackUrl(url.trim())
+            ensureAudibleVolume()
+            val uri  = Uri.parse(playbackUrl)
             val item = MediaItem.fromUri(uri)
-            val src  = if (url.contains(".m3u8", ignoreCase = true)) {
+            val src  = if (playbackUrl.contains(".m3u8", ignoreCase = true)) {
                 HlsMediaSource.Factory(factory).createMediaSource(item)
             } else {
                 ProgressiveMediaSource.Factory(DefaultDataSource.Factory(this, factory))
@@ -324,6 +335,23 @@ class PlayerActivity : AppCompatActivity() {
             errorText.text        = "Could not load stream"
             errorText.visibility  = View.VISIBLE
             loadingBar.visibility = View.GONE
+        }
+    }
+
+    private fun normalizeLivePlaybackUrl(url: String): String {
+        // Many Xtream /live/.../*.ts endpoints have better codec/audio compatibility via .m3u8 sibling.
+        return if (Regex("""/live/[^/]+/[^/]+/\d+\.ts(\?.*)?$""", RegexOption.IGNORE_CASE).containsMatchIn(url)) {
+            url.replace(Regex("""\.ts(\?.*)?$""", RegexOption.IGNORE_CASE), ".m3u8$1")
+        } else {
+            url
+        }
+    }
+
+    private fun ensureAudibleVolume() {
+        val maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val curVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+        if (maxVol > 0 && curVol <= 0) {
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (maxVol * 0.35f).toInt().coerceAtLeast(1), 0)
         }
     }
 
