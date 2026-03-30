@@ -11,6 +11,11 @@ import com.bachors.iptv.models.PlaylistData
 
 class PlaylistAdapter(private val inContext: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val allData = mutableListOf<PlaylistData>()
+    private var onItemClick: ((Int) -> Unit)? = null
+
+    fun setOnItemClickListener(listener: (Int) -> Unit) {
+        onItemClick = listener
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -23,6 +28,10 @@ class PlaylistAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
         val holder = holder as ViewHolder
 
         holder.tvTitle.text = data.title
+        holder.itemView.setOnClickListener {
+            val pos = holder.bindingAdapterPosition
+            if (pos != RecyclerView.NO_POSITION) onItemClick?.invoke(pos)
+        }
     }
 
     override fun getItemCount(): Int = allData.size

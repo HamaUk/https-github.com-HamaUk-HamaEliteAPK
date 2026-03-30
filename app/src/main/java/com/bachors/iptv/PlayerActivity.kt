@@ -243,6 +243,7 @@ class PlayerActivity : AppCompatActivity() {
             return true
         }
 
+        // DPAD_RIGHT is not handled here so focus can move to the bottom control bar (TV remotes).
         return when (keyCode) {
             KeyEvent.KEYCODE_DPAD_CENTER,
             KeyEvent.KEYCODE_ENTER,
@@ -250,12 +251,10 @@ class PlayerActivity : AppCompatActivity() {
 
             KeyEvent.KEYCODE_DPAD_UP,
             KeyEvent.KEYCODE_CHANNEL_UP,
-            KeyEvent.KEYCODE_DPAD_RIGHT,
             KeyEvent.KEYCODE_MEDIA_NEXT       -> { nextChannel(); true }
 
             KeyEvent.KEYCODE_DPAD_DOWN,
             KeyEvent.KEYCODE_CHANNEL_DOWN,
-            KeyEvent.KEYCODE_DPAD_LEFT,
             KeyEvent.KEYCODE_MEDIA_PREVIOUS   -> { prevChannel(); true }
 
             KeyEvent.KEYCODE_MEDIA_PLAY       -> { exoPlayer?.play();  updatePlayPauseIcon(); true }
@@ -266,9 +265,10 @@ class PlayerActivity : AppCompatActivity() {
             KeyEvent.KEYCODE_VOLUME_DOWN -> { adjustVolume(-1); true }
             KeyEvent.KEYCODE_VOLUME_MUTE -> { toggleMute(); true }
 
-            KeyEvent.KEYCODE_BACK -> {
-                if (isInPipMode) { finish(); true }
-                else { finish(); true }
+            KeyEvent.KEYCODE_BACK,
+            KeyEvent.KEYCODE_DPAD_LEFT -> {
+                finish()
+                true
             }
 
             else -> super.onKeyDown(keyCode, event)

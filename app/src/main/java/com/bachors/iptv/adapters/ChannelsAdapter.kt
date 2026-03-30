@@ -5,6 +5,7 @@ import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +20,7 @@ import com.bachors.iptv.R
 import com.bachors.iptv.models.ChannelsData
 import com.bachors.iptv.utils.SharedPrefManager
 import com.google.android.material.card.MaterialCardView
+import com.squareup.picasso.Picasso
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -44,6 +46,7 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
         h.tvName.text = data.name
         h.tvNumber.text = (position + 1).toString()
         h.tvSubline.text = streamIdOrNoInfo(data.url)
+        bindChannelIcon(h.iconStream, data.logo)
         val currentUrl = sharedPrefManager.getSpCurrentUrl()
         val isPlaying = currentUrl.isNotEmpty() && currentUrl == data.url
         h.tvPlayingBadge.visibility = if (isPlaying) View.VISIBLE else View.GONE
@@ -147,10 +150,39 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
         return inContext.getString(R.string.no_information)
     }
 
+    private fun bindChannelIcon(iv: ImageView, logoRaw: String) {
+        val trimmed = logoRaw.trim()
+        val url = when {
+            trimmed.startsWith("http://", ignoreCase = true) ||
+                trimmed.startsWith("https://", ignoreCase = true) -> trimmed
+            trimmed.startsWith("//") -> "https:$trimmed"
+            else -> ""
+        }
+        val fallbackTint = ColorStateList.valueOf(Color.parseColor("#55FFFFFF"))
+        if (url.isNotEmpty()) {
+            iv.clearColorFilter()
+            iv.imageTintList = null
+            iv.scaleType = ImageView.ScaleType.CENTER_CROP
+            Picasso.get()
+                .load(url)
+                .placeholder(R.drawable.ic_live)
+                .error(R.drawable.ic_live)
+                .fit()
+                .centerCrop()
+                .into(iv)
+        } else {
+            Picasso.get().cancelRequest(iv)
+            iv.scaleType = ImageView.ScaleType.CENTER_INSIDE
+            iv.setImageResource(R.drawable.ic_live)
+            iv.imageTintList = fallbackTint
+        }
+    }
+
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val cardRoot: MaterialCardView = itemView.findViewById(R.id.card_root)
         val lnPlay: LinearLayout = itemView.findViewById(R.id.play)
         val tvNumber: TextView = itemView.findViewById(R.id.ch_number)
+        val iconStream: ImageView = itemView.findViewById(R.id.icon_stream)
         val tvName: TextView = itemView.findViewById(R.id.name)
         val tvSubline: TextView = itemView.findViewById(R.id.subline)
         val btFavorite: ImageView = itemView.findViewById(R.id.btn_favorite)

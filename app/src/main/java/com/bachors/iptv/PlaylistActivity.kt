@@ -20,7 +20,6 @@ import com.bachors.iptv.databinding.ActivityPlaylistBinding
 import com.bachors.iptv.models.ChannelsData
 import com.bachors.iptv.models.PlaylistData
 import com.bachors.iptv.utils.HttpHandler
-import com.bachors.iptv.utils.RecyclerTouchListener
 import com.bachors.iptv.utils.SharedPrefManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
@@ -182,6 +181,9 @@ class PlaylistActivity : AppCompatActivity() {
     // ════════════════════════════════════════════════════════
     private fun setupUI() {
         categoryAdapter = PlaylistAdapter(this)
+        categoryAdapter.setOnItemClickListener { position ->
+            showGroup(groupNames.getOrNull(position) ?: return@setOnItemClickListener)
+        }
         binding.rvCategories.apply {
             layoutManager = LinearLayoutManager(this@PlaylistActivity)
             adapter = categoryAdapter
@@ -228,15 +230,6 @@ class PlaylistActivity : AppCompatActivity() {
         })
 
         binding.btnSort.setOnClickListener { showSortDialog() }
-
-        binding.rvCategories.addOnItemTouchListener(
-            RecyclerTouchListener(this, binding.rvCategories, object : RecyclerTouchListener.ClickListener {
-                override fun onClick(view: View, position: Int) {
-                    showGroup(groupNames.getOrNull(position) ?: return)
-                }
-                override fun onLongClick(view: View, position: Int) {}
-            })
-        )
     }
 
     // ════════════════════════════════════════════════════════
@@ -322,7 +315,15 @@ class PlaylistActivity : AppCompatActivity() {
                     }
                     trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("rtsp://") || trimmed.startsWith("rtmp://") -> {
                         if (currentName.isNotEmpty()) {
-                            val detectedType = detectTypeFromUrl(trimmed)
+                            // Xtream `m3u_plus` sometimes returns channel URLs without reliable
+                            // "movie/live/series" markers. Since this screen already knows what type
+                            // the user selected (intent extra), use `currentType` for filtering stability.
+                            val screenType = currentType.trim().lowercase()
+                            val resolvedType = when (screenType) {
+                                "vod" -> "vod"
+                                "series" -> "series"
+                                else -> "live"
+                            }
                             val channel = ChannelsData(
                                 name = currentName,
                                 logo = currentLogo,
@@ -330,7 +331,7 @@ class PlaylistActivity : AppCompatActivity() {
                                 userAgent = currentUserAgent,
                                 referrer = currentReferrer
                             )
-                            val key = "$detectedType|$currentGroup"
+                            val key = "$resolvedType|$currentGroup"
                             groupMap.getOrPut(key) { mutableListOf() }.add(channel)
                             channelsFound++
                             currentName = ""

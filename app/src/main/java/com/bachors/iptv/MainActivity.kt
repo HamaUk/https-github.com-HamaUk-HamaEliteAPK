@@ -28,8 +28,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPrefManager: SharedPrefManager
     private var deviceId: String = ""
 
-    // File picker for M3U/M3U8 files
-    private val filePicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+    /** Primary: ACTION_OPEN_DOCUMENT — works on most Android TV / GMS devices */
+    private val openDocumentPicker = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        uri?.let { readM3uFile(it) }
+    }
+
+    /** Fallback when no DocumentsUI / provider handles OpenDocument */
+    private val getContentFallback = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
         uri?.let { readM3uFile(it) }
     }
 
@@ -115,9 +124,34 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // File picker button — opens file picker for .m3u / .m3u8
+        // File picker — OpenDocument first (TV-friendly), then GetContent fallback
         binding.btnPickFile.setOnClickListener {
-            filePicker.launch("*/*")
+            openM3uWithBestAvailablePicker()
+        }
+    }
+
+    private fun openM3uWithBestAvailablePicker() {
+        val mimeTypes = arrayOf(
+            "application/vnd.apple.mpegurl",
+            "audio/x-mpegurl",
+            "text/plain",
+            "*/*"
+        )
+        val probe = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+            putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
+        }
+        if (probe.resolveActivity(packageManager) != null) {
+            try {
+                openDocumentPicker.launch(mimeTypes)
+                return
+            } catch (_: Exception) { /* fall through */ }
+        }
+        try {
+            getContentFallback.launch("*/*")
+        } catch (e: Exception) {
+            Toast.makeText(this, "No file picker available: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 
