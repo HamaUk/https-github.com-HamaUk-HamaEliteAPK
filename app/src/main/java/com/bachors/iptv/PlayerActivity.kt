@@ -27,6 +27,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.TrackSelectionParameters.AudioOffloadPreferences
@@ -112,6 +113,7 @@ class PlayerActivity : AppCompatActivity() {
     private var channelNumberBuffer = StringBuilder()
     private val commitChannelNumberRunnable = Runnable { commitChannelNumber() }
     private val hideChannelOsdRunnable = Runnable { fadeOutChannelOsd() }
+    private val audioFallbackRunnable = Runnable { maybeRetryIfNoPlayableAudio() }
 
     // ── Auto-Reconnect ──────────────────────────────────────
     private var reconnectAttempts = 0
@@ -443,6 +445,8 @@ class PlayerActivity : AppCompatActivity() {
         // Builder inherits TrackSelectionParameters.Builder; .build() is typed as base class — cast for assignment.
         val trackParams = trackSelector.buildUponParameters()
             .setTunnelingEnabled(false)
+            // DefaultTrackSelector may cap channels from Context; allow full surround from TS.
+            .setMaxAudioChannelCount(Int.MAX_VALUE)
             .setAudioOffloadPreferences(
                 AudioOffloadPreferences.Builder()
                     .setAudioOffloadMode(AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_DISABLED)
@@ -451,9 +455,10 @@ class PlayerActivity : AppCompatActivity() {
             .build() as DefaultTrackSelector.Parameters
         trackSelector.parameters = trackParams
 
-        val renderersFactory = DefaultRenderersFactory(this).setExtensionRendererMode(
-            DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON
-        )
+        val renderersFactory = DefaultRenderersFactory(this)
+            // Prefer FFmpeg extension when present (AC-3 / E-AC-3 etc.); ON often never picks it for “supported” HW tracks.
+            .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
+            .setEnableDecoderFallback(true)
         exoPlayer = ExoPlayer.Builder(this, renderersFactory)
             .setTrackSelector(trackSelector)
             .build().also { player ->
@@ -477,11 +482,10 @@ class PlayerActivity : AppCompatActivity() {
                             loadingBar.visibility = View.GONE
                             errorText.visibility  = View.GONE
                             reconnectAttempts = 0
-                            if (shouldFallbackForMissingAudio(player)) {
-                                if (retryWithAlternateSourceType()) return
-                                retryWithAlternateLiveUrl()
-                                return
-                            }
+                            ensurePreferredAudioTrackSelected()
+                            handler.removeCallbacks(audioFallbackRunnable)
+                            // FFmpeg/extension renderers can report audio support a moment after READY.
+                            handler.postDelayed(audioFallbackRunnable, 900)
                             updatePlayPauseIcon()
                             val hasDuration = player.duration > 0
                             seekBar.visibility    = if (hasDuration) View.VISIBLE else View.GONE
@@ -499,6 +503,7 @@ class PlayerActivity : AppCompatActivity() {
                 override fun onIsPlayingChanged(isPlaying: Boolean) = updatePlayPauseIcon()
 
                 override fun onTracksChanged(tracks: Tracks) {
+                    ensurePreferredAudioTrackSelected()
                     updateTrackButtonVisibility(tracks)
                 }
 
@@ -719,6 +724,40 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    private fun maybeRetryIfNoPlayableAudio() {
+        val player = exoPlayer ?: return
+        if (player.playbackState != Player.STATE_READY) return
+        ensurePreferredAudioTrackSelected()
+        if (!shouldFallbackForMissingAudio(player)) return
+        if (retryWithAlternateSourceType()) return
+        retryWithAlternateLiveUrl()
+    }
+
+    /** Pick the first ExoPlayer-supported audio track (helps TS with multiple PIDs / odd defaults). */
+    private fun ensurePreferredAudioTrackSelected() {
+        val player = exoPlayer ?: return
+        var targetGroup: Tracks.Group? = null
+        var targetIndex = -1
+        for (group in player.currentTracks.groups) {
+            if (group.type != C.TRACK_TYPE_AUDIO) continue
+            for (i in 0 until group.mediaTrackGroup.length) {
+                if (!group.isTrackSupported(i)) continue
+                targetGroup = group
+                targetIndex = i
+                break
+            }
+            if (targetIndex >= 0) break
+        }
+        if (targetGroup == null || targetIndex < 0) return
+        if (targetGroup.isTrackSelected(targetIndex)) return
+        val override = TrackSelectionOverride(targetGroup.mediaTrackGroup, targetIndex)
+        val next = trackSelector.buildUponParameters()
+            .clearOverridesOfType(C.TRACK_TYPE_AUDIO)
+            .addOverride(override)
+            .build() as DefaultTrackSelector.Parameters
+        trackSelector.parameters = next
+    }
+
     private fun shouldFallbackForMissingAudio(player: ExoPlayer): Boolean {
         if (fallbackTriedForUrl == lastRequestedUrl) return false
         if (sourceFallbackTriedForUrl == lastRequestedUrl) return false
@@ -765,7 +804,15 @@ class PlayerActivity : AppCompatActivity() {
         headers: Map<String, String>
     ): androidx.media3.exoplayer.source.MediaSource {
         val uri = Uri.parse(playbackUrl)
-        val item = MediaItem.fromUri(uri)
+        val lower = playbackUrl.lowercase(Locale.US)
+        val item = when {
+            lower.endsWith(".ts") || lower.contains(".ts?") ->
+                MediaItem.Builder()
+                    .setUri(uri)
+                    .setMimeType(MimeTypes.VIDEO_MP2T)
+                    .build()
+            else -> MediaItem.fromUri(uri)
+        }
         val dataFactory = OkHttpDataSource.Factory(client).apply {
             val ua = headers["User-Agent"]
             if (!ua.isNullOrEmpty()) setUserAgent(ua)
@@ -792,8 +839,8 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun buildRequestHeaders(): Map<String, String> {
         val headers = linkedMapOf<String, String>()
-        val ua = currentUserAgent.trim()
-        if (ua.isNotEmpty()) headers["User-Agent"] = ua
+        val ua = currentUserAgent.trim().ifEmpty { "VLC/3.0.20 LibVLC/3.0.20" }
+        headers["User-Agent"] = ua
         val ref = currentReferrer.trim()
         if (ref.isNotEmpty()) {
             headers["Referer"] = ref
