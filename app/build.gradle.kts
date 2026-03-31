@@ -29,6 +29,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // Required by org.jellyfin.media3:media3-ffmpeg-decoder (AAR metadata / Java 8+ APIs on older devices)
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlin {
@@ -42,6 +44,7 @@ android {
 }
 
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 
     implementation(libs.appcompat)
     implementation(libs.material)
