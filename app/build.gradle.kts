@@ -54,8 +54,9 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer-hls:1.3.1")
     implementation("androidx.media3:media3-ui:1.3.1")
     implementation("androidx.media3:media3-datasource-okhttp:1.3.1")
-    // Software decode for AC-3 / E-AC-3 / DTS (common on IPTV MPEG-TS; many devices have no hardware decoder)
-    implementation("androidx.media3:media3-decoder-ffmpeg:1.3.1")
+    // Software decode for AC-3 / E-AC-3 / DTS (Google does not publish media3-decoder-ffmpeg to Maven;
+    // Jellyfin publishes a compatible build aligned with Media3 1.3.1. License: GPL-3.0.)
+    implementation("org.jellyfin.media3:media3-ffmpeg-decoder:1.3.1+2")
     
     // API Support
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
