@@ -54,6 +54,8 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer-hls:1.3.1")
     implementation("androidx.media3:media3-ui:1.3.1")
     implementation("androidx.media3:media3-datasource-okhttp:1.3.1")
+    // Software decode for AC-3 / E-AC-3 / DTS (common on IPTV MPEG-TS; many devices have no hardware decoder)
+    implementation("androidx.media3:media3-decoder-ffmpeg:1.3.1")
     
     // API Support
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

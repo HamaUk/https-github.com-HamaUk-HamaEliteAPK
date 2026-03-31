@@ -6,6 +6,9 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.io.BufferedOutputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.ProtocolException
@@ -49,8 +52,9 @@ class HttpHandler {
             val url = URL(reqUrl)
             val conn = url.openConnection() as HttpURLConnection
             conn.requestMethod = "GET"
-            conn.connectTimeout = 30_000
-            conn.readTimeout = 60_000
+            conn.instanceFollowRedirects = true
+            conn.connectTimeout = 60_000
+            conn.readTimeout = 600_000
             conn.connect()
 
             val totalBytes = conn.contentLength.toLong()
@@ -78,6 +82,59 @@ class HttpHandler {
             Log.e(TAG, "Exception: ${e.message}")
         }
         return response
+    }
+
+    /**
+     * Streams playlist bytes to disk (avoids OOM on huge M3U). Reports progress when Content-Length is known.
+     * @param totalBytes use -1 when unknown (chunked / missing header).
+     */
+    fun downloadToFileWithProgress(
+        reqUrl: String?,
+        dest: File,
+        onProgress: (bytesRead: Long, totalBytes: Long) -> Unit
+    ): Boolean {
+        if (reqUrl.isNullOrBlank()) return false
+        var conn: HttpURLConnection? = null
+        return try {
+            val url = URL(reqUrl)
+            conn = url.openConnection() as HttpURLConnection
+            conn.requestMethod = "GET"
+            conn.instanceFollowRedirects = true
+            conn.connectTimeout = 60_000
+            // Large provider playlists can pause mid-download; short read timeout was cutting transfers (~60%).
+            conn.readTimeout = 600_000
+            conn.connect()
+            val total = conn.contentLength.toLong().let { if (it > 0) it else -1L }
+            dest.parentFile?.mkdirs()
+            BufferedInputStream(conn.inputStream, 32768).use { input ->
+                BufferedOutputStream(FileOutputStream(dest), 32768).use { output ->
+                    val buffer = ByteArray(32768)
+                    var bytesRead = 0L
+                    while (true) {
+                        val n = input.read(buffer)
+                        if (n <= 0) break
+                        output.write(buffer, 0, n)
+                        bytesRead += n
+                        onProgress(bytesRead, total)
+                    }
+                }
+            }
+            dest.length() > 0L
+        } catch (e: MalformedURLException) {
+            Log.e(TAG, "downloadToFile MalformedURL: ${e.message}")
+            false
+        } catch (e: ProtocolException) {
+            Log.e(TAG, "downloadToFile Protocol: ${e.message}")
+            false
+        } catch (e: IOException) {
+            Log.e(TAG, "downloadToFile IO: ${e.message}")
+            false
+        } catch (e: Exception) {
+            Log.e(TAG, "downloadToFile: ${e.message}")
+            false
+        } finally {
+            conn?.disconnect()
+        }
     }
 
     private fun convertStreamToString(inputStream: InputStream): String {

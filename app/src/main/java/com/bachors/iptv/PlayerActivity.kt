@@ -29,11 +29,13 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionOverride
+import androidx.media3.common.TrackSelectionParameters.AudioOffloadPreferences
 import androidx.media3.common.Tracks
 import androidx.media3.common.util.Util
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
@@ -257,6 +259,12 @@ class PlayerActivity : AppCompatActivity() {
             KeyEvent.KEYCODE_CHANNEL_DOWN,
             KeyEvent.KEYCODE_MEDIA_PREVIOUS   -> { prevChannel(); true }
 
+            // Explicitly focus the bottom controls on TV remotes.
+            KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                focusBottomControls()
+                true
+            }
+
             KeyEvent.KEYCODE_MEDIA_PLAY       -> { exoPlayer?.play();  updatePlayPauseIcon(); true }
             KeyEvent.KEYCODE_MEDIA_PAUSE      -> { exoPlayer?.pause(); updatePlayPauseIcon(); true }
             KeyEvent.KEYCODE_MEDIA_STOP       -> { exoPlayer?.pause(); true }
@@ -432,7 +440,19 @@ class PlayerActivity : AppCompatActivity() {
         okHttpClient = okHttp
 
         trackSelector = DefaultTrackSelector(this)
-        exoPlayer = ExoPlayer.Builder(this)
+        trackSelector.parameters = trackSelector.buildUponParameters()
+            .setTunnelingEnabled(false)
+            .setAudioOffloadPreferences(
+                AudioOffloadPreferences.Builder()
+                    .setAudioOffloadMode(AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_DISABLED)
+                    .build()
+            )
+            .build()
+
+        val renderersFactory = DefaultRenderersFactory(this).setExtensionRendererMode(
+            DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON
+        )
+        exoPlayer = ExoPlayer.Builder(this, renderersFactory)
             .setTrackSelector(trackSelector)
             .build().also { player ->
             player.setAudioAttributes(
@@ -440,7 +460,7 @@ class PlayerActivity : AppCompatActivity() {
                     .setUsage(C.USAGE_MEDIA)
                     .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
                     .build(),
-                false
+                true
             )
             player.volume = 1f
             playerView.player = player
@@ -526,7 +546,8 @@ class PlayerActivity : AppCompatActivity() {
 
         for (group in tracks.groups) {
             when (group.type) {
-                C.TRACK_TYPE_AUDIO -> if (group.mediaTrackGroup.length > 1) hasMultiAudio = true
+                // Show audio control whenever any audio track exists (single-track AC3/AACSwitch still useful)
+                C.TRACK_TYPE_AUDIO -> if (group.mediaTrackGroup.length > 0) hasMultiAudio = true
                 C.TRACK_TYPE_TEXT -> hasSubtitles = true
                 C.TRACK_TYPE_VIDEO -> if (group.mediaTrackGroup.length > 1) hasMultiVideo = true
             }
@@ -699,10 +720,14 @@ class PlayerActivity : AppCompatActivity() {
     private fun shouldFallbackForMissingAudio(player: ExoPlayer): Boolean {
         if (fallbackTriedForUrl == lastRequestedUrl) return false
         if (sourceFallbackTriedForUrl == lastRequestedUrl) return false
-        val hasAudioGroup = player.currentTracks.groups.any {
-            it.type == C.TRACK_TYPE_AUDIO && it.mediaTrackGroup.length > 0
+        for (group in player.currentTracks.groups) {
+            if (group.type != C.TRACK_TYPE_AUDIO) continue
+            for (i in 0 until group.mediaTrackGroup.length) {
+                if (group.isTrackSupported(i) && group.isTrackSelected(i)) return false
+            }
         }
-        return !hasAudioGroup
+        // No audio in media, or only unsupported codecs / nothing selected yet at READY
+        return true
     }
 
     private fun retryWithAlternateSourceType(): Boolean {
@@ -858,6 +883,23 @@ class PlayerActivity : AppCompatActivity() {
         btnSubtitle.setOnClickListener { showSubtitleSelector() }
         btnSpeed.setOnClickListener { cyclePlaybackSpeed() }
         btnQuality.setOnClickListener { showQualitySelector() }
+
+        listOf(
+            btnPrev, btnPlayPause, btnNext, btnAudioTrack, btnSubtitle,
+            btnSpeed, btnQuality, btnResize, btnFullscreen
+        ).forEach {
+            it.isFocusable = true
+            it.isFocusableInTouchMode = true
+        }
+    }
+
+    private fun focusBottomControls() {
+        showControls()
+        val target = listOf(
+            btnPlayPause, btnNext, btnPrev, btnAudioTrack, btnSubtitle,
+            btnSpeed, btnQuality, btnResize, btnFullscreen
+        ).firstOrNull { it.visibility == View.VISIBLE && it.isFocusable }
+        target?.requestFocus()
     }
 
     private fun togglePlayPause() {

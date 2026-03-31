@@ -24,6 +24,7 @@ import com.bachors.iptv.utils.SharedPrefManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.io.File
 import java.text.NumberFormat
 
 enum class SortMode { DEFAULT, NAME_AZ, NAME_ZA }
@@ -246,20 +247,57 @@ class PlaylistActivity : AppCompatActivity() {
             } else {
                 showLoadingOverlay("LOADING CHANNELS")
                 Thread {
-                    val result = HttpHandler().makeServiceCallWithProgress(directData) { bytesRead, total ->
-                        updateDownloadProgress(bytesRead, total)
-                    }
-                    if (result != null) {
+                    val tmp = File(cacheDir, "iptv_playlist_fetch.tmp")
+                    try {
+                        if (tmp.exists()) tmp.delete()
+                        val ok = HttpHandler().downloadToFileWithProgress(directData, tmp) { read, total ->
+                            updateDownloadProgress(read, total)
+                        }
+                        if (!ok) {
+                            try {
+                                if (tmp.exists()) tmp.delete()
+                            } catch (_: Throwable) { }
+                            runOnUiThread {
+                                hideLoadingOverlay()
+                                Toast.makeText(
+                                    this@PlaylistActivity,
+                                    "Could not finish playlist download. Check connection or try again.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                            return@Thread
+                        }
                         runOnUiThread {
                             loadingPercent.text = "100%"
                             setProgressWidth(1f)
                             loadingStatus.text = "Download complete. Parsing..."
                         }
-                        parseInBackground(result)
-                    } else {
+                        parseM3uFromDownloadedFile(tmp)
+                    } catch (oom: OutOfMemoryError) {
+                        android.util.Log.e("PlaylistActivity", "OOM during playlist load", oom)
+                        try {
+                            if (tmp.exists()) tmp.delete()
+                        } catch (_: Throwable) { }
                         runOnUiThread {
                             hideLoadingOverlay()
-                            Toast.makeText(this, "Failed to load playlist", Toast.LENGTH_LONG).show()
+                            Toast.makeText(
+                                this@PlaylistActivity,
+                                "Playlist is too large to load on this device. Try fewer channels or another device.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    } catch (t: Throwable) {
+                        android.util.Log.e("PlaylistActivity", "Playlist load failed", t)
+                        try {
+                            if (tmp.exists()) tmp.delete()
+                        } catch (_: Throwable) { }
+                        runOnUiThread {
+                            hideLoadingOverlay()
+                            Toast.makeText(
+                                this@PlaylistActivity,
+                                "Playlist error: ${t.message}",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                     }
                 }.start()
@@ -318,12 +356,9 @@ class PlaylistActivity : AppCompatActivity() {
                             // Xtream `m3u_plus` sometimes returns channel URLs without reliable
                             // "movie/live/series" markers. Since this screen already knows what type
                             // the user selected (intent extra), use `currentType` for filtering stability.
-                            val screenType = currentType.trim().lowercase()
-                            val resolvedType = when (screenType) {
-                                "vod" -> "vod"
-                                "series" -> "series"
-                                else -> "live"
-                            }
+                            // Correctly identify the content type based on the URL structure,
+                            // rather than forcing everything into the screen the user tapped.
+                            val resolvedType = detectTypeFromUrl(trimmed)
                             val channel = ChannelsData(
                                 name = currentName,
                                 logo = currentLogo,
@@ -352,6 +387,119 @@ class PlaylistActivity : AppCompatActivity() {
             runOnUiThread {
                 buildAndShowGroups()
                 handler.postDelayed({ hideLoadingOverlay() }, 400)
+            }
+        }.start()
+    }
+
+    /**
+     * Parse M3U from disk line-by-line — avoids holding a second full copy in RAM (OOM on huge lists).
+     */
+    private fun parseM3uFromDownloadedFile(file: File) {
+        Thread {
+            var reader: java.io.BufferedReader? = null
+            try {
+                runOnUiThread {
+                    loadingTitle.text = "PARSING CHANNELS"
+                    loadingStatus.text = "Analyzing playlist data..."
+                    loadingPercent.text = "0%"
+                    setProgressWidth(0f)
+                }
+
+                val fileLen = file.length().coerceAtLeast(1L)
+                val estLineCount = (fileLen / 100L).coerceAtLeast(1L).toInt()
+
+                groupMap.clear()
+
+                var currentName = ""
+                var currentLogo = ""
+                var currentGroup = "General"
+                var currentUserAgent = ""
+                var currentReferrer = ""
+                var channelsFound = 0
+                var lineIndex = 0
+
+                reader = file.bufferedReader(Charsets.UTF_8)
+                while (true) {
+                    val line = reader.readLine() ?: break
+                    lineIndex++
+                    val trimmed = line.trim()
+                    when {
+                        trimmed.startsWith("#EXTINF") -> {
+                            currentName = ""
+                            currentLogo = ""
+                            currentGroup = extractAttr(trimmed, "group-title") ?: "General"
+                            currentLogo = extractAttr(trimmed, "tvg-logo") ?: ""
+                            currentUserAgent = ""
+                            currentReferrer = ""
+                            val commaIdx = trimmed.lastIndexOf(',')
+                            if (commaIdx >= 0) currentName = trimmed.substring(commaIdx + 1).trim()
+                        }
+                        trimmed.startsWith("#EXTVLCOPT:", ignoreCase = true) -> {
+                            parseVlcOpt(trimmed)?.let { (key, value) ->
+                                when (key) {
+                                    "http-user-agent", "user-agent" -> currentUserAgent = value
+                                    "http-referrer", "http-referer", "referrer", "referer" -> currentReferrer = value
+                                }
+                            }
+                        }
+                        trimmed.startsWith("http://") || trimmed.startsWith("https://") ||
+                            trimmed.startsWith("rtsp://") || trimmed.startsWith("rtmp://") -> {
+                            if (currentName.isNotEmpty()) {
+                                val resolvedType = detectTypeFromUrl(trimmed)
+                                val channel = ChannelsData(
+                                    name = currentName,
+                                    logo = currentLogo,
+                                    url = trimmed,
+                                    userAgent = currentUserAgent,
+                                    referrer = currentReferrer
+                                )
+                                val key = "$resolvedType|$currentGroup"
+                                groupMap.getOrPut(key) { mutableListOf() }.add(channel)
+                                channelsFound++
+                                currentName = ""
+                            }
+                        }
+                    }
+
+                    if (lineIndex % 4000 == 0) {
+                        val now = System.currentTimeMillis()
+                        if (now - lastProgressUpdate >= PROGRESS_UPDATE_INTERVAL) {
+                            lastProgressUpdate = now
+                            val pct = ((lineIndex * 100L) / estLineCount).toInt().coerceIn(0, 99)
+                            runOnUiThread {
+                                loadingPercent.text = "$pct%"
+                                setProgressWidth(pct / 100f)
+                                loadingStatus.text = "Parsing channels..."
+                                loadingChannelCount.text = "${numberFormat.format(channelsFound)} channels found"
+                            }
+                        }
+                    }
+                }
+
+                runOnUiThread {
+                    loadingPercent.text = "100%"
+                    setProgressWidth(1f)
+                    loadingChannelCount.text = "${numberFormat.format(channelsFound)} channels ready"
+                    loadingStatus.text = "Building channel list..."
+                }
+
+                runOnUiThread {
+                    buildAndShowGroups()
+                    handler.postDelayed({ hideLoadingOverlay() }, 400)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("PlaylistActivity", "parseM3uFromFile", e)
+                runOnUiThread {
+                    hideLoadingOverlay()
+                    Toast.makeText(this@PlaylistActivity, "Could not read playlist file.", Toast.LENGTH_LONG).show()
+                }
+            } finally {
+                try {
+                    reader?.close()
+                } catch (_: Exception) { }
+                try {
+                    if (file.exists()) file.delete()
+                } catch (_: Exception) { }
             }
         }.start()
     }
