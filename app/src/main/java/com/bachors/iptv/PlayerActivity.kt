@@ -440,14 +440,16 @@ class PlayerActivity : AppCompatActivity() {
         okHttpClient = okHttp
 
         trackSelector = DefaultTrackSelector(this)
-        trackSelector.parameters = trackSelector.buildUponParameters()
+        // Builder inherits TrackSelectionParameters.Builder; .build() is typed as base class — cast for assignment.
+        val trackParams = trackSelector.buildUponParameters()
             .setTunnelingEnabled(false)
             .setAudioOffloadPreferences(
                 AudioOffloadPreferences.Builder()
                     .setAudioOffloadMode(AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_DISABLED)
                     .build()
             )
-            .build()
+            .build() as DefaultTrackSelector.Parameters
+        trackSelector.parameters = trackParams
 
         val renderersFactory = DefaultRenderersFactory(this).setExtensionRendererMode(
             DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON
