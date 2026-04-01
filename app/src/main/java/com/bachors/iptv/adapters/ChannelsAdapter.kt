@@ -4,6 +4,7 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.graphics.Color
 import android.content.res.ColorStateList
 import android.view.LayoutInflater
@@ -173,20 +174,36 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
 
     private fun bindChannelIcon(iv: ImageView, logoRaw: String) {
         val trimmed = logoRaw.trim()
-        val url = when {
+        val uri: Uri? = when {
+            trimmed.isEmpty() -> null
+            trimmed.startsWith("data:image/", ignoreCase = true) ->
+                try {
+                    Uri.parse(trimmed)
+                } catch (_: Exception) {
+                    null
+                }
             trimmed.startsWith("http://", ignoreCase = true) ||
-                trimmed.startsWith("https://", ignoreCase = true) -> trimmed
-            trimmed.startsWith("//") -> "https:$trimmed"
-            trimmed.startsWith("data:image/", ignoreCase = true) -> trimmed
-            else -> ""
+                trimmed.startsWith("https://", ignoreCase = true) ->
+                try {
+                    Uri.parse(trimmed)
+                } catch (_: Exception) {
+                    null
+                }
+            trimmed.startsWith("//") ->
+                try {
+                    Uri.parse("https:$trimmed")
+                } catch (_: Exception) {
+                    null
+                }
+            else -> null
         }
         val fallbackTint = ColorStateList.valueOf(Color.parseColor("#55FFFFFF"))
-        if (url.isNotEmpty()) {
+        if (uri != null) {
             iv.clearColorFilter()
             iv.imageTintList = null
             iv.scaleType = ImageView.ScaleType.CENTER_CROP
             Picasso.get()
-                .load(url)
+                .load(uri)
                 .placeholder(R.drawable.ic_live)
                 .error(R.drawable.ic_live)
                 .fit()

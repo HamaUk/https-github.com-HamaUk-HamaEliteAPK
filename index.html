@@ -367,6 +367,8 @@ td {
 .channel-mgr-table th { position: sticky; top: 0; background: rgba(0,0,0,0.55); z-index: 1; padding: 10px 8px; text-align: left; }
 .channel-mgr-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: middle; }
 .channel-mgr-table tr:hover { background: rgba(255,255,255,0.04); }
+.channel-mgr-logo-cell { width: 56px; text-align: center; vertical-align: middle; }
+.channel-mgr-logo-thumb { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.35); display: inline-block; vertical-align: middle; }
 .tag-hidden { color: #ff9800; font-weight: 700; }
 .tag-adult { color: #ff4b2b; font-weight: 700; }
 .channel-mgr-pager { display: flex; align-items: center; gap: 12px; margin-top: 12px; justify-content: center; }
@@ -542,7 +544,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
       <div>
         <h3 style="margin-bottom:8px;">MANAGE CHANNELS</h3>
         <div class="mgr-note" id="channelMgrSyncKeyLabel">sync key: —</div>
-        <div class="mgr-note">Import from your M3U (profile URL, embedded file on this key, paste, or local file). Remote URL fetch may fail in-browser due to CORS — then use Paste or a profile with embedded <b>content</b>. Saves to <b>managedPlaylist</b> on this sync key. After saving, users must <b>sync the app again</b> (Start / reload); the app then shows logos and names from here for live/vod/series.</div>
+        <div class="mgr-note">Import from your M3U (profile URL, embedded file on this key, paste, or local file). Remote URL fetch may fail in-browser due to CORS — then use Paste or a profile with embedded <b>content</b>. Saves to <b>managedPlaylist</b> on this sync key. After editing logos/names, click <b>SAVE MANAGED PLAYLIST TO FIREBASE</b>, then users must <b>sync the app again</b> (same sync key) so icons appear in the app. The <b>Logo</b> column below shows a thumbnail when the URL or embedded image loads.</div>
       </div>
       <button type="button" class="btn-small" onclick="window.closeChannelManager()">CLOSE</button>
     </div>
@@ -563,6 +565,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
         <thead>
           <tr>
             <th>#</th>
+            <th>Logo</th>
             <th>Name</th>
             <th>Group</th>
             <th>Type</th>
@@ -1368,12 +1371,32 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
       if (row.adult) flags.push('<span class="tag-adult">ADULT</span>');
       tr.innerHTML =
         '<td>' + (start + i + 1) + '</td>' +
+        '<td class="channel-mgr-logo-cell"></td>' +
         '<td>' + channelMgrEscapeAttr(row.name) + '</td>' +
         '<td>' + channelMgrEscapeAttr(row.group) + '</td>' +
         '<td>' + channelMgrEscapeAttr(row.type) + '</td>' +
         '<td>' + (flags.join(' ') || '—') + '</td>' +
         '<td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + channelMgrEscapeAttr(row.url) + '">' + channelMgrEscapeAttr(row.url) + '</td>' +
         '<td><button type="button" class="btn-small" data-act="e">EDIT</button></td>';
+      const logoTd = tr.querySelector('.channel-mgr-logo-cell');
+      const lg = (row.logo && String(row.logo).trim()) || '';
+      if (lg.startsWith('data:image/') || /^https?:\/\//i.test(lg)) {
+        const img = document.createElement('img');
+        img.className = 'channel-mgr-logo-thumb';
+        img.alt = '';
+        img.loading = 'lazy';
+        img.src = lg;
+        img.onerror = function () {
+          logoTd.textContent = '×';
+          logoTd.title = 'Image failed to load';
+        };
+        logoTd.appendChild(img);
+      } else if (lg.length > 0) {
+        logoTd.textContent = '●';
+        logoTd.title = 'Logo set (not http/data — check in EDIT)';
+      } else {
+        logoTd.textContent = '—';
+      }
       tr.querySelector('button').onclick = () => window.openChannelMgrEdit(row.id);
       tb.appendChild(tr);
     });
@@ -1405,7 +1428,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     f.innerHTML =
       '<div class="form-group"><label>Display name</label><input type="text" id="cm-edit-name" value="' + channelMgrEscapeAttr(row.name) + '"></div>' +
       '<div class="form-group"><label>Group</label><input type="text" id="cm-edit-group" value="' + channelMgrEscapeAttr(row.group) + '"></div>' +
-      '<div class="form-group"><label>Stream URL (read-only)</label><input type="text" id="cm-edit-url" value="' + channelMgrEscapeAttr(row.url) + '" readonly style="opacity:0.85"></div>' +
+      '<div class="form-group"><label>Stream URL</label><input type="text" id="cm-edit-url" value="' + channelMgrEscapeAttr(row.url) + '" placeholder="https://… or .m3u8 stream" spellcheck="false" autocomplete="off"></div>' +
       '<div class="form-group"><label>Logo URL (optional)</label><input type="text" id="cm-edit-logo" placeholder="https://… or use &quot;Select logo&quot; below" value=""></div>' +
       '<div class="form-group"><label>Channel icon — from your device</label>' +
       '<div class="file-upload-wrapper">' +
@@ -1493,8 +1516,14 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     const id = window.channelMgrEditingId;
     const row = window.channelMgrRows.find(r => r.id === id);
     if (!row) return;
+    const newUrl = (document.getElementById('cm-edit-url').value || '').trim();
+    if (!newUrl) {
+      alert('Stream URL cannot be empty. Paste the new stream link or cancel.');
+      return;
+    }
     row.name = document.getElementById('cm-edit-name').value;
     row.group = document.getElementById('cm-edit-group').value;
+    row.url = newUrl;
     row.logo = document.getElementById('cm-edit-logo').value;
     row.type = document.getElementById('cm-edit-type').value;
     row.hidden = document.getElementById('cm-edit-hidden').checked;

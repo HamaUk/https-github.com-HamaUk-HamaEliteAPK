@@ -4,6 +4,7 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.Color
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,12 +30,38 @@ class FavoritesAdapter(private val inContext: Context) : RecyclerView.Adapter<Re
         val data = allData[position]
         val holder = holder as ViewHolder
 
-        val logo = data.logo
+        val trimmed = data.logo.trim()
+        val logoUri: Uri? = when {
+            trimmed.isEmpty() -> null
+            trimmed.startsWith("data:image/", ignoreCase = true) -> try {
+                Uri.parse(trimmed)
+            } catch (_: Exception) {
+                null
+            }
+            trimmed.startsWith("http://", ignoreCase = true) ||
+                trimmed.startsWith("https://", ignoreCase = true) -> try {
+                Uri.parse(trimmed)
+            } catch (_: Exception) {
+                null
+            }
+            trimmed.startsWith("//") -> try {
+                Uri.parse("https:$trimmed")
+            } catch (_: Exception) {
+                null
+            }
+            else -> null
+        }
         holder.tvName.text = data.name
-        Picasso.get()
-            .load(logo)
-            .placeholder(ContextCompat.getDrawable(inContext, R.drawable.load)!!)
-            .into(holder.tvLogo)
+        val ph = ContextCompat.getDrawable(inContext, R.drawable.load)!!
+        if (logoUri != null) {
+            Picasso.get()
+                .load(logoUri)
+                .placeholder(ph)
+                .into(holder.tvLogo)
+        } else {
+            Picasso.get().cancelRequest(holder.tvLogo)
+            holder.tvLogo.setImageDrawable(ph)
+        }
 
         holder.cardRoot.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
