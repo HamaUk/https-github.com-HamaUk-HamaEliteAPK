@@ -4,7 +4,6 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.graphics.Color
 import android.content.res.ColorStateList
 import android.view.LayoutInflater
@@ -19,8 +18,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bachors.iptv.PlayerActivity
 import com.bachors.iptv.R
 import com.bachors.iptv.models.ChannelsData
+import com.bachors.iptv.utils.ChannelLogoUri
 import com.bachors.iptv.utils.SharedPrefManager
 import com.google.android.material.card.MaterialCardView
+import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import org.json.JSONArray
 import org.json.JSONObject
@@ -173,30 +174,7 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
     }
 
     private fun bindChannelIcon(iv: ImageView, logoRaw: String) {
-        val trimmed = logoRaw.trim()
-        val uri: Uri? = when {
-            trimmed.isEmpty() -> null
-            trimmed.startsWith("data:image/", ignoreCase = true) ->
-                try {
-                    Uri.parse(trimmed)
-                } catch (_: Exception) {
-                    null
-                }
-            trimmed.startsWith("http://", ignoreCase = true) ||
-                trimmed.startsWith("https://", ignoreCase = true) ->
-                try {
-                    Uri.parse(trimmed)
-                } catch (_: Exception) {
-                    null
-                }
-            trimmed.startsWith("//") ->
-                try {
-                    Uri.parse("https:$trimmed")
-                } catch (_: Exception) {
-                    null
-                }
-            else -> null
-        }
+        val uri = ChannelLogoUri.parse(logoRaw)
         val fallbackTint = ColorStateList.valueOf(Color.parseColor("#55FFFFFF"))
         if (uri != null) {
             iv.clearColorFilter()
@@ -208,7 +186,12 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
                 .error(R.drawable.ic_live)
                 .fit()
                 .centerCrop()
-                .into(iv)
+                .into(iv, object : Callback {
+                    override fun onSuccess() {}
+                    override fun onError(e: Exception) {
+                        ChannelLogoUri.logLoadFailure(logoRaw, e)
+                    }
+                })
         } else {
             Picasso.get().cancelRequest(iv)
             iv.scaleType = ImageView.ScaleType.CENTER_INSIDE

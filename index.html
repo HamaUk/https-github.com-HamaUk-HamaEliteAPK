@@ -369,6 +369,7 @@ td {
 .channel-mgr-table tr:hover { background: rgba(255,255,255,0.04); }
 .channel-mgr-logo-cell { width: 56px; text-align: center; vertical-align: middle; }
 .channel-mgr-logo-thumb { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.35); display: inline-block; vertical-align: middle; }
+#cm-edit-logo { width: 100%; min-height: 4.5rem; max-height: 10rem; padding: 10px; font-family: ui-monospace, monospace; font-size: 0.65rem; word-break: break-all; resize: vertical; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; color: #fff; box-sizing: border-box; }
 .tag-hidden { color: #ff9800; font-weight: 700; }
 .tag-adult { color: #ff4b2b; font-weight: 700; }
 .channel-mgr-pager { display: flex; align-items: center; gap: 12px; margin-top: 12px; justify-content: center; }
@@ -1156,12 +1157,13 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     return parsed.map(row => {
       const old = managedItems && managedItems[row.id];
       if (!old) return { ...row };
+      const oldLogo = old.logo != null ? String(old.logo).trim() : '';
       return {
         id: row.id,
         name: old.name != null ? old.name : row.name,
         url: row.url,
         group: old.group != null ? old.group : row.group,
-        logo: old.logo != null ? old.logo : row.logo,
+        logo: oldLogo !== '' ? oldLogo : row.logo,
         hidden: !!old.hidden,
         adult: !!old.adult,
         type: old.type || row.type
@@ -1193,11 +1195,12 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     }
   }
 
-  /** Downscale + JPEG compress so data URL stays reasonable for Firebase. Transparency → white backing. */
+  /** Downscale + JPEG compress so data URL stays reasonable for Firebase. Transparency → white backing.
+   *  Stay under ~450k chars: many browsers cap &lt;input type="text"&gt; at ~524k, which broke long data URLs. */
   function channelMgrDownscaleImageFile(file) {
-    const MAX_DATA_URL_CHARS = 520000;
-    const maxSides = [512, 384, 320, 256, 200];
-    const qualities = [0.88, 0.8, 0.72, 0.64, 0.55, 0.48, 0.42];
+    const MAX_DATA_URL_CHARS = 450000;
+    const maxSides = [512, 384, 320, 256, 200, 160, 128];
+    const qualities = [0.88, 0.8, 0.72, 0.64, 0.55, 0.48, 0.42, 0.36, 0.32];
 
     return new Promise((resolve, reject) => {
       const blobUrl = URL.createObjectURL(file);
@@ -1384,7 +1387,8 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
         const img = document.createElement('img');
         img.className = 'channel-mgr-logo-thumb';
         img.alt = '';
-        img.loading = 'lazy';
+        img.loading = 'eager';
+        img.decoding = 'async';
         img.src = lg;
         img.onerror = function () {
           logoTd.textContent = '×';
@@ -1423,13 +1427,14 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     const row = window.channelMgrRows.find(r => r.id === id);
     if (!row) return;
     window.channelMgrEditingId = id;
+    window.channelMgrPendingLogoDataUrl = null;
     const f = document.getElementById('channelMgrEditFields');
     const t = row.type === 'vod' ? 'vod' : row.type === 'series' ? 'series' : 'live';
     f.innerHTML =
       '<div class="form-group"><label>Display name</label><input type="text" id="cm-edit-name" value="' + channelMgrEscapeAttr(row.name) + '"></div>' +
       '<div class="form-group"><label>Group</label><input type="text" id="cm-edit-group" value="' + channelMgrEscapeAttr(row.group) + '"></div>' +
       '<div class="form-group"><label>Stream URL</label><input type="text" id="cm-edit-url" value="' + channelMgrEscapeAttr(row.url) + '" placeholder="https://… or .m3u8 stream" spellcheck="false" autocomplete="off"></div>' +
-      '<div class="form-group"><label>Logo URL (optional)</label><input type="text" id="cm-edit-logo" placeholder="https://… or use &quot;Select logo&quot; below" value=""></div>' +
+      '<div class="form-group"><label>Logo URL or embedded image (paste https:// or pick file below)</label><textarea id="cm-edit-logo" placeholder="https://… or embedded data after file pick" spellcheck="false" autocomplete="off"></textarea></div>' +
       '<div class="form-group"><label>Channel icon — from your device</label>' +
       '<div class="file-upload-wrapper">' +
       '<label for="cm-edit-logo-file" class="file-upload-label" style="padding:20px">' +
@@ -1454,6 +1459,10 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     const logoPrev = document.getElementById('cm-edit-logo-preview');
     logoEl.value = row.logo || '';
     channelMgrSyncLogoPreview(logoEl, logoPrev);
+    logoEl.addEventListener('input', () => {
+      window.channelMgrPendingLogoDataUrl = null;
+      channelMgrSyncLogoPreview(logoEl, logoPrev);
+    });
     const maxLogoUploadBytes = 18 * 1024 * 1024;
     const logoFileNameEl = document.getElementById('cm-edit-logo-file-name');
     logoFile.addEventListener('change', () => {
@@ -1486,6 +1495,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
         }
         try {
           const dataUrl = await channelMgrDownscaleImageFile(file);
+          window.channelMgrPendingLogoDataUrl = dataUrl;
           logoEl.value = dataUrl;
           channelMgrSyncLogoPreview(logoEl, logoPrev);
           if (logoFileNameEl) {
@@ -1503,13 +1513,13 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
       };
       run();
     });
-    logoEl.addEventListener('input', () => channelMgrSyncLogoPreview(logoEl, logoPrev));
     document.getElementById('channelMgrEditModal').style.display = 'flex';
   };
 
   window.closeChannelMgrEdit = () => {
     document.getElementById('channelMgrEditModal').style.display = 'none';
     window.channelMgrEditingId = null;
+    window.channelMgrPendingLogoDataUrl = null;
   };
 
   window.channelMgrSaveEditRow = () => {
@@ -1524,7 +1534,12 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     row.name = document.getElementById('cm-edit-name').value;
     row.group = document.getElementById('cm-edit-group').value;
     row.url = newUrl;
-    row.logo = document.getElementById('cm-edit-logo').value;
+    const logoTa = document.getElementById('cm-edit-logo');
+    const fromTextarea = (logoTa && logoTa.value) ? logoTa.value.trim() : '';
+    row.logo = (window.channelMgrPendingLogoDataUrl != null && window.channelMgrPendingLogoDataUrl !== '')
+      ? window.channelMgrPendingLogoDataUrl
+      : fromTextarea;
+    window.channelMgrPendingLogoDataUrl = null;
     row.type = document.getElementById('cm-edit-type').value;
     row.hidden = document.getElementById('cm-edit-hidden').checked;
     row.adult = document.getElementById('cm-edit-adult').checked;

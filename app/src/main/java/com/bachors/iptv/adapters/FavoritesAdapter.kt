@@ -4,7 +4,6 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.Color
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +13,9 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bachors.iptv.R
 import com.bachors.iptv.models.ChannelsData
+import com.bachors.iptv.utils.ChannelLogoUri
 import com.google.android.material.card.MaterialCardView
+import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
 class FavoritesAdapter(private val inContext: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -30,34 +31,19 @@ class FavoritesAdapter(private val inContext: Context) : RecyclerView.Adapter<Re
         val data = allData[position]
         val holder = holder as ViewHolder
 
-        val trimmed = data.logo.trim()
-        val logoUri: Uri? = when {
-            trimmed.isEmpty() -> null
-            trimmed.startsWith("data:image/", ignoreCase = true) -> try {
-                Uri.parse(trimmed)
-            } catch (_: Exception) {
-                null
-            }
-            trimmed.startsWith("http://", ignoreCase = true) ||
-                trimmed.startsWith("https://", ignoreCase = true) -> try {
-                Uri.parse(trimmed)
-            } catch (_: Exception) {
-                null
-            }
-            trimmed.startsWith("//") -> try {
-                Uri.parse("https:$trimmed")
-            } catch (_: Exception) {
-                null
-            }
-            else -> null
-        }
+        val logoUri = ChannelLogoUri.parse(data.logo)
         holder.tvName.text = data.name
         val ph = ContextCompat.getDrawable(inContext, R.drawable.load)!!
         if (logoUri != null) {
             Picasso.get()
                 .load(logoUri)
                 .placeholder(ph)
-                .into(holder.tvLogo)
+                .into(holder.tvLogo, object : Callback {
+                    override fun onSuccess() {}
+                    override fun onError(e: Exception) {
+                        ChannelLogoUri.logLoadFailure(data.logo, e)
+                    }
+                })
         } else {
             Picasso.get().cancelRequest(holder.tvLogo)
             holder.tvLogo.setImageDrawable(ph)

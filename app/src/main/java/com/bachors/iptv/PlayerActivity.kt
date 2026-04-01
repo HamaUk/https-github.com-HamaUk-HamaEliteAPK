@@ -26,6 +26,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionOverride
@@ -147,6 +148,10 @@ class PlayerActivity : AppCompatActivity() {
     private var seekbarUserDragging = false
     private var lastContinueWatchSaveAt = 0L
 
+    /** Live: detect READY+playing but timeline position not advancing (frozen stream). */
+    private var liveStallWatchLastWallMs = 0L
+    private var liveStallWatchLastPosition = 0L
+
     private val handler = Handler(Looper.getMainLooper())
     private val hideControlsRunnable = Runnable { hideControls() }
     private val hideVolumeOsdRunnable = Runnable { fadeOutVolumeOsd() }
@@ -154,6 +159,9 @@ class PlayerActivity : AppCompatActivity() {
     companion object {
         private const val LIVE_MAX_VIDEO_BITRATE = 1_500_000
         private const val LIVE_BUFFERING_WATCHDOG_MS = 12_000L
+        /** If position moves less than this over [LIVE_STALL_CHECK_INTERVAL_MS], treat as frozen. */
+        private const val LIVE_STALL_POSITION_DELTA_MS = 50L
+        private const val LIVE_STALL_CHECK_INTERVAL_MS = 10_000L
     }
 
     private val clockRunnable = object : Runnable {
@@ -178,8 +186,35 @@ class PlayerActivity : AppCompatActivity() {
                     lastContinueWatchSaveAt = now
                 }
             }
+            if (p != null && isLiveStream && p.playWhenReady && p.playbackState == Player.STATE_READY && p.isPlaying) {
+                checkLiveTimelineStall(p)
+            } else {
+                liveStallWatchLastWallMs = 0L
+            }
             handler.postDelayed(this, 500L)
         }
+    }
+
+    private fun checkLiveTimelineStall(p: ExoPlayer) {
+        if (lastRequestedUrl.isBlank()) return
+        val now = System.currentTimeMillis()
+        val pos = p.currentPosition
+        if (liveStallWatchLastWallMs == 0L) {
+            liveStallWatchLastWallMs = now
+            liveStallWatchLastPosition = pos
+            return
+        }
+        if (now - liveStallWatchLastWallMs < LIVE_STALL_CHECK_INTERVAL_MS) return
+        if (pos <= liveStallWatchLastPosition + LIVE_STALL_POSITION_DELTA_MS) {
+            liveStallWatchLastWallMs = 0L
+            reconnectAttempts = 0
+            reconnectPending = false
+            handler.removeCallbacks(reconnectRunnable)
+            startPlayback(lastRequestedUrl, currentChannelName)
+            return
+        }
+        liveStallWatchLastWallMs = now
+        liveStallWatchLastPosition = pos
     }
 
     private fun videoCapsForPreset(preset: Int): Triple<Int, Int, Int> {
@@ -556,15 +591,15 @@ class PlayerActivity : AppCompatActivity() {
             .build() as DefaultTrackSelector.Parameters
         trackSelector.parameters = trackParams
 
-        // Live: slightly lower buffers for faster zapping (more rebuffer risk on bad networks).
+        // Live: balance zapping vs stalls — slightly higher min buffer than before to reduce frozen-edge cases.
         // VOD: keep safer defaults for seeking stability.
         val loadControlBuilder = DefaultLoadControl.Builder()
         if (isLiveStream) {
             loadControlBuilder.setBufferDurationsMs(
-                1800,
+                2200,
                 15000,
-                500,
-                1200
+                600,
+                1300
             )
         } else {
             loadControlBuilder.setBufferDurationsMs(
@@ -597,11 +632,13 @@ class PlayerActivity : AppCompatActivity() {
                 override fun onPlaybackStateChanged(state: Int) {
                     when (state) {
                         Player.STATE_BUFFERING -> {
+                            liveStallWatchLastWallMs = 0L
                             loadingBar.visibility = View.VISIBLE
                             errorText.visibility  = View.GONE
                             startBufferingWatchdogIfLive()
                         }
                         Player.STATE_READY -> {
+                            liveStallWatchLastWallMs = 0L
                             loadingBar.visibility = View.GONE
                             errorText.visibility  = View.GONE
                             reconnectAttempts = 0
@@ -624,10 +661,14 @@ class PlayerActivity : AppCompatActivity() {
                         Player.STATE_ENDED -> {
                             loadingBar.visibility = View.GONE
                             cancelBufferingWatchdog()
+                            if (isLiveStream && lastRequestedUrl.isNotBlank()) {
+                                handler.post { restartLiveAfterSourceEnded() }
+                            }
                         }
                         Player.STATE_IDLE -> {
                             // After stop() during channel change, IDLE appears before BUFFERING.
                             // Do not hide loading here — that caused the spinner to flash off.
+                            liveStallWatchLastWallMs = 0L
                             cancelBufferingWatchdog()
                         }
                     }
@@ -648,8 +689,16 @@ class PlayerActivity : AppCompatActivity() {
                     updateTrackButtonVisibility(tracks)
                 }
 
-                override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                override fun onPlayerError(error: PlaybackException) {
                     cancelBufferingWatchdog()
+                    if (isLiveStream && error.errorCode == PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW) {
+                        exoPlayer?.run {
+                            seekToDefaultPosition()
+                            prepare()
+                            playWhenReady = true
+                        }
+                        return
+                    }
                     if (retryWithAlternateSourceType()) return
                     if (retryWithAlternateLiveUrl()) return
                     val transientNetworkIssue = isTransientNetworkPlaybackError(error)
@@ -696,6 +745,20 @@ class PlayerActivity : AppCompatActivity() {
         startPlayback(lastRequestedUrl, currentChannelName)
     }
 
+    /** Live sources sometimes report ENDED when the playlist stops; reload the same URL. */
+    private fun restartLiveAfterSourceEnded() {
+        if (lastRequestedUrl.isBlank()) return
+        reconnectAttempts = 0
+        reconnectPending = false
+        handler.removeCallbacks(reconnectRunnable)
+        cancelBufferingWatchdog()
+        liveStallWatchLastWallMs = 0L
+        forceHlsForCurrentUrl = null
+        sourceFallbackTriedForUrl = ""
+        fallbackTriedForUrl = ""
+        startPlayback(lastRequestedUrl, currentChannelName)
+    }
+
     private fun startBufferingWatchdogIfLive() {
         if (!isLiveStream) return
         handler.removeCallbacks(bufferingWatchdogRunnable)
@@ -713,12 +776,12 @@ class PlayerActivity : AppCompatActivity() {
         scheduleReconnect()
     }
 
-    private fun isTransientNetworkPlaybackError(error: androidx.media3.common.PlaybackException): Boolean {
+    private fun isTransientNetworkPlaybackError(error: PlaybackException): Boolean {
         return when (error.errorCode) {
-            androidx.media3.common.PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
-            androidx.media3.common.PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT,
-            androidx.media3.common.PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS,
-            androidx.media3.common.PlaybackException.ERROR_CODE_IO_UNSPECIFIED -> true
+            PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
+            PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT,
+            PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS,
+            PlaybackException.ERROR_CODE_IO_UNSPECIFIED -> true
             else -> false
         }
     }
@@ -884,6 +947,7 @@ class PlayerActivity : AppCompatActivity() {
         reconnectPending = false
         cancelBufferingWatchdog()
         handler.removeCallbacks(reconnectRunnable)
+        liveStallWatchLastWallMs = 0L
         val currentChannel = channelList.firstOrNull { it.url == url.trim() }
         currentUserAgent = currentChannel?.userAgent?.trim().orEmpty().ifEmpty { intentUserAgent }
         currentReferrer = currentChannel?.referrer?.trim().orEmpty().ifEmpty { intentReferrer }
