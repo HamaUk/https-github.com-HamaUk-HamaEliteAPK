@@ -549,7 +549,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     <div class="channel-mgr-toolbar">
       <button type="button" class="tool-btn accent" onclick="window.channelMgrImportFromProfile()">IMPORT FROM PROFILE</button>
       <button type="button" class="tool-btn" onclick="window.channelMgrPickFile()">LOAD .M3U FILE</button>
-      <input type="file" id="channelMgrFile" accept=".m3u,.m3u8" style="display:none" onchange="window.channelMgrOnFile(this)">
+      <input type="file" id="channelMgrFile" accept=".m3u,.m3u8,.txt,application/vnd.apple.mpegurl,text/plain" style="display:none" onchange="window.channelMgrOnFile(this)">
       <button type="button" class="tool-btn" onclick="document.getElementById('channelMgrPaste').style.display=document.getElementById('channelMgrPaste').style.display==='none'?'block':'none'">PASTE M3U</button>
     </div>
     <div id="channelMgrPaste" style="display:none; margin-bottom:12px;">
@@ -662,7 +662,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
               <span>CHOOSE M3U FILE</span>
               <div id="addFileName" class="file-selected-name">No file selected</div>
             </label>
-            <input type="file" id="add-file" class="file-upload-input" accept=".m3u,.m3u8" onchange="updateFileName(this, 'addFileName')">
+            <input type="file" id="add-file" class="file-upload-input" accept=".m3u,.m3u8,.txt,application/vnd.apple.mpegurl,text/plain" onchange="updateFileName(this, 'addFileName')">
           </div>
         </div>
       `;
@@ -678,9 +678,35 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     });
   };
 
+  /** Firebase RTDB rejects `undefined` anywhere in the tree (common when merging `managedPlaylist`). */
+  function stripUndefinedDeep(value) {
+    if (value === undefined) return undefined;
+    if (value === null) return null;
+    if (typeof value !== 'object') return value;
+    if (Array.isArray(value)) {
+      return value.map(stripUndefinedDeep).filter((x) => x !== undefined);
+    }
+    const o = {};
+    for (const k of Object.keys(value)) {
+      const v = stripUndefinedDeep(value[k]);
+      if (v !== undefined) o[k] = v;
+    }
+    return o;
+  }
+
+  /** Full document replace at sync/<code>: keep existing managedPlaylist only if present; never write undefined. */
+  function buildSyncNodeForSet(payload, prev) {
+    const next = stripUndefinedDeep({ ...payload });
+    if (prev && prev.managedPlaylist != null) {
+      next.managedPlaylist = stripUndefinedDeep(prev.managedPlaylist);
+    }
+    return next;
+  }
+
   window.updateFileName = (input, displayId) => {
     const file = input.files[0];
-    document.getElementById(displayId).innerText = file ? file.name : "No file selected";
+    const el = document.getElementById(displayId);
+    if (el) el.innerText = file ? file.name : "No file selected";
   };
 
   const syncBtnEl = document.getElementById('syncBtn');
@@ -719,7 +745,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
 
       const prevSnap = await get(dbRef);
       const prev = prevSnap.exists() ? prevSnap.val() : {};
-      await set(dbRef, { ...payload, managedPlaylist: prev.managedPlaylist });
+      await set(dbRef, buildSyncNodeForSet(payload, prev));
 
       status.innerText = "✅ DATA SENT — users can tap START in the app";
       status.className = "status-msg success";
@@ -892,6 +918,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
 
   window.openAddManual = () => {
     document.getElementById('add-code').value = 'global';
+    window.setAddMethod('xtream');
     document.getElementById('addModal').style.display = 'flex';
   };
   window.closeAddModal = () => document.getElementById('addModal').style.display = 'none';
@@ -899,27 +926,75 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
   window.saveAddManual = async () => {
     const code = (document.getElementById('add-code').value || 'global').trim();
     if (!code) return alert('Sync key is required');
-    
+
+    const addBtn = document.querySelector('#addModal .sync-btn');
+    const prevBtnText = addBtn ? addBtn.innerText : '';
+
     let payload = { method: addMethod, timestamp: Date.now() };
-    if (addMethod === 'xtream') {
-      payload.server = document.getElementById('add-server').value;
-      payload.user = document.getElementById('add-user').value;
-      payload.pass = document.getElementById('add-pass').value;
-    } else if (addMethod === 'm3u') {
-      payload.url = document.getElementById('add-url').value;
-    } else if (addMethod === 'file') {
-      const file = document.getElementById('add-file').files[0];
-      if (!file) return alert('Select a file first');
-      payload.method = 'm3u_file';
-      payload.content = await readFileContent(file);
-      payload.filename = file.name;
+    try {
+      if (addMethod === 'xtream') {
+        const s = document.getElementById('add-server');
+        const u = document.getElementById('add-user');
+        const p = document.getElementById('add-pass');
+        if (!s || !u || !p) {
+          alert('Form not ready: choose XTREAM tab and fill Server / User / Pass.');
+          return;
+        }
+        payload.server = s.value;
+        payload.user = u.value;
+        payload.pass = p.value;
+      } else if (addMethod === 'm3u') {
+        const urlEl = document.getElementById('add-url');
+        if (!urlEl) {
+          alert('Form not ready: choose URL tab and enter an M3U address.');
+          return;
+        }
+        payload.url = urlEl.value;
+      } else if (addMethod === 'file') {
+        const fi = document.getElementById('add-file');
+        if (!fi) {
+          alert('Click the FILE tab, then choose your .m3u / .m3u8 again.');
+          return;
+        }
+        const file = fi.files[0];
+        if (!file) return alert('Select an M3U file first (FILE tab → CHOOSE M3U FILE).');
+        const maxEmb = 12 * 1024 * 1024;
+        if (file.size > maxEmb) {
+          alert(
+            'This file is ' + Math.round(file.size / (1024 * 1024)) + ' MB. Firebase stores the whole playlist in one place; try a smaller list or use the URL tab with a hosted link instead.'
+          );
+          return;
+        }
+        if (addBtn) {
+          addBtn.disabled = true;
+          addBtn.innerText = 'READING FILE…';
+        }
+        payload.method = 'm3u_file';
+        payload.content = await readFileContent(file);
+        payload.filename = file.name;
+        if (addBtn) {
+          addBtn.innerText = 'SAVING…';
+        }
+      }
+
+      const prevSnap = await get(ref(db, 'sync/' + code));
+      const prev = prevSnap.exists() ? prevSnap.val() : {};
+      await set(ref(db, 'sync/' + code), buildSyncNodeForSet(payload, prev));
+      window.closeAddModal();
+      await window.loadUsers();
+    } catch (e) {
+      const msg = (e && e.message) ? e.message : String(e);
+      const codeFirebase = e && e.code ? '\n(' + e.code + ')' : '';
+      alert(
+        'Could not save profile: ' + msg + codeFirebase +
+          '\n\nCommon causes: playlist file too large for Firebase, network lost, or editor rules blocked the write. Check the browser console (F12) for details.'
+      );
+    } finally {
+      if (addBtn) {
+        addBtn.disabled = false;
+        addBtn.innerText = prevBtnText || 'ADD USER';
+      }
     }
-    
-    const prevSnap = await get(ref(db, 'sync/' + code));
-    const prev = prevSnap.exists() ? prevSnap.val() : {};
-    await set(ref(db, 'sync/' + code), { ...payload, managedPlaylist: prev.managedPlaylist });
-    window.closeAddModal();
-    window.loadUsers();
   };
 
   window.exportData = () => {
@@ -963,7 +1038,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
               <span>REPLACE M3U FILE</span>
               <div id="editFileName" class="file-selected-name">No file selected</div>
             </label>
-            <input type="file" id="edit-file" class="file-upload-input" accept=".m3u,.m3u8" onchange="updateFileName(this, 'editFileName')">
+            <input type="file" id="edit-file" class="file-upload-input" accept=".m3u,.m3u8,.txt,application/vnd.apple.mpegurl,text/plain" onchange="updateFileName(this, 'editFileName')">
           </div>
         </div>
       `;
@@ -996,9 +1071,9 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
           payload.filename = u.filename;
         }
       }
-      if (u.managedPlaylist) payload.managedPlaylist = u.managedPlaylist;
+      if (u.managedPlaylist != null) payload.managedPlaylist = u.managedPlaylist;
 
-      await set(dbRef, payload);
+      await set(dbRef, stripUndefinedDeep(payload));
       window.closeModal();
       window.loadUsers();
     } catch (e) { alert(e.message); }
@@ -1450,14 +1525,14 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     const st = document.getElementById('channelMgrStatus');
     st.innerText = 'Saving...';
     try {
-      await update(ref(db, 'sync/' + code), {
+      await update(ref(db, 'sync/' + code), stripUndefinedDeep({
         managedPlaylist: {
           schemaVersion: 1,
           updatedAt: Date.now(),
           items
         },
         timestamp: Date.now()
-      });
+      }));
       st.innerText = 'Saved. Users must sync app again to refresh cache.';
       window.channelMgrProfile = (await get(ref(db, 'sync/' + code))).val();
     } catch (e) {

@@ -1,7 +1,6 @@
 package com.bachors.iptv
 
 import android.app.PictureInPictureParams
-import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.media.AudioManager
@@ -74,7 +73,6 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var btnPlayPause: ImageView
     private lateinit var btnPrev: ImageView
     private lateinit var btnNext: ImageView
-    private lateinit var btnFullscreen: ImageView
     private lateinit var btnResize: ImageView
     private lateinit var btnAudioTrack: ImageView
     private lateinit var btnSubtitle: ImageView
@@ -132,7 +130,6 @@ class PlayerActivity : AppCompatActivity() {
     private var channelList = mutableListOf<ChannelsData>()
     private var currentIndex = 0
     private var controlsVisible = true
-    private var isFullscreen = false
     private var isInPipMode = false
     private var lastRequestedUrl: String = ""
     private var fallbackTriedForUrl: String = ""
@@ -294,8 +291,6 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        isFullscreen = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE
-        updateFullscreenIcon()
         goFullscreen()
     }
 
@@ -561,14 +556,25 @@ class PlayerActivity : AppCompatActivity() {
             .build() as DefaultTrackSelector.Parameters
         trackSelector.parameters = trackParams
 
-        val loadControl = DefaultLoadControl.Builder()
-            .setBufferDurationsMs(
+        // Live: slightly lower buffers for faster zapping (more rebuffer risk on bad networks).
+        // VOD: keep safer defaults for seeking stability.
+        val loadControlBuilder = DefaultLoadControl.Builder()
+        if (isLiveStream) {
+            loadControlBuilder.setBufferDurationsMs(
+                1800,
+                15000,
+                500,
+                1200
+            )
+        } else {
+            loadControlBuilder.setBufferDurationsMs(
                 2500,
                 15000,
                 800,
                 1500
             )
-            .build()
+        }
+        val loadControl = loadControlBuilder.build()
 
         val renderersFactory = DefaultRenderersFactory(this)
             // Prefer FFmpeg extension when present (AC-3 / E-AC-3 etc.); ON often never picks it for “supported” HW tracks.
@@ -619,11 +625,20 @@ class PlayerActivity : AppCompatActivity() {
                             loadingBar.visibility = View.GONE
                             cancelBufferingWatchdog()
                         }
-                        else -> {
-                            loadingBar.visibility = View.GONE
+                        Player.STATE_IDLE -> {
+                            // After stop() during channel change, IDLE appears before BUFFERING.
+                            // Do not hide loading here — that caused the spinner to flash off.
                             cancelBufferingWatchdog()
                         }
                     }
+                }
+
+                override fun onIsLoadingChanged(isLoading: Boolean) {
+                    if (isLoading) {
+                        loadingBar.visibility = View.VISIBLE
+                        errorText.visibility = View.GONE
+                    }
+                    // When false, READY / ENDED / onPlayerError control hiding the spinner.
                 }
 
                 override fun onIsPlayingChanged(isPlaying: Boolean) = updatePlayPauseIcon()
@@ -883,6 +898,8 @@ class PlayerActivity : AppCompatActivity() {
     private fun startPlayback(playbackUrl: String, name: String) {
         val client = okHttpClient ?: return
         try {
+            loadingBar.visibility = View.VISIBLE
+            errorText.visibility = View.GONE
             lastRequestedUrl = playbackUrl
             ensureAudibleVolume()
             exoPlayer?.volume = 1.0f
@@ -891,8 +908,6 @@ class PlayerActivity : AppCompatActivity() {
             exoPlayer?.run { stop(); setMediaSource(src); prepare(); playWhenReady = true }
             tvChannel.text = name.uppercase()
             tvEpg.text     = "زانیاری نییە"
-            loadingBar.visibility = View.VISIBLE
-            errorText.visibility  = View.GONE
             cancelBufferingWatchdog()
         } catch (_: Exception) {
             errorText.text        = "نەتوانرا پەخشەکە باربکرێت"
@@ -1075,7 +1090,6 @@ class PlayerActivity : AppCompatActivity() {
         btnPlayPause    = findViewById(R.id.btn_play_pause)
         btnPrev         = findViewById(R.id.btn_prev_channel)
         btnNext         = findViewById(R.id.btn_next_channel)
-        btnFullscreen   = findViewById(R.id.btn_fullscreen)
         btnResize       = findViewById(R.id.btn_resize)
         btnAudioTrack   = findViewById(R.id.btn_audio_track)
         btnSubtitle     = findViewById(R.id.btn_subtitle)
@@ -1104,7 +1118,6 @@ class PlayerActivity : AppCompatActivity() {
         btnPlayPause.setOnClickListener { togglePlayPause(); scheduleHideControls() }
         btnPrev.setOnClickListener { prevChannel() }
         btnNext.setOnClickListener { nextChannel() }
-        btnFullscreen.setOnClickListener { toggleFullscreen(); scheduleHideControls() }
         btnResize.setOnClickListener { cycleResizeMode() }
         btnAudioTrack.setOnClickListener { showAudioTrackSelector() }
         btnSubtitle.setOnClickListener { showSubtitleSelector() }
@@ -1125,8 +1138,9 @@ class PlayerActivity : AppCompatActivity() {
         })
 
         listOf(
+            btnBack,
             btnPrev, btnPlayPause, btnNext, btnAudioTrack, btnSubtitle,
-            btnSpeed, btnQuality, btnResize, btnFullscreen
+            btnSpeed, btnQuality, btnResize
         ).forEach {
             it.isFocusable = true
             it.isFocusableInTouchMode = true
@@ -1146,7 +1160,7 @@ class PlayerActivity : AppCompatActivity() {
         showControls()
         val target = listOf(
             btnPlayPause, btnNext, btnPrev, btnAudioTrack, btnSubtitle,
-            btnSpeed, btnQuality, btnResize, btnFullscreen
+            btnSpeed, btnQuality, btnResize
         ).firstOrNull { it.visibility == View.VISIBLE && it.isFocusable }
         target?.requestFocus()
     }
@@ -1214,30 +1228,6 @@ class PlayerActivity : AppCompatActivity() {
             .setDuration(300)
             .withEndAction { resizeOsd.visibility = View.INVISIBLE }
             .start()
-    }
-
-    // ════════════════════════════════════════════════════════
-    //  FULLSCREEN
-    // ════════════════════════════════════════════════════════
-    private fun toggleFullscreen() {
-        isFullscreen = !isFullscreen
-        val uiMode = resources.configuration.uiMode and Configuration.UI_MODE_TYPE_MASK
-        val isTelevision = uiMode == Configuration.UI_MODE_TYPE_TELEVISION
-        if (!isTelevision) {
-            try {
-                requestedOrientation = if (isFullscreen)
-                    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                else
-                    ActivityInfo.SCREEN_ORIENTATION_SENSOR
-            } catch (_: Exception) {}
-        }
-        updateFullscreenIcon()
-    }
-
-    private fun updateFullscreenIcon() {
-        btnFullscreen.setImageResource(
-            if (isFullscreen) R.drawable.ic_fullscreen_exit_white else R.drawable.ic_fullscreen_white
-        )
     }
 
     private fun goFullscreen() {

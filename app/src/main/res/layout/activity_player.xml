@@ -104,6 +104,9 @@
             android:layout_width="44dp"
             android:layout_height="44dp"
             android:padding="10dp"
+            android:background="@drawable/bg_tv_icon_focus"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:src="@drawable/ic_back"
             app:tint="#FFFFFF" />
 
@@ -161,6 +164,9 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:padding="10dp"
+            android:background="@drawable/bg_tv_icon_focus"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:src="@drawable/ic_chevron_left_white"
             android:contentDescription="کەناڵی پێشوو"
             app:tint="#FFFFFF" />
@@ -171,6 +177,9 @@
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:padding="10dp"
+            android:background="@drawable/bg_tv_icon_focus"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:src="@drawable/ic_pause_white"
             android:contentDescription="پەخش/وەستان"
             app:tint="#FFFFFF" />
@@ -181,6 +190,9 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:padding="10dp"
+            android:background="@drawable/bg_tv_icon_focus"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:src="@drawable/ic_chevron_right_white"
             android:contentDescription="کەناڵی داهاتوو"
             app:tint="#FFFFFF" />
@@ -211,6 +223,9 @@
             android:layout_width="44dp"
             android:layout_height="44dp"
             android:padding="10dp"
+            android:background="@drawable/bg_tv_icon_focus"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:src="@drawable/ic_volume_high"
             android:contentDescription="ڕێچکەی دەنگ"
             app:tint="#BBBBBB" />
@@ -221,6 +236,9 @@
             android:layout_width="44dp"
             android:layout_height="44dp"
             android:padding="10dp"
+            android:background="@drawable/bg_tv_icon_focus"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:src="@drawable/ic_file"
             android:contentDescription="ژێرنووس"
             app:tint="#BBBBBB" />
@@ -230,6 +248,9 @@
             android:id="@+id/btn_speed"
             android:layout_width="44dp"
             android:layout_height="44dp"
+            android:background="@drawable/bg_tv_icon_focus"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:gravity="center"
             android:text="1x"
             android:textColor="#BBBBBB"
@@ -242,29 +263,25 @@
             android:layout_width="44dp"
             android:layout_height="44dp"
             android:padding="10dp"
+            android:background="@drawable/bg_tv_icon_focus"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:src="@drawable/ic_settings"
             android:contentDescription="کوالێتی"
             app:tint="#BBBBBB" />
 
-        <!-- Resize mode toggle -->
+        <!-- Resize / fit mode (single control; duplicate fullscreen icon removed) -->
         <ImageView
             android:id="@+id/btn_resize"
             android:layout_width="44dp"
             android:layout_height="44dp"
             android:padding="10dp"
+            android:background="@drawable/bg_tv_icon_focus"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:src="@drawable/ic_fullscreen_white"
             android:contentDescription="دۆخی گەورەکردنەوە"
             app:tint="#BBBBBB" />
-
-        <!-- Fullscreen toggle -->
-        <ImageView
-            android:id="@+id/btn_fullscreen"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="10dp"
-            android:src="@drawable/ic_fullscreen_white"
-            android:contentDescription="پڕ شاشە"
-            app:tint="#FFFFFF" />
     </LinearLayout>
 
 </FrameLayout>

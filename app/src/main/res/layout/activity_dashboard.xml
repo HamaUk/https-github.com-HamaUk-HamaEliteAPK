@@ -116,6 +116,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:duplicateParentState="true"
                     android:background="@drawable/bg_dashboard_card_active" />
                 <ImageView
                     android:layout_width="match_parent"
@@ -156,6 +157,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:duplicateParentState="true"
                     android:background="@drawable/bg_dashboard_card" />
                 <ImageView
                     android:layout_width="match_parent"
@@ -196,6 +198,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:duplicateParentState="true"
                     android:background="@drawable/bg_dashboard_card" />
                 <ImageView
                     android:layout_width="match_parent"
@@ -236,6 +239,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:duplicateParentState="true"
                     android:background="@drawable/bg_dashboard_card" />
                 <ImageView
                     android:layout_width="match_parent"
@@ -276,6 +280,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:duplicateParentState="true"
                     android:background="@drawable/bg_dashboard_card" />
                 <ImageView
                     android:layout_width="match_parent"
@@ -301,9 +306,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:background="?attr/selectableItemBackground"
+        android:background="@drawable/bg_tv_icon_focus"
         android:clickable="true"
         android:focusable="true"
+        android:focusableInTouchMode="true"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="8dp"
@@ -335,9 +341,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:background="?attr/selectableItemBackground"
+        android:background="@drawable/bg_tv_icon_focus"
         android:clickable="true"
         android:focusable="true"
+        android:focusableInTouchMode="true"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="8dp"
