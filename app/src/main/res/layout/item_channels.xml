@@ -100,7 +100,7 @@
             android:paddingEnd="10dp"
             android:paddingTop="4dp"
             android:paddingBottom="4dp"
-            android:text="PLAYING"
+            android:text="لە پەخشداندا"
             android:textColor="#FFFFFF"
             android:textSize="9sp"
             android:textStyle="bold"

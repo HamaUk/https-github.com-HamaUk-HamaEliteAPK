@@ -100,7 +100,7 @@ class PlayerActivity : AppCompatActivity() {
         AspectRatioFrameLayout.RESIZE_MODE_ZOOM,
         AspectRatioFrameLayout.RESIZE_MODE_FILL
     )
-    private val resizeLabels = arrayOf("Fit Screen", "Fixed Width", "Zoom (100%)", "Stretch Fill")
+    private val resizeLabels = arrayOf("گونجاندن لە شاشە", "پانی جێگیر", "زووم (100%)", "پڕکردنەوەی تەواو")
     private var currentResizeIndex = 0
     private val hideResizeOsdRunnable = Runnable { fadeOutResizeOsd() }
 
@@ -130,7 +130,7 @@ class PlayerActivity : AppCompatActivity() {
     private var fallbackTriedForUrl: String = ""
     private var sourceFallbackTriedForUrl: String = ""
     private var forceHlsForCurrentUrl: Boolean? = null
-    private var currentChannelName: String = "Channel"
+    private var currentChannelName: String = "کەناڵ"
     private var currentUserAgent: String = ""
     private var currentReferrer: String = ""
     private var intentUserAgent: String = ""
@@ -159,13 +159,13 @@ class PlayerActivity : AppCompatActivity() {
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         bindViews()
 
-        val name = intent.getStringExtra("name") ?: "Channel"
+        val name = intent.getStringExtra("name") ?: "کەناڵ"
         val url  = intent.getStringExtra("url")  ?: ""
         intentUserAgent = intent.getStringExtra("userAgent").orEmpty().trim()
         intentReferrer = intent.getStringExtra("referrer").orEmpty().trim()
 
         if (url.isEmpty()) {
-            Toast.makeText(this, "No stream URL", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "بەستەری پەخش نییە", Toast.LENGTH_SHORT).show()
             finish(); return
         }
 
@@ -516,7 +516,7 @@ class PlayerActivity : AppCompatActivity() {
                     }
                     loadingBar.visibility = View.GONE
                     errorText.visibility  = View.VISIBLE
-                    errorText.text        = "Stream unavailable"
+                    errorText.text        = "پەخشەکە بەردەست نییە"
                 }
             })
         }
@@ -529,7 +529,7 @@ class PlayerActivity : AppCompatActivity() {
         reconnectAttempts++
         val delay = (reconnectAttempts * 2000L).coerceAtMost(6000L)
         errorText.visibility = View.VISIBLE
-        errorText.text = "Reconnecting... (${reconnectAttempts}/$maxReconnectAttempts)"
+        errorText.text = "دووبارە پەیوەندی دەکرێت... (${reconnectAttempts}/$maxReconnectAttempts)"
         loadingBar.visibility = View.VISIBLE
         handler.removeCallbacks(reconnectRunnable)
         handler.postDelayed(reconnectRunnable, delay)
@@ -572,26 +572,26 @@ class PlayerActivity : AppCompatActivity() {
             if (group.type != C.TRACK_TYPE_AUDIO) continue
             for (i in 0 until group.mediaTrackGroup.length) {
                 val format = group.mediaTrackGroup.getFormat(i)
-                val label = format.label ?: format.language?.uppercase() ?: "Track ${i + 1}"
+                val label = format.label ?: format.language?.uppercase() ?: "ڕێچکە ${i + 1}"
                 audioTracks.add(label to TrackSelectionOverride(group.mediaTrackGroup, i))
             }
         }
 
         if (audioTracks.isEmpty()) {
-            Toast.makeText(this, "No audio tracks available", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "هیچ ڕێچکەی دەنگی بەردەست نییە", Toast.LENGTH_SHORT).show()
             return
         }
 
         val names = audioTracks.map { it.first }.toTypedArray()
         MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-            .setTitle("Audio Track")
+            .setTitle("ڕێچکەی دەنگ")
             .setItems(names) { _, which ->
                 val override = audioTracks[which].second
                 trackSelector.parameters = trackSelector.buildUponParameters()
                     .clearOverridesOfType(C.TRACK_TYPE_AUDIO)
                     .addOverride(override)
                     .build()
-                showGenericOsd("Audio: ${names[which]}")
+                showGenericOsd("دەنگ: ${names[which]}")
             }
             .show()
     }
@@ -604,22 +604,22 @@ class PlayerActivity : AppCompatActivity() {
             if (group.type != C.TRACK_TYPE_TEXT) continue
             for (i in 0 until group.mediaTrackGroup.length) {
                 val format = group.mediaTrackGroup.getFormat(i)
-                val label = format.label ?: format.language?.uppercase() ?: "Subtitle ${i + 1}"
+                val label = format.label ?: format.language?.uppercase() ?: "ژێرنووس ${i + 1}"
                 subtitleTracks.add(label to TrackSelectionOverride(group.mediaTrackGroup, i))
             }
         }
 
-        val names = mutableListOf("Off")
+        val names = mutableListOf("کوژاوە")
         names.addAll(subtitleTracks.map { it.first })
 
         MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-            .setTitle("Subtitles")
+            .setTitle("ژێرنووس")
             .setItems(names.toTypedArray()) { _, which ->
                 if (which == 0) {
                     trackSelector.parameters = trackSelector.buildUponParameters()
                         .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
                         .build()
-                    showGenericOsd("Subtitles: Off")
+                    showGenericOsd("ژێرنووس: کوژاوە")
                 } else {
                     val override = subtitleTracks[which - 1].second
                     trackSelector.parameters = trackSelector.buildUponParameters()
@@ -627,7 +627,7 @@ class PlayerActivity : AppCompatActivity() {
                         .clearOverridesOfType(C.TRACK_TYPE_TEXT)
                         .addOverride(override)
                         .build()
-                    showGenericOsd("Subtitles: ${names[which]}")
+                    showGenericOsd("ژێرنووس: ${names[which]}")
                 }
             }
             .show()
@@ -648,30 +648,30 @@ class PlayerActivity : AppCompatActivity() {
                     h >= 720  -> "720p"
                     h >= 480  -> "480p"
                     h > 0     -> "${h}p"
-                    else      -> "Track ${i + 1}"
+                    else      -> "ڕێچکە ${i + 1}"
                 }
                 videoTracks.add(label to TrackSelectionOverride(group.mediaTrackGroup, i))
             }
         }
 
-        val names = mutableListOf("Auto")
+        val names = mutableListOf("خۆکار")
         names.addAll(videoTracks.map { it.first })
 
         MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-            .setTitle("Video Quality")
+            .setTitle("کوالێتی ڤیدیۆ")
             .setItems(names.toTypedArray()) { _, which ->
                 if (which == 0) {
                     trackSelector.parameters = trackSelector.buildUponParameters()
                         .clearOverridesOfType(C.TRACK_TYPE_VIDEO)
                         .build()
-                    showGenericOsd("Quality: Auto")
+                    showGenericOsd("کوالێتی: خۆکار")
                 } else {
                     val override = videoTracks[which - 1].second
                     trackSelector.parameters = trackSelector.buildUponParameters()
                         .clearOverridesOfType(C.TRACK_TYPE_VIDEO)
                         .addOverride(override)
                         .build()
-                    showGenericOsd("Quality: ${names[which]}")
+                    showGenericOsd("کوالێتی: ${names[which]}")
                 }
             }
             .show()
@@ -684,7 +684,7 @@ class PlayerActivity : AppCompatActivity() {
         currentSpeedIndex = (currentSpeedIndex + 1) % speedValues.size
         exoPlayer?.setPlaybackSpeed(speedValues[currentSpeedIndex])
         btnSpeed.text = speedLabels[currentSpeedIndex]
-        showGenericOsd("Speed: ${speedLabels[currentSpeedIndex]}")
+        showGenericOsd("خێرایی: ${speedLabels[currentSpeedIndex]}")
         scheduleHideControls()
     }
 
@@ -714,11 +714,11 @@ class PlayerActivity : AppCompatActivity() {
             val src = buildMediaSource(playbackUrl, client, buildRequestHeaders())
             exoPlayer?.run { stop(); setMediaSource(src); prepare(); playWhenReady = true }
             tvChannel.text = name.uppercase()
-            tvEpg.text     = "No Information"
+            tvEpg.text     = "زانیاری نییە"
             loadingBar.visibility = View.VISIBLE
             errorText.visibility  = View.GONE
         } catch (_: Exception) {
-            errorText.text        = "Could not load stream"
+            errorText.text        = "نەتوانرا پەخشەکە باربکرێت"
             errorText.visibility  = View.VISIBLE
             loadingBar.visibility = View.GONE
         }

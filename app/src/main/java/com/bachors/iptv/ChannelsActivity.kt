@@ -89,7 +89,7 @@ class ChannelsActivity : AppCompatActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val searchView = menu.findItem(R.id.action_search).actionView as SearchView
-        searchView.queryHint = "Search..."
+        searchView.queryHint = "گەڕان..."
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(s: String): Boolean = false
 

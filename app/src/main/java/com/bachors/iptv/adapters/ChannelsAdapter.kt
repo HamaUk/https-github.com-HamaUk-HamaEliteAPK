@@ -112,7 +112,7 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
                 ob.put("referrer", data.referrer)
                 ar.put(ob)
                 sharedPrefManager.saveSPString(SharedPrefManager.SP_FAVORITES, ar.toString())
-                Toast.makeText(inContext, "Saved to Favorites...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(inContext, "خرا دڵخوازەکان...", Toast.LENGTH_SHORT).show()
             } catch (_: Exception) { }
         }
     }

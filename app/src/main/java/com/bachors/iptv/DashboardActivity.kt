@@ -30,7 +30,7 @@ class DashboardActivity : AppCompatActivity() {
             updateCategoryCounts()
         } catch (t: Throwable) {
             t.printStackTrace()
-            Toast.makeText(this, "Recovered from startup issue. Please login again.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "لە کێشەی دەستپێک ڕزگاربووین. تکایە دووبارە بچۆ ژوورەوە.", Toast.LENGTH_LONG).show()
             val intent = Intent(this, MainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
@@ -100,15 +100,15 @@ class DashboardActivity : AppCompatActivity() {
                 }
                 val totalGroups = data.count { it.title.isNotEmpty() }
                 val totalChannels = data.sumOf { it.channel.toIntOrNull() ?: 0 }
-                binding.tvLabelLive.text = if (totalChannels > 0) "LIVE TV ($totalChannels)" else "LIVE TV"
-                binding.tvLabelPlaylists.text = if (totalGroups > 0) "PLAYLISTS ($totalGroups)" else "PLAYLISTS"
+                binding.tvLabelLive.text = if (totalChannels > 0) "پەخشی ڕاستەوخۆ ($totalChannels)" else "پەخشی ڕاستەوخۆ"
+                binding.tvLabelPlaylists.text = if (totalGroups > 0) "پلی‌لیستەکان ($totalGroups)" else "پلی‌لیستەکان"
             }
 
             val favJson = sp.getSpFavorites()
             if (favJson.isNotEmpty() && favJson != "[]") {
                 val favCount = org.json.JSONArray(favJson).length()
                 if (favCount > 0) {
-                    binding.tvLabelPlaylists.text = "FAVORITES ($favCount)"
+                    binding.tvLabelPlaylists.text = "دڵخوازەکان ($favCount)"
                 }
             }
         } catch (_: Exception) {}

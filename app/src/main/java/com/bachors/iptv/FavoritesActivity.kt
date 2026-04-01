@@ -42,7 +42,7 @@ class FavoritesActivity : AppCompatActivity() {
         supportActionBar?.elevation = 0f
         supportActionBar?.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
 
-        supportActionBar?.subtitle = "Favorites"
+        supportActionBar?.subtitle = "دڵخوازەکان"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         mcon = this
@@ -109,9 +109,9 @@ class FavoritesActivity : AppCompatActivity() {
         key = if (all) id else allData.indexOf(searchData!![id])
 
         MaterialAlertDialogBuilder(mcon)
-            .setTitle("Delete ?")
+            .setTitle("سڕینەوە؟")
             .setCancelable(false)
-            .setPositiveButton("Yes") { _, _ ->
+            .setPositiveButton("بەڵێ") { _, _ ->
                 try {
                     val arr = JSONArray(sharedPrefManager.getSpFavorites())
                     arr.remove(key)
@@ -123,7 +123,7 @@ class FavoritesActivity : AppCompatActivity() {
                     // Handle exception
                 }
             }
-            .setNegativeButton("No", null)
+            .setNegativeButton("نەخێر", null)
             .show()
     }
 
@@ -135,7 +135,7 @@ class FavoritesActivity : AppCompatActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val searchView = menu.findItem(R.id.action_search).actionView as SearchView
-        searchView.queryHint = "Search..."
+        searchView.queryHint = "گەڕان..."
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(s: String): Boolean = false
 

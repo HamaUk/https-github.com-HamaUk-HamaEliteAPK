@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="CODE: ----"
+        android:text="کۆد: ----"
         android:textColor="#55FFFFFF"
         android:textSize="11sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -115,7 +115,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="LIVE TV"
+                android:text="پەخشی ڕاستەوخۆ"
                 android:textColor="#E53935"
                 android:textSize="13sp"
                 android:textStyle="bold"
@@ -155,7 +155,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="MOVIES"
+                android:text="فیلمەکان"
                 android:textColor="#BBBBBB"
                 android:textSize="13sp"
                 android:textStyle="bold"
@@ -195,7 +195,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="SERIES"
+                android:text="زنجیرەکان"
                 android:textColor="#BBBBBB"
                 android:textSize="13sp"
                 android:textStyle="bold"
@@ -235,7 +235,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="PLAYLISTS"
+                android:text="پلی‌لیستەکان"
                 android:textColor="#BBBBBB"
                 android:textSize="13sp"
                 android:textStyle="bold"
@@ -274,7 +274,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="SETTINGS"
+                android:text="ڕێکخستنەکان"
                 android:textColor="#BBBBBB"
                 android:textSize="13sp"
                 android:textStyle="bold"
@@ -302,7 +302,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:text="RELOAD"
+            android:text="نوێکردنەوە"
             android:textColor="#FFFFFF"
             android:textSize="22sp"
             android:textStyle="bold"
@@ -319,13 +319,13 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Version: 1.0.8"
+            android:text="وەشان: 1.0.8"
             android:textColor="#55FFFFFF"
             android:textSize="11sp" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Status: Activated"
+            android:text="دۆخ: چالاککراو"
             android:textColor="#E53935"
             android:textSize="11sp"
             android:textStyle="bold" />
@@ -333,3 +333,6 @@
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+

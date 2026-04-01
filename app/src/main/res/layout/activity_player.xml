@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -30,7 +30,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
-        android:text="Stream unavailable"
+        android:text="پەخشەکە بەردەست نییە"
         android:textColor="#AAFFFFFF"
         android:textSize="15sp"
         android:visibility="gone" />
@@ -46,7 +46,7 @@
         android:paddingEnd="24dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
-        android:text="Fit Screen"
+        android:text="گونجاندن لە شاشە"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -116,7 +116,7 @@
             android:layout_marginStart="4dp"
             android:ellipsize="end"
             android:maxLines="1"
-            android:text="CHANNEL"
+            android:text="کەناڵ"
             android:textColor="#FFFFFF"
             android:textSize="15sp"
             android:textStyle="bold" />
@@ -127,7 +127,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
-            android:text="No Information"
+            android:text="زانیاری نییە"
             android:textColor="#80FFFFFF"
             android:textSize="11sp" />
 
@@ -162,7 +162,7 @@
             android:layout_height="48dp"
             android:padding="10dp"
             android:src="@drawable/ic_chevron_left_white"
-            android:contentDescription="Previous Channel"
+            android:contentDescription="کەناڵی پێشوو"
             app:tint="#FFFFFF" />
 
         <!-- Play / Pause -->
@@ -172,7 +172,7 @@
             android:layout_height="56dp"
             android:padding="10dp"
             android:src="@drawable/ic_pause_white"
-            android:contentDescription="Play / Pause"
+            android:contentDescription="پەخش/وەستان"
             app:tint="#FFFFFF" />
 
         <!-- Next channel -->
@@ -182,7 +182,7 @@
             android:layout_height="48dp"
             android:padding="10dp"
             android:src="@drawable/ic_chevron_right_white"
-            android:contentDescription="Next Channel"
+            android:contentDescription="کەناڵی داهاتوو"
             app:tint="#FFFFFF" />
 
         <!-- Seek bar (hidden for live TV, shown for VOD) -->
@@ -212,7 +212,7 @@
             android:layout_height="44dp"
             android:padding="10dp"
             android:src="@drawable/ic_volume_high"
-            android:contentDescription="Audio Track"
+            android:contentDescription="ڕێچکەی دەنگ"
             app:tint="#BBBBBB" />
 
         <!-- Subtitle selector -->
@@ -222,7 +222,7 @@
             android:layout_height="44dp"
             android:padding="10dp"
             android:src="@drawable/ic_file"
-            android:contentDescription="Subtitles"
+            android:contentDescription="ژێرنووس"
             app:tint="#BBBBBB" />
 
         <!-- Playback speed -->
@@ -243,7 +243,7 @@
             android:layout_height="44dp"
             android:padding="10dp"
             android:src="@drawable/ic_settings"
-            android:contentDescription="Quality"
+            android:contentDescription="کوالێتی"
             app:tint="#BBBBBB" />
 
         <!-- Resize mode toggle -->
@@ -253,7 +253,7 @@
             android:layout_height="44dp"
             android:padding="10dp"
             android:src="@drawable/ic_fullscreen_white"
-            android:contentDescription="Resize Mode"
+            android:contentDescription="دۆخی گەورەکردنەوە"
             app:tint="#BBBBBB" />
 
         <!-- Fullscreen toggle -->
@@ -263,8 +263,11 @@
             android:layout_height="48dp"
             android:padding="10dp"
             android:src="@drawable/ic_fullscreen_white"
-            android:contentDescription="Fullscreen"
+            android:contentDescription="پڕ شاشە"
             app:tint="#FFFFFF" />
     </LinearLayout>
 
 </FrameLayout>
+
+
+

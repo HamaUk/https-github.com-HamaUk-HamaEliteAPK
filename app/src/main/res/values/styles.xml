@@ -2,6 +2,8 @@
 <resources>
 
     <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:fontFamily">@font/rabar_044</item>
+        <item name="fontFamily">@font/rabar_044</item>
         <item name="colorPrimary">#E53935</item>
         <item name="colorPrimaryVariant">#B71C1C</item>
         <item name="colorOnPrimary">#FFFFFF</item>

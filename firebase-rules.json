@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "sync": {
+      ".read": true,
+      ".write": "auth != null"
+    }
+  }
+}

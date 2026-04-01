@@ -68,7 +68,7 @@ class FileActivity : AppCompatActivity() {
 
         supportActionBar?.elevation = 0f
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.subtitle = "M3U File"
+        supportActionBar?.subtitle = "پەڕگەی M3U"
         supportActionBar?.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
 
         mcon = this
@@ -161,10 +161,10 @@ class FileActivity : AppCompatActivity() {
                     goLink = uri.toString()
                     loadChannels()
                 } else {
-                    Toast.makeText(applicationContext, "Failed...", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, "سەرکەوتوو نەبوو...", Toast.LENGTH_SHORT).show()
                 }
             } else {
-                Toast.makeText(applicationContext, "Failed: wrong file format...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(applicationContext, "سەرکەوتوو نەبوو: جۆری پەڕگە هەڵەیە...", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -200,10 +200,10 @@ class FileActivity : AppCompatActivity() {
                             adapter.clear()
                             jsonTogson()
                         } else {
-                            Toast.makeText(applicationContext, "Failed...", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(applicationContext, "سەرکەوتوو نەبوو...", Toast.LENGTH_SHORT).show()
                         }
                     } else {
-                        Toast.makeText(applicationContext, "Failed: wrong file format...", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(applicationContext, "سەرکەوتوو نەبوو: جۆری پەڕگە هەڵەیە...", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -288,9 +288,9 @@ class FileActivity : AppCompatActivity() {
         key = if (all) id else allData.indexOf(searchData!![id])
 
         MaterialAlertDialogBuilder(mcon)
-            .setTitle("Delete ?")
+            .setTitle("سڕینەوە؟")
             .setCancelable(false)
-            .setPositiveButton("Yes") { _, _ ->
+            .setPositiveButton("بەڵێ") { _, _ ->
                 try {
                     val arr = JSONArray(sharedPrefManager.getSpFiles())
                     arr.remove(key)
@@ -306,7 +306,7 @@ class FileActivity : AppCompatActivity() {
                     // Handle exception
                 }
             }
-            .setNegativeButton("No", null)
+            .setNegativeButton("نەخێر", null)
             .show()
     }
 
@@ -318,7 +318,7 @@ class FileActivity : AppCompatActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         val searchView = menu.findItem(R.id.action_search).actionView as SearchView
-        searchView.queryHint = "Search..."
+        searchView.queryHint = "گەڕان..."
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(s: String): Boolean = false
 

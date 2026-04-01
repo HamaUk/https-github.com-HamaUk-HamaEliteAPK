@@ -99,7 +99,7 @@ class PlaylistActivity : AppCompatActivity() {
 
     private fun showLoadingOverlay(title: String) {
         loadingTitle.text = title
-        loadingStatus.text = "Connecting to server..."
+        loadingStatus.text = "پەیوەندی بە سێرڤەرەوە..."
         loadingPercent.text = "0%"
         loadingChannelCount.text = ""
         setProgressWidth(0f)
@@ -130,10 +130,10 @@ class PlaylistActivity : AppCompatActivity() {
                 setProgressWidth(pct / 100f)
                 val mbRead = String.format("%.1f", bytesRead / 1_048_576.0)
                 val mbTotal = String.format("%.1f", totalBytes / 1_048_576.0)
-                loadingStatus.text = "Downloading playlist... ${mbRead}MB / ${mbTotal}MB"
+                loadingStatus.text = "داگرتنی پلی‌لیست... ${mbRead}MB / ${mbTotal}MB"
             } else {
                 val mbRead = String.format("%.1f", bytesRead / 1_048_576.0)
-                loadingStatus.text = "Downloading... ${mbRead}MB"
+                loadingStatus.text = "داگرتن... ${mbRead}MB"
                 val pulse = ((bytesRead / 32768) % 100).toInt()
                 loadingPercent.text = "${pulse}%"
                 setProgressWidth(pulse / 100f)
@@ -150,8 +150,8 @@ class PlaylistActivity : AppCompatActivity() {
             val pct = if (totalLines > 0) ((linesProcessed * 100) / totalLines).coerceIn(0, 100) else 0
             loadingPercent.text = "$pct%"
             setProgressWidth(pct / 100f)
-            loadingStatus.text = "Parsing channels..."
-            loadingChannelCount.text = "${numberFormat.format(channelsFound)} channels found"
+            loadingStatus.text = "شی‌کردنەوەی کەناڵەکان..."
+            loadingChannelCount.text = "${numberFormat.format(channelsFound)} کەناڵ دۆزرایەوە"
         }
     }
 
@@ -207,9 +207,9 @@ class PlaylistActivity : AppCompatActivity() {
         }
 
         binding.tvHeaderTitle.text = when (currentType) {
-            "vod" -> "MOVIES"
-            "series" -> "SERIES"
-            else -> "LIVE TV"
+            "vod" -> "فیلمەکان"
+            "series" -> "زنجیرەکان"
+            else -> "پەخشی ڕاستەوخۆ"
         }
 
         try { binding.btnBack.setOnClickListener { finish() } } catch (_: Exception) {}
@@ -241,11 +241,11 @@ class PlaylistActivity : AppCompatActivity() {
         if (directData.isNotEmpty()) {
             if (directData.startsWith("file_content:")) {
                 val content = directData.removePrefix("file_content:")
-                showLoadingOverlay("PARSING PLAYLIST")
-                runOnUiThread { loadingStatus.text = "Reading local file..." }
+                showLoadingOverlay("شی‌کردنەوەی پلی‌لیست")
+                runOnUiThread { loadingStatus.text = "خوێندنەوەی پەڕگەی ناوخۆ..." }
                 parseInBackground(content)
             } else {
-                showLoadingOverlay("LOADING CHANNELS")
+                showLoadingOverlay("بارکردنی کەناڵەکان")
                 Thread {
                     val tmp = File(cacheDir, "iptv_playlist_fetch.tmp")
                     try {
@@ -261,7 +261,7 @@ class PlaylistActivity : AppCompatActivity() {
                                 hideLoadingOverlay()
                                 Toast.makeText(
                                     this@PlaylistActivity,
-                                    "Could not finish playlist download. Check connection or try again.",
+                                    "داگرتنی پلی‌لیست تەواو نەبوو. پەیوەندی پشکنە یان دووبارە هەوڵبدە.",
                                     Toast.LENGTH_LONG
                                 ).show()
                             }
@@ -270,7 +270,7 @@ class PlaylistActivity : AppCompatActivity() {
                         runOnUiThread {
                             loadingPercent.text = "100%"
                             setProgressWidth(1f)
-                            loadingStatus.text = "Download complete. Parsing..."
+                            loadingStatus.text = "داگرتن تەواو بوو. شی‌کردنەوە..."
                         }
                         parseM3uFromDownloadedFile(tmp)
                     } catch (oom: OutOfMemoryError) {
@@ -282,7 +282,7 @@ class PlaylistActivity : AppCompatActivity() {
                             hideLoadingOverlay()
                             Toast.makeText(
                                 this@PlaylistActivity,
-                                "Playlist is too large to load on this device. Try fewer channels or another device.",
+                                "پلی‌لیست زۆر گەورەیە بۆ ئەم ئامێرە. کەناڵی کەمتر یان ئامێرێکی تر هەوڵبدە.",
                                 Toast.LENGTH_LONG
                             ).show()
                         }
@@ -295,7 +295,7 @@ class PlaylistActivity : AppCompatActivity() {
                             hideLoadingOverlay()
                             Toast.makeText(
                                 this@PlaylistActivity,
-                                "Playlist error: ${t.message}",
+                                "هەڵەی پلی‌لیست: ${t.message}",
                                 Toast.LENGTH_LONG
                             ).show()
                         }
@@ -313,8 +313,8 @@ class PlaylistActivity : AppCompatActivity() {
     private fun parseInBackground(content: String) {
         Thread {
             runOnUiThread {
-                loadingTitle.text = "PARSING CHANNELS"
-                loadingStatus.text = "Analyzing playlist data..."
+                loadingTitle.text = "شی‌کردنەوەی کەناڵەکان"
+                loadingStatus.text = "شیکردنەوەی داتای پلی‌لیست..."
                 loadingPercent.text = "0%"
                 setProgressWidth(0f)
             }
@@ -325,7 +325,7 @@ class PlaylistActivity : AppCompatActivity() {
 
             var currentName = ""
             var currentLogo = ""
-            var currentGroup = "General"
+            var currentGroup = "گشتی"
             var currentUserAgent = ""
             var currentReferrer = ""
             var channelsFound = 0
@@ -336,7 +336,7 @@ class PlaylistActivity : AppCompatActivity() {
                     trimmed.startsWith("#EXTINF") -> {
                         currentName = ""
                         currentLogo = ""
-                        currentGroup = extractAttr(trimmed, "group-title") ?: "General"
+                        currentGroup = extractAttr(trimmed, "group-title") ?: "گشتی"
                         currentLogo = extractAttr(trimmed, "tvg-logo") ?: ""
                         currentUserAgent = ""
                         currentReferrer = ""
@@ -379,8 +379,8 @@ class PlaylistActivity : AppCompatActivity() {
             runOnUiThread {
                 loadingPercent.text = "100%"
                 setProgressWidth(1f)
-                loadingChannelCount.text = "${numberFormat.format(channelsFound)} channels ready"
-                loadingStatus.text = "Building channel list..."
+                loadingChannelCount.text = "${numberFormat.format(channelsFound)} کەناڵ ئامادەیە"
+                loadingStatus.text = "دروستکردنی لیستی کەناڵ..."
             }
 
             val finalChannelsFound = channelsFound
@@ -399,8 +399,8 @@ class PlaylistActivity : AppCompatActivity() {
             var reader: java.io.BufferedReader? = null
             try {
                 runOnUiThread {
-                    loadingTitle.text = "PARSING CHANNELS"
-                    loadingStatus.text = "Analyzing playlist data..."
+                    loadingTitle.text = "شی‌کردنەوەی کەناڵەکان"
+                    loadingStatus.text = "شیکردنەوەی داتای پلی‌لیست..."
                     loadingPercent.text = "0%"
                     setProgressWidth(0f)
                 }
@@ -412,7 +412,7 @@ class PlaylistActivity : AppCompatActivity() {
 
                 var currentName = ""
                 var currentLogo = ""
-                var currentGroup = "General"
+                var currentGroup = "گشتی"
                 var currentUserAgent = ""
                 var currentReferrer = ""
                 var channelsFound = 0
@@ -427,7 +427,7 @@ class PlaylistActivity : AppCompatActivity() {
                         trimmed.startsWith("#EXTINF") -> {
                             currentName = ""
                             currentLogo = ""
-                            currentGroup = extractAttr(trimmed, "group-title") ?: "General"
+                            currentGroup = extractAttr(trimmed, "group-title") ?: "گشتی"
                             currentLogo = extractAttr(trimmed, "tvg-logo") ?: ""
                             currentUserAgent = ""
                             currentReferrer = ""
@@ -469,8 +469,8 @@ class PlaylistActivity : AppCompatActivity() {
                             runOnUiThread {
                                 loadingPercent.text = "$pct%"
                                 setProgressWidth(pct / 100f)
-                                loadingStatus.text = "Parsing channels..."
-                                loadingChannelCount.text = "${numberFormat.format(channelsFound)} channels found"
+                                loadingStatus.text = "شی‌کردنەوەی کەناڵەکان..."
+                                loadingChannelCount.text = "${numberFormat.format(channelsFound)} کەناڵ دۆزرایەوە"
                             }
                         }
                     }
@@ -479,8 +479,8 @@ class PlaylistActivity : AppCompatActivity() {
                 runOnUiThread {
                     loadingPercent.text = "100%"
                     setProgressWidth(1f)
-                    loadingChannelCount.text = "${numberFormat.format(channelsFound)} channels ready"
-                    loadingStatus.text = "Building channel list..."
+                    loadingChannelCount.text = "${numberFormat.format(channelsFound)} کەناڵ ئامادەیە"
+                    loadingStatus.text = "دروستکردنی لیستی کەناڵ..."
                 }
 
                 runOnUiThread {
@@ -491,7 +491,7 @@ class PlaylistActivity : AppCompatActivity() {
                 android.util.Log.e("PlaylistActivity", "parseM3uFromFile", e)
                 runOnUiThread {
                     hideLoadingOverlay()
-                    Toast.makeText(this@PlaylistActivity, "Could not read playlist file.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@PlaylistActivity, "نەتوانرا پەڕگەی پلی‌لیست بخوێندرێتەوە.", Toast.LENGTH_LONG).show()
                 }
             } finally {
                 try {
@@ -514,9 +514,12 @@ class PlaylistActivity : AppCompatActivity() {
         val keysToShow = matchingKeys.ifEmpty { groupMap.keys.toList() }
 
         if (matchingKeys.isEmpty() && currentType != "live") {
-            Toast.makeText(this,
-                "No ${currentType.uppercase()} content detected in this playlist.",
-                Toast.LENGTH_LONG).show()
+            val typeLabel = when (currentType) {
+                "vod" -> "فیلم"
+                "series" -> "زنجیرە"
+                else -> "پەخشی ڕاستەوخۆ"
+            }
+            Toast.makeText(this, "هیچ ناوەڕۆکی $typeLabel لەم پلی‌لیستەدا نەدۆزرایەوە.", Toast.LENGTH_LONG).show()
         }
 
         groupNames.addAll(keysToShow.map { it.substringAfter("|") }.distinct().sorted())
@@ -605,10 +608,10 @@ class PlaylistActivity : AppCompatActivity() {
     }
 
     private fun showSortDialog() {
-        val options = arrayOf("Default Order", "Name A \u2192 Z", "Name Z \u2192 A")
+        val options = arrayOf("ڕیزبەندی بنەڕەت", "ناو A \u2192 Z", "ناو Z \u2192 A")
         val currentIdx = currentSortMode.ordinal
         MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-            .setTitle("Sort Channels")
+            .setTitle("ڕیزکردنی کەناڵەکان")
             .setSingleChoiceItems(options, currentIdx) { dialog, which ->
                 currentSortMode = SortMode.entries[which]
                 channelAdapter.clear()
@@ -634,7 +637,7 @@ class PlaylistActivity : AppCompatActivity() {
         try {
             val rawJson = sharedPrefManager.getSpPlaylist()
             if (rawJson.isEmpty() || rawJson == "[]") {
-                Toast.makeText(this, "No playlist. Please login first.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "هیچ پلی‌لیستێک نییە. تکایە یەکەم جار بچۆ ژوورەوە.", Toast.LENGTH_LONG).show()
                 return
             }
             val gson = Gson()
@@ -660,13 +663,13 @@ class PlaylistActivity : AppCompatActivity() {
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(this, "Error loading playlist", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "هەڵە لە بارکردنی پلی‌لیست", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun loadXtreamChannels(url: String?) {
         if (url.isNullOrEmpty()) return
-        showLoadingOverlay("LOADING CHANNELS")
+        showLoadingOverlay("بارکردنی کەناڵەکان")
         Thread {
             val result = HttpHandler().makeServiceCallWithProgress(url) { bytesRead, total ->
                 updateDownloadProgress(bytesRead, total)
@@ -676,7 +679,7 @@ class PlaylistActivity : AppCompatActivity() {
             } else {
                 runOnUiThread {
                     hideLoadingOverlay()
-                    Toast.makeText(this, "Failed to load channels", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "بارکردنی کەناڵەکان شکستی هێنا", Toast.LENGTH_SHORT).show()
                 }
             }
         }.start()
