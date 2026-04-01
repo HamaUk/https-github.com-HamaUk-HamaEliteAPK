@@ -37,6 +37,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
@@ -118,7 +119,13 @@ class PlayerActivity : AppCompatActivity() {
     // ── Auto-Reconnect ──────────────────────────────────────
     private var reconnectAttempts = 0
     private val maxReconnectAttempts = 3
-    private val reconnectRunnable = Runnable { attemptReconnect() }
+    private val maxLiveReconnectAttempts = 8
+    private var reconnectPending = false
+    private val reconnectRunnable = Runnable {
+        reconnectPending = false
+        attemptReconnect()
+    }
+    private val bufferingWatchdogRunnable = Runnable { onBufferingStallDetected() }
 
     // ── State ───────────────────────────────────────────────
     private var channelList = mutableListOf<ChannelsData>()
@@ -135,10 +142,16 @@ class PlayerActivity : AppCompatActivity() {
     private var currentReferrer: String = ""
     private var intentUserAgent: String = ""
     private var intentReferrer: String = ""
+    private var isLiveStream: Boolean = true
 
     private val handler = Handler(Looper.getMainLooper())
     private val hideControlsRunnable = Runnable { hideControls() }
     private val hideVolumeOsdRunnable = Runnable { fadeOutVolumeOsd() }
+
+    companion object {
+        private const val LIVE_MAX_VIDEO_BITRATE = 1_500_000
+        private const val LIVE_BUFFERING_WATCHDOG_MS = 12_000L
+    }
 
     private val clockRunnable = object : Runnable {
         override fun run() {
@@ -163,6 +176,7 @@ class PlayerActivity : AppCompatActivity() {
         val url  = intent.getStringExtra("url")  ?: ""
         intentUserAgent = intent.getStringExtra("userAgent").orEmpty().trim()
         intentReferrer = intent.getStringExtra("referrer").orEmpty().trim()
+        isLiveStream = intent.getBooleanExtra("isLive", true)
 
         if (url.isEmpty()) {
             Toast.makeText(this, "بەستەری پەخش نییە", Toast.LENGTH_SHORT).show()
@@ -436,8 +450,9 @@ class PlayerActivity : AppCompatActivity() {
         playerView.resizeMode = resizeModes[currentResizeIndex]
 
         val okHttp = OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(20, TimeUnit.SECONDS)
+            .connectTimeout(12, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
             .build()
         okHttpClient = okHttp
 
@@ -452,8 +467,19 @@ class PlayerActivity : AppCompatActivity() {
                     .setAudioOffloadMode(AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_DISABLED)
                     .build()
             )
+            .setForceHighestSupportedBitrate(false)
+            .setMaxVideoBitrate(if (isLiveStream) LIVE_MAX_VIDEO_BITRATE else Int.MAX_VALUE)
             .build() as DefaultTrackSelector.Parameters
         trackSelector.parameters = trackParams
+
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                2500,
+                15000,
+                800,
+                1500
+            )
+            .build()
 
         val renderersFactory = DefaultRenderersFactory(this)
             // Prefer FFmpeg extension when present (AC-3 / E-AC-3 etc.); ON often never picks it for “supported” HW tracks.
@@ -461,6 +487,7 @@ class PlayerActivity : AppCompatActivity() {
             .setEnableDecoderFallback(true)
         exoPlayer = ExoPlayer.Builder(this, renderersFactory)
             .setTrackSelector(trackSelector)
+            .setLoadControl(loadControl)
             .build().also { player ->
             player.setAudioAttributes(
                 AudioAttributes.Builder()
@@ -477,11 +504,14 @@ class PlayerActivity : AppCompatActivity() {
                         Player.STATE_BUFFERING -> {
                             loadingBar.visibility = View.VISIBLE
                             errorText.visibility  = View.GONE
+                            startBufferingWatchdogIfLive()
                         }
                         Player.STATE_READY -> {
                             loadingBar.visibility = View.GONE
                             errorText.visibility  = View.GONE
                             reconnectAttempts = 0
+                            reconnectPending = false
+                            cancelBufferingWatchdog()
                             ensurePreferredAudioTrackSelected()
                             handler.removeCallbacks(audioFallbackRunnable)
                             // FFmpeg/extension renderers can report audio support a moment after READY.
@@ -493,9 +523,11 @@ class PlayerActivity : AppCompatActivity() {
                         }
                         Player.STATE_ENDED -> {
                             loadingBar.visibility = View.GONE
+                            cancelBufferingWatchdog()
                         }
                         else -> {
                             loadingBar.visibility = View.GONE
+                            cancelBufferingWatchdog()
                         }
                     }
                 }
@@ -508,12 +540,15 @@ class PlayerActivity : AppCompatActivity() {
                 }
 
                 override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                    cancelBufferingWatchdog()
                     if (retryWithAlternateSourceType()) return
                     if (retryWithAlternateLiveUrl()) return
-                    if (reconnectAttempts < maxReconnectAttempts) {
-                        scheduleReconnect()
-                        return
+                    val transientNetworkIssue = isTransientNetworkPlaybackError(error)
+                    val allowedAttempts = when {
+                        isLiveStream && transientNetworkIssue -> maxLiveReconnectAttempts
+                        else -> maxReconnectAttempts
                     }
+                    if (scheduleReconnect(allowedAttempts)) return
                     loadingBar.visibility = View.GONE
                     errorText.visibility  = View.VISIBLE
                     errorText.text        = "پەخشەکە بەردەست نییە"
@@ -525,22 +560,58 @@ class PlayerActivity : AppCompatActivity() {
     // ════════════════════════════════════════════════════════
     //  AUTO-RECONNECT
     // ════════════════════════════════════════════════════════
-    private fun scheduleReconnect() {
+    private fun scheduleReconnect(maxAttempts: Int = if (isLiveStream) maxLiveReconnectAttempts else maxReconnectAttempts): Boolean {
+        if (reconnectPending) return true
+        if (reconnectAttempts >= maxAttempts) return false
         reconnectAttempts++
-        val delay = (reconnectAttempts * 2000L).coerceAtMost(6000L)
+        val delay = if (isLiveStream) {
+            (1200L + reconnectAttempts * 1200L).coerceAtMost(8000L)
+        } else {
+            (reconnectAttempts * 2000L).coerceAtMost(6000L)
+        }
         errorText.visibility = View.VISIBLE
-        errorText.text = "دووبارە پەیوەندی دەکرێت... (${reconnectAttempts}/$maxReconnectAttempts)"
+        errorText.text = "دووبارە پەیوەندی دەکرێت... (${reconnectAttempts}/$maxAttempts)"
         loadingBar.visibility = View.VISIBLE
+        reconnectPending = true
         handler.removeCallbacks(reconnectRunnable)
         handler.postDelayed(reconnectRunnable, delay)
+        return true
     }
 
     private fun attemptReconnect() {
         if (lastRequestedUrl.isBlank()) return
+        cancelBufferingWatchdog()
         forceHlsForCurrentUrl = null
         sourceFallbackTriedForUrl = ""
         fallbackTriedForUrl = ""
         startPlayback(lastRequestedUrl, currentChannelName)
+    }
+
+    private fun startBufferingWatchdogIfLive() {
+        if (!isLiveStream) return
+        handler.removeCallbacks(bufferingWatchdogRunnable)
+        handler.postDelayed(bufferingWatchdogRunnable, LIVE_BUFFERING_WATCHDOG_MS)
+    }
+
+    private fun cancelBufferingWatchdog() {
+        handler.removeCallbacks(bufferingWatchdogRunnable)
+    }
+
+    private fun onBufferingStallDetected() {
+        val player = exoPlayer ?: return
+        if (!isLiveStream || player.playbackState != Player.STATE_BUFFERING) return
+        if (lastRequestedUrl.isBlank()) return
+        scheduleReconnect()
+    }
+
+    private fun isTransientNetworkPlaybackError(error: androidx.media3.common.PlaybackException): Boolean {
+        return when (error.errorCode) {
+            androidx.media3.common.PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
+            androidx.media3.common.PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT,
+            androidx.media3.common.PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS,
+            androidx.media3.common.PlaybackException.ERROR_CODE_IO_UNSPECIFIED -> true
+            else -> false
+        }
     }
 
     // ════════════════════════════════════════════════════════
@@ -697,6 +768,8 @@ class PlayerActivity : AppCompatActivity() {
         sourceFallbackTriedForUrl = ""
         fallbackTriedForUrl = ""
         reconnectAttempts = 0
+        reconnectPending = false
+        cancelBufferingWatchdog()
         handler.removeCallbacks(reconnectRunnable)
         val currentChannel = channelList.firstOrNull { it.url == url.trim() }
         currentUserAgent = currentChannel?.userAgent?.trim().orEmpty().ifEmpty { intentUserAgent }
@@ -717,10 +790,12 @@ class PlayerActivity : AppCompatActivity() {
             tvEpg.text     = "زانیاری نییە"
             loadingBar.visibility = View.VISIBLE
             errorText.visibility  = View.GONE
+            cancelBufferingWatchdog()
         } catch (_: Exception) {
             errorText.text        = "نەتوانرا پەخشەکە باربکرێت"
             errorText.visibility  = View.VISIBLE
             loadingBar.visibility = View.GONE
+            cancelBufferingWatchdog()
         }
     }
 

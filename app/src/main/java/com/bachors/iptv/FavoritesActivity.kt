@@ -102,7 +102,17 @@ class FavoritesActivity : AppCompatActivity() {
         intent.putExtra("url", allData[key].url)
         intent.putExtra("userAgent", allData[key].userAgent)
         intent.putExtra("referrer", allData[key].referrer)
+        intent.putExtra("isLive", isLikelyLiveUrl(allData[key].url))
         startActivity(intent)
+    }
+
+    private fun isLikelyLiveUrl(url: String): Boolean {
+        val lower = url.lowercase()
+        return lower.contains("/live/") ||
+            lower.contains("/stream/") ||
+            lower.contains("output=mpegts") ||
+            lower.contains("output=ts") ||
+            lower.endsWith(".m3u8")
     }
 
     private fun goDel(id: Int) {

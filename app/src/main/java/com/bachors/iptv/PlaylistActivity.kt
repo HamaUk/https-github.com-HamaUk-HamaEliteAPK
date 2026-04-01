@@ -193,6 +193,7 @@ class PlaylistActivity : AppCompatActivity() {
         }
 
         channelAdapter = ChannelsAdapter(this)
+        channelAdapter.setPlaybackMode(currentType == "live")
         channelAdapter.setOnBeforePlayListener {
             sharedPrefManager.saveSPString(
                 SharedPrefManager.SP_CHANNELS,

@@ -28,9 +28,14 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
     private val allData = mutableListOf<ChannelsData>()
     private lateinit var sharedPrefManager: SharedPrefManager
     private var onBeforePlay: (() -> Unit)? = null
+    private var isLivePlayback: Boolean = true
 
     fun setOnBeforePlayListener(listener: () -> Unit) {
         onBeforePlay = listener
+    }
+
+    fun setPlaybackMode(isLive: Boolean) {
+        isLivePlayback = isLive
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -95,6 +100,7 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
             intent.putExtra("url", data.url)
             intent.putExtra("userAgent", data.userAgent)
             intent.putExtra("referrer", data.referrer)
+            intent.putExtra("isLive", isLivePlayback)
             sharedPrefManager.saveSPString(SharedPrefManager.SP_CURRENT_URL, data.url)
             inContext.startActivity(intent)
         }
