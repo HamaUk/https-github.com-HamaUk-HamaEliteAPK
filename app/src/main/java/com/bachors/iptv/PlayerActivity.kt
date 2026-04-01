@@ -45,6 +45,7 @@ import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.bachors.iptv.models.ChannelsData
+import com.bachors.iptv.utils.ContinueWatchingStore
 import com.bachors.iptv.utils.SharedPrefManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
@@ -143,6 +144,11 @@ class PlayerActivity : AppCompatActivity() {
     private var intentUserAgent: String = ""
     private var intentReferrer: String = ""
     private var isLiveStream: Boolean = true
+    private var contentTypeForPlayer: String = "live"
+    private var shouldTrackContinueWatching: Boolean = false
+    private var pendingResumeMs: Long = -1L
+    private var seekbarUserDragging = false
+    private var lastContinueWatchSaveAt = 0L
 
     private val handler = Handler(Looper.getMainLooper())
     private val hideControlsRunnable = Runnable { hideControls() }
@@ -161,6 +167,75 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    private val progressUpdateRunnable = object : Runnable {
+        override fun run() {
+            val p = exoPlayer
+            if (p != null && !seekbarUserDragging && p.duration > 0) {
+                seekBar.max = 1000
+                seekBar.progress = ((p.currentPosition * 1000L) / p.duration).toInt().coerceIn(0, 1000)
+            }
+            if (shouldTrackContinueWatching) {
+                val now = System.currentTimeMillis()
+                if (now - lastContinueWatchSaveAt >= 10_000L) {
+                    saveContinueWatchingProgress()
+                    lastContinueWatchSaveAt = now
+                }
+            }
+            handler.postDelayed(this, 500L)
+        }
+    }
+
+    private fun videoCapsForPreset(preset: Int): Triple<Int, Int, Int> {
+        val maxBr = when {
+            !isLiveStream && preset == 0 -> Int.MAX_VALUE
+            isLiveStream && preset == 0 -> LIVE_MAX_VIDEO_BITRATE
+            preset == 1 -> 4_000_000
+            preset == 2 -> 12_000_000
+            else -> Int.MAX_VALUE
+        }
+        val (w, h) = when (preset) {
+            1 -> 1280 to 720
+            2 -> 1920 to 1080
+            3 -> 3840 to 2160
+            else -> Int.MAX_VALUE to Int.MAX_VALUE
+        }
+        return Triple(w, h, maxBr)
+    }
+
+    private fun applyVideoQualityPreset(preset: Int, showOsd: Boolean) {
+        SharedPrefManager(this).saveSPInt(SharedPrefManager.SP_VIDEO_QUALITY_PRESET, preset)
+        val (w, h, br) = videoCapsForPreset(preset)
+        trackSelector.parameters = trackSelector.buildUponParameters()
+            .clearOverridesOfType(C.TRACK_TYPE_VIDEO)
+            .setMaxVideoSize(w, h)
+            .setMaxVideoBitrate(br)
+            .build() as DefaultTrackSelector.Parameters
+        if (showOsd) {
+            val label = when (preset) {
+                1 -> "720p"
+                2 -> "1080p"
+                3 -> "4K"
+                else -> "خۆکار"
+            }
+            showGenericOsd("سنووری کوالێتی: $label")
+        }
+    }
+
+    private fun saveContinueWatchingProgress() {
+        if (!shouldTrackContinueWatching) return
+        val p = exoPlayer ?: return
+        if (lastRequestedUrl.isBlank()) return
+        if (p.duration <= 0L) return
+        ContinueWatchingStore.upsert(
+            this,
+            lastRequestedUrl,
+            currentChannelName,
+            p.currentPosition,
+            p.duration,
+            contentTypeForPlayer
+        )
+    }
+
     // ════════════════════════════════════════════════════════
     //  LIFECYCLE
     // ════════════════════════════════════════════════════════
@@ -177,6 +252,10 @@ class PlayerActivity : AppCompatActivity() {
         intentUserAgent = intent.getStringExtra("userAgent").orEmpty().trim()
         intentReferrer = intent.getStringExtra("referrer").orEmpty().trim()
         isLiveStream = intent.getBooleanExtra("isLive", true)
+        contentTypeForPlayer = intent.getStringExtra("contentType")?.trim()?.lowercase().orEmpty()
+            .ifEmpty { if (isLiveStream) "live" else "vod" }
+        shouldTrackContinueWatching =
+            contentTypeForPlayer == "vod" || contentTypeForPlayer == "series"
 
         if (url.isEmpty()) {
             Toast.makeText(this, "بەستەری پەخش نییە", Toast.LENGTH_SHORT).show()
@@ -189,10 +268,12 @@ class PlayerActivity : AppCompatActivity() {
         currentChannelName = name
         playUrl(url, name)
         handler.post(clockRunnable)
+        handler.post(progressUpdateRunnable)
         scheduleHideControls()
     }
 
     override fun onPause() {
+        saveContinueWatchingProgress()
         super.onPause()
         if (!isInPipMode) exoPlayer?.pause()
     }
@@ -204,6 +285,7 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        saveContinueWatchingProgress()
         super.onDestroy()
         handler.removeCallbacksAndMessages(null)
         exoPlayer?.release()
@@ -261,7 +343,6 @@ class PlayerActivity : AppCompatActivity() {
             return true
         }
 
-        // DPAD_RIGHT is not handled here so focus can move to the bottom control bar (TV remotes).
         return when (keyCode) {
             KeyEvent.KEYCODE_DPAD_CENTER,
             KeyEvent.KEYCODE_ENTER,
@@ -275,8 +356,10 @@ class PlayerActivity : AppCompatActivity() {
             KeyEvent.KEYCODE_CHANNEL_DOWN,
             KeyEvent.KEYCODE_MEDIA_PREVIOUS   -> { prevChannel(); true }
 
-            // Explicitly focus the bottom controls on TV remotes.
+            // Only jump into the bottom bar when focus isn't already there — otherwise we steal
+            // DPAD_RIGHT and reset focus to the first button, so audio / fullscreen stay unreachable.
             KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                if (isFocusInsideBottomBar()) return super.onKeyDown(keyCode, event)
                 focusBottomControls()
                 true
             }
@@ -289,8 +372,13 @@ class PlayerActivity : AppCompatActivity() {
             KeyEvent.KEYCODE_VOLUME_DOWN -> { adjustVolume(-1); true }
             KeyEvent.KEYCODE_VOLUME_MUTE -> { toggleMute(); true }
 
-            KeyEvent.KEYCODE_BACK,
+            KeyEvent.KEYCODE_BACK -> {
+                finish()
+                true
+            }
+
             KeyEvent.KEYCODE_DPAD_LEFT -> {
+                if (isFocusInsideBottomBar()) return super.onKeyDown(keyCode, event)
                 finish()
                 true
             }
@@ -457,10 +545,10 @@ class PlayerActivity : AppCompatActivity() {
         okHttpClient = okHttp
 
         trackSelector = DefaultTrackSelector(this)
-        // Builder inherits TrackSelectionParameters.Builder; .build() is typed as base class — cast for assignment.
+        val savedPreset = SharedPrefManager(this).getSpInt(SharedPrefManager.SP_VIDEO_QUALITY_PRESET, 0)
+        val (capW, capH, capBr) = videoCapsForPreset(savedPreset)
         val trackParams = trackSelector.buildUponParameters()
             .setTunnelingEnabled(false)
-            // DefaultTrackSelector may cap channels from Context; allow full surround from TS.
             .setMaxAudioChannelCount(Int.MAX_VALUE)
             .setAudioOffloadPreferences(
                 AudioOffloadPreferences.Builder()
@@ -468,7 +556,8 @@ class PlayerActivity : AppCompatActivity() {
                     .build()
             )
             .setForceHighestSupportedBitrate(false)
-            .setMaxVideoBitrate(if (isLiveStream) LIVE_MAX_VIDEO_BITRATE else Int.MAX_VALUE)
+            .setMaxVideoSize(capW, capH)
+            .setMaxVideoBitrate(capBr)
             .build() as DefaultTrackSelector.Parameters
         trackSelector.parameters = trackParams
 
@@ -520,6 +609,11 @@ class PlayerActivity : AppCompatActivity() {
                             val hasDuration = player.duration > 0
                             seekBar.visibility    = if (hasDuration) View.VISIBLE else View.GONE
                             seekSpacer.visibility = if (hasDuration) View.GONE   else View.VISIBLE
+                            if (pendingResumeMs > 0L && hasDuration) {
+                                val target = pendingResumeMs.coerceAtMost((player.duration - 500L).coerceAtLeast(0L))
+                                player.seekTo(target)
+                                pendingResumeMs = -1L
+                            }
                         }
                         Player.STATE_ENDED -> {
                             loadingBar.visibility = View.GONE
@@ -632,7 +726,8 @@ class PlayerActivity : AppCompatActivity() {
         }
         btnAudioTrack.visibility = if (hasMultiAudio) View.VISIBLE else View.GONE
         btnSubtitle.visibility = if (hasSubtitles) View.VISIBLE else View.GONE
-        btnQuality.visibility = if (hasMultiVideo) View.VISIBLE else View.GONE
+        val showQuality = hasMultiVideo || !isLiveStream
+        btnQuality.visibility = if (showQuality) View.VISIBLE else View.GONE
     }
 
     private fun showAudioTrackSelector() {
@@ -725,24 +820,27 @@ class PlayerActivity : AppCompatActivity() {
             }
         }
 
-        val names = mutableListOf("خۆکار")
-        names.addAll(videoTracks.map { it.first })
+        val names = mutableListOf(
+            "سنووری ABR: خۆکار",
+            "سنووردان: 720p",
+            "سنووردان: 1080p",
+            "سنووردان: 4K"
+        )
+        names.addAll(videoTracks.map { "ڕێچکە: ${it.first}" })
 
         MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
             .setTitle("کوالێتی ڤیدیۆ")
             .setItems(names.toTypedArray()) { _, which ->
-                if (which == 0) {
-                    trackSelector.parameters = trackSelector.buildUponParameters()
-                        .clearOverridesOfType(C.TRACK_TYPE_VIDEO)
-                        .build()
-                    showGenericOsd("کوالێتی: خۆکار")
-                } else {
-                    val override = videoTracks[which - 1].second
-                    trackSelector.parameters = trackSelector.buildUponParameters()
-                        .clearOverridesOfType(C.TRACK_TYPE_VIDEO)
-                        .addOverride(override)
-                        .build()
-                    showGenericOsd("کوالێتی: ${names[which]}")
+                when {
+                    which <= 3 -> applyVideoQualityPreset(which, showOsd = true)
+                    else -> {
+                        val override = videoTracks[which - 4].second
+                        trackSelector.parameters = trackSelector.buildUponParameters()
+                            .clearOverridesOfType(C.TRACK_TYPE_VIDEO)
+                            .addOverride(override)
+                            .build()
+                        showGenericOsd("ڕێچکە: ${videoTracks[which - 4].first}")
+                    }
                 }
             }
             .show()
@@ -774,6 +872,11 @@ class PlayerActivity : AppCompatActivity() {
         val currentChannel = channelList.firstOrNull { it.url == url.trim() }
         currentUserAgent = currentChannel?.userAgent?.trim().orEmpty().ifEmpty { intentUserAgent }
         currentReferrer = currentChannel?.referrer?.trim().orEmpty().ifEmpty { intentReferrer }
+        pendingResumeMs = if (shouldTrackContinueWatching) {
+            ContinueWatchingStore.getResumePositionMs(this, url.trim())
+        } else {
+            -1L
+        }
         startPlayback(url.trim(), name)
     }
 
@@ -1008,6 +1111,19 @@ class PlayerActivity : AppCompatActivity() {
         btnSpeed.setOnClickListener { cyclePlaybackSpeed() }
         btnQuality.setOnClickListener { showQualitySelector() }
 
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {}
+            override fun onStartTrackingTouch(seekBar: SeekBar?) { seekbarUserDragging = true }
+            override fun onStopTrackingTouch(sb: SeekBar?) {
+                seekbarUserDragging = false
+                val p = exoPlayer ?: return
+                if (p.duration > 0L) {
+                    val pos = p.duration * ((sb?.progress ?: 0).toLong()) / 1000L
+                    p.seekTo(pos.coerceIn(0L, p.duration))
+                }
+            }
+        })
+
         listOf(
             btnPrev, btnPlayPause, btnNext, btnAudioTrack, btnSubtitle,
             btnSpeed, btnQuality, btnResize, btnFullscreen
@@ -1015,6 +1131,15 @@ class PlayerActivity : AppCompatActivity() {
             it.isFocusable = true
             it.isFocusableInTouchMode = true
         }
+    }
+
+    private fun isFocusInsideBottomBar(): Boolean {
+        var v: View? = currentFocus
+        while (v != null) {
+            if (v === bottomBar) return true
+            v = v.parent as? View
+        }
+        return false
     }
 
     private fun focusBottomControls() {

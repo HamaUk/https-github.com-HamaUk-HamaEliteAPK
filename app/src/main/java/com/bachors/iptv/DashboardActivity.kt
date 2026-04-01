@@ -4,18 +4,28 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bachors.iptv.databinding.ActivityDashboardBinding
 import com.bachors.iptv.models.PlaylistData
+import com.bachors.iptv.utils.AppStatus
+import com.bachors.iptv.utils.ContinueWatchingStore
+import com.bachors.iptv.utils.GlobalSync
+import com.bachors.iptv.utils.IptvService
 import com.bachors.iptv.utils.SharedPrefManager
+import com.bachors.iptv.utils.SyncData
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.*
 
 class DashboardActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDashboardBinding
+    private lateinit var sharedPrefManager: SharedPrefManager
     private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,9 +35,12 @@ class DashboardActivity : AppCompatActivity() {
             setContentView(binding.root)
 
             supportActionBar?.hide()
+            sharedPrefManager = SharedPrefManager(this)
             setupClock()
             setupClickListeners()
             updateCategoryCounts()
+            fetchAppStatus()
+            refreshContinueWatchingRow()
         } catch (t: Throwable) {
             t.printStackTrace()
             Toast.makeText(this, "لە کێشەی دەستپێک ڕزگاربووین. تکایە دووبارە بچۆ ژوورەوە.", Toast.LENGTH_LONG).show()
@@ -41,6 +54,8 @@ class DashboardActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateCategoryCounts()
+        refreshContinueWatchingRow()
+        fetchAppStatus()
     }
 
     private fun setupClock() {
@@ -84,11 +99,88 @@ class DashboardActivity : AppCompatActivity() {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
         }
+
+        binding.rowReload.setOnClickListener { performGlobalReload() }
+
+        binding.rowContinueWatching.setOnClickListener {
+            startActivity(Intent(this, ContinueWatchingActivity::class.java))
+        }
+    }
+
+    private fun refreshContinueWatchingRow() {
+        val has = ContinueWatchingStore.getAll(this).isNotEmpty()
+        binding.rowContinueWatching.visibility = if (has) View.VISIBLE else View.GONE
+    }
+
+    private fun fetchAppStatus() {
+        val service = GlobalSync.retrofit().create(IptvService::class.java)
+        service.getAppStatus().enqueue(object : Callback<AppStatus> {
+            override fun onResponse(call: Call<AppStatus>, response: Response<AppStatus>) {
+                val body = response.body()
+                if (!response.isSuccessful || body == null) {
+                    binding.appStatusBanner.visibility = View.GONE
+                    return
+                }
+                val state = body.state?.trim()?.lowercase() ?: "ok"
+                if (state == "ok" || state.isEmpty()) {
+                    binding.appStatusBanner.visibility = View.GONE
+                    return
+                }
+                binding.appStatusBanner.visibility = View.VISIBLE
+                val msg = body.message_ku?.takeIf { it.isNotBlank() }
+                    ?: body.message?.takeIf { it.isNotBlank() }
+                    ?: when (state) {
+                        "maintenance" -> "ئێستا چاککردنەوەی سێرڤەر دەستپێکراوە. تکایە دواتر هەوڵبدەرەوە."
+                        "degraded" -> "خزمەتگوزاری سێرڤەر کەمکراوە."
+                        else -> "دۆخی سێرڤەر: $state"
+                    }
+                binding.appStatusBanner.text = msg
+            }
+
+            override fun onFailure(call: Call<AppStatus>, t: Throwable) {
+                binding.appStatusBanner.visibility = View.GONE
+            }
+        })
+    }
+
+    private fun performGlobalReload() {
+        binding.rowReload.isEnabled = false
+        binding.reloadProgress.visibility = View.VISIBLE
+
+        val service = GlobalSync.retrofit().create(IptvService::class.java)
+        service.getSyncData(GlobalSync.SYNC_KEY_GLOBAL).enqueue(object : Callback<SyncData> {
+            override fun onResponse(call: Call<SyncData>, response: Response<SyncData>) {
+                binding.rowReload.isEnabled = true
+                binding.reloadProgress.visibility = View.GONE
+                val body = response.body()
+                if (response.isSuccessful && body != null) {
+                    val synced = GlobalSync.applySyncedConfig(this@DashboardActivity, sharedPrefManager, body)
+                    if (synced) {
+                        Toast.makeText(this@DashboardActivity, R.string.sync_success, Toast.LENGTH_SHORT).show()
+                        updateCategoryCounts()
+                    } else {
+                        Toast.makeText(this@DashboardActivity, R.string.sync_invalid, Toast.LENGTH_LONG).show()
+                    }
+                } else {
+                    Toast.makeText(this@DashboardActivity, R.string.sync_no_data, Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<SyncData>, t: Throwable) {
+                binding.rowReload.isEnabled = true
+                binding.reloadProgress.visibility = View.GONE
+                Toast.makeText(
+                    this@DashboardActivity,
+                    getString(R.string.sync_error, t.message ?: ""),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        })
     }
 
     private fun updateCategoryCounts() {
         try {
-            val sp = SharedPrefManager(this)
+            val sp = sharedPrefManager
             val rawJson = sp.getSpPlaylist()
             if (rawJson.isNotEmpty() && rawJson != "[]") {
                 val listType = object : TypeToken<List<PlaylistData>>() {}.type
@@ -101,7 +193,7 @@ class DashboardActivity : AppCompatActivity() {
                 val totalGroups = data.count { it.title.isNotEmpty() }
                 val totalChannels = data.sumOf { it.channel.toIntOrNull() ?: 0 }
                 binding.tvLabelLive.text = if (totalChannels > 0) "پەخشی ڕاستەوخۆ ($totalChannels)" else "پەخشی ڕاستەوخۆ"
-                binding.tvLabelPlaylists.text = if (totalGroups > 0) "پلی‌لیستەکان ($totalGroups)" else "پلی‌لیستەکان"
+                binding.tvLabelPlaylists.text = if (totalGroups > 0) "پلەی لیستەکان ($totalGroups)" else "پلەی لیستەکان"
             }
 
             val favJson = sp.getSpFavorites()

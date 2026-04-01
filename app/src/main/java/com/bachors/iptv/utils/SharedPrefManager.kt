@@ -18,6 +18,14 @@ class SharedPrefManager(context: Context) {
         const val SP_HW_ACCEL = "spHwAccel"
         const val SP_SAVED_PLAYLISTS = "spSavedPlaylists"
         const val SP_ACTIVE_PLAYLIST_NAME = "spActivePlaylistName"
+        /** Last M3U URL for which `cacheDir/m3u_playlist_cached.m3u` is valid */
+        const val SP_M3U_CACHE_URL = "spM3uCacheUrl"
+        /** JSON custom order: groups + channels (see [PlaylistOrderStore]) */
+        const val SP_PLAYLIST_CUSTOM_ORDER = "spPlaylistCustomOrder"
+        /** JSON array of continue-watching entries */
+        const val SP_CONTINUE_WATCHING = "spContinueWatching"
+        /** 0=auto, 1=720p cap, 2=1080p cap, 3=4K cap (max dimensions / ABR) */
+        const val SP_VIDEO_QUALITY_PRESET = "spVideoQualityPreset"
     }
 
     private val sp: SharedPreferences = context.getSharedPreferences(SP_SS_APP, Context.MODE_PRIVATE)
@@ -40,6 +48,13 @@ class SharedPrefManager(context: Context) {
     fun getSpCurrentUrl(): String = sp.getString(SP_CURRENT_URL, "") ?: ""
 
     fun getSpString(key: String): String = sp.getString(key, "") ?: ""
+
+    fun saveSPInt(keySP: String, value: Int) {
+        spEditor.putInt(keySP, value)
+        spEditor.commit()
+    }
+
+    fun getSpInt(key: String, default: Int = 0): Int = sp.getInt(key, default)
 
     fun saveSPBoolean(keySP: String, value: Boolean) {
         spEditor.putBoolean(keySP, value)

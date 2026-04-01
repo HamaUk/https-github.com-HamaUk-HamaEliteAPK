@@ -30,13 +30,37 @@ data class ServerInfo(
     @SerializedName("server_protocol") val protocol: String?
 )
 
+data class ManagedChannelItem(
+    val name: String? = null,
+    val url: String? = null,
+    val group: String? = null,
+    val logo: String? = null,
+    val hidden: Boolean? = false,
+    val adult: Boolean? = false,
+    val type: String? = null
+)
+
+data class ManagedPlaylist(
+    val schemaVersion: Int? = 1,
+    val updatedAt: Long? = null,
+    val items: Map<String, ManagedChannelItem>? = null
+)
+
 data class SyncData(
     val method: String?,
     val server: String?,
     val user: String?,
     val pass: String?,
     val url: String?,
-    val content: String?
+    val content: String?,
+    val managedPlaylist: ManagedPlaylist? = null
+)
+
+/** Firebase RTDB node `app_status` — create manually: `{ "state": "ok|maintenance|degraded", "message_ku": "..." }` */
+data class AppStatus(
+    val state: String? = "ok",
+    val message_ku: String? = null,
+    val message: String? = null
 )
 
 /**
@@ -55,4 +79,7 @@ interface IptvService {
     fun getSyncData(
         @Path("deviceId") deviceId: String
     ): Call<SyncData>
+
+    @GET("app_status.json")
+    fun getAppStatus(): Call<AppStatus>
 }

@@ -20,6 +20,10 @@ import com.bachors.iptv.databinding.ActivityPlaylistBinding
 import com.bachors.iptv.models.ChannelsData
 import com.bachors.iptv.models.PlaylistData
 import com.bachors.iptv.utils.HttpHandler
+import com.bachors.iptv.utils.ManagedPlaylistCache
+import com.bachors.iptv.utils.M3uPlaylistCache
+import com.bachors.iptv.utils.M3uTypeDetect
+import com.bachors.iptv.utils.PlaylistOrderStore
 import com.bachors.iptv.utils.SharedPrefManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
@@ -130,7 +134,7 @@ class PlaylistActivity : AppCompatActivity() {
                 setProgressWidth(pct / 100f)
                 val mbRead = String.format("%.1f", bytesRead / 1_048_576.0)
                 val mbTotal = String.format("%.1f", totalBytes / 1_048_576.0)
-                loadingStatus.text = "داگرتنی پلی‌لیست... ${mbRead}MB / ${mbTotal}MB"
+                loadingStatus.text = "داگرتنی پلەی لیست... ${mbRead}MB / ${mbTotal}MB"
             } else {
                 val mbRead = String.format("%.1f", bytesRead / 1_048_576.0)
                 loadingStatus.text = "داگرتن... ${mbRead}MB"
@@ -185,6 +189,13 @@ class PlaylistActivity : AppCompatActivity() {
         categoryAdapter.setOnItemClickListener { position ->
             showGroup(groupNames.getOrNull(position) ?: return@setOnItemClickListener)
         }
+        categoryAdapter.setOnItemLongClickListener { position ->
+            val title = categoryAdapter.getItem(position).title
+            if (title.isBlank()) return@setOnItemLongClickListener
+            PlaylistOrderStore.moveGroupToTop(this, currentType, title)
+            Toast.makeText(this, "گرووپەکە بڕیاردرا لە سەرەوە", Toast.LENGTH_SHORT).show()
+            buildAndShowGroups()
+        }
         binding.rvCategories.apply {
             layoutManager = LinearLayoutManager(this@PlaylistActivity)
             adapter = categoryAdapter
@@ -194,6 +205,24 @@ class PlaylistActivity : AppCompatActivity() {
 
         channelAdapter = ChannelsAdapter(this)
         channelAdapter.setPlaybackMode(currentType == "live")
+        channelAdapter.setContentTypeForPlayer(
+            when (currentType) {
+                "vod" -> "vod"
+                "series" -> "series"
+                else -> "live"
+            }
+        )
+        channelAdapter.setOnChannelLongClickListener { ch ->
+            val g = binding.tvHeaderTitle.text?.toString()?.trim().orEmpty()
+            if (g.isEmpty()) return@setOnChannelLongClickListener
+            PlaylistOrderStore.moveChannelToTop(this, currentType, g, ch.url)
+            Toast.makeText(this, "کەناڵەکە لە سەرەوە", Toast.LENGTH_SHORT).show()
+            channelAdapter.clear()
+            val q = binding.etSearchChannels.text?.toString() ?: ""
+            val base = if (q.isEmpty()) currentGroupChannels
+            else currentGroupChannels.filter { it.name.contains(q, ignoreCase = true) }
+            channelAdapter.addAll(applySorting(base))
+        }
         channelAdapter.setOnBeforePlayListener {
             sharedPrefManager.saveSPString(
                 SharedPrefManager.SP_CHANNELS,
@@ -238,20 +267,62 @@ class PlaylistActivity : AppCompatActivity() {
     //  DATA LOADING (with progress)
     // ════════════════════════════════════════════════════════
     private fun loadData() {
+        if (ManagedPlaylistCache.hasCachedItems(this)) {
+            showLoadingOverlay("بارکردنی کەناڵەکان")
+            Thread {
+                val gm = mutableMapOf<String, MutableList<ChannelsData>>()
+                val ok = ManagedPlaylistCache.fillGroupMap(this, currentType, gm)
+                runOnUiThread {
+                    if (ok) {
+                        groupMap.clear()
+                        groupMap.putAll(gm)
+                        buildAndShowGroups()
+                        hideLoadingOverlay()
+                    } else {
+                        hideLoadingOverlay()
+                        loadDataFromM3uOrJson()
+                    }
+                }
+            }.start()
+            return
+        }
+        loadDataFromM3uOrJson()
+    }
+
+    private fun loadDataFromM3uOrJson() {
         val directData = sharedPrefManager.getSpM3uDirect()
         if (directData.isNotEmpty()) {
             if (directData.startsWith("file_content:")) {
                 val content = directData.removePrefix("file_content:")
-                showLoadingOverlay("شی‌کردنەوەی پلی‌لیست")
+                showLoadingOverlay("شی‌کردنەوەی پلەی لیست")
                 runOnUiThread { loadingStatus.text = "خوێندنەوەی پەڕگەی ناوخۆ..." }
                 parseInBackground(content)
             } else {
+                val url = directData.trim()
                 showLoadingOverlay("بارکردنی کەناڵەکان")
                 Thread {
+                    if (M3uPlaylistCache.hasCacheForUrl(this@PlaylistActivity, url)) {
+                        try {
+                            runOnUiThread {
+                                loadingPercent.text = "100%"
+                                setProgressWidth(1f)
+                                loadingStatus.text = "خوێندنەوە لە کاش..."
+                            }
+                            parseM3uFromFile(M3uPlaylistCache.cacheFile(this@PlaylistActivity), deleteWhenDone = false)
+                        } catch (t: Throwable) {
+                            android.util.Log.e("PlaylistActivity", "cached playlist load", t)
+                            runOnUiThread {
+                                hideLoadingOverlay()
+                                Toast.makeText(this@PlaylistActivity, t.message ?: "هەڵە", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                        return@Thread
+                    }
+
                     val tmp = File(cacheDir, "iptv_playlist_fetch.tmp")
                     try {
                         if (tmp.exists()) tmp.delete()
-                        val ok = HttpHandler().downloadToFileWithProgress(directData, tmp) { read, total ->
+                        val ok = HttpHandler().downloadToFileWithProgress(url, tmp) { read, total ->
                             updateDownloadProgress(read, total)
                         }
                         if (!ok) {
@@ -262,7 +333,7 @@ class PlaylistActivity : AppCompatActivity() {
                                 hideLoadingOverlay()
                                 Toast.makeText(
                                     this@PlaylistActivity,
-                                    "داگرتنی پلی‌لیست تەواو نەبوو. پەیوەندی پشکنە یان دووبارە هەوڵبدە.",
+                                    "داگرتنی پلەی لیست تەواو نەبوو. پەیوەندی پشکنە یان دووبارە هەوڵبدە.",
                                     Toast.LENGTH_LONG
                                 ).show()
                             }
@@ -273,7 +344,11 @@ class PlaylistActivity : AppCompatActivity() {
                             setProgressWidth(1f)
                             loadingStatus.text = "داگرتن تەواو بوو. شی‌کردنەوە..."
                         }
-                        parseM3uFromDownloadedFile(tmp)
+                        M3uPlaylistCache.writeFromDownloadedTemp(this@PlaylistActivity, url, tmp)
+                        try {
+                            if (tmp.exists()) tmp.delete()
+                        } catch (_: Throwable) { }
+                        parseM3uFromFile(M3uPlaylistCache.cacheFile(this@PlaylistActivity), deleteWhenDone = false)
                     } catch (oom: OutOfMemoryError) {
                         android.util.Log.e("PlaylistActivity", "OOM during playlist load", oom)
                         try {
@@ -283,7 +358,7 @@ class PlaylistActivity : AppCompatActivity() {
                             hideLoadingOverlay()
                             Toast.makeText(
                                 this@PlaylistActivity,
-                                "پلی‌لیست زۆر گەورەیە بۆ ئەم ئامێرە. کەناڵی کەمتر یان ئامێرێکی تر هەوڵبدە.",
+                                "پلەی لیست زۆر گەورەیە بۆ ئەم ئامێرە. کەناڵی کەمتر یان ئامێرێکی تر هەوڵبدە.",
                                 Toast.LENGTH_LONG
                             ).show()
                         }
@@ -296,7 +371,7 @@ class PlaylistActivity : AppCompatActivity() {
                             hideLoadingOverlay()
                             Toast.makeText(
                                 this@PlaylistActivity,
-                                "هەڵەی پلی‌لیست: ${t.message}",
+                                "هەڵەی پلەی لیست: ${t.message}",
                                 Toast.LENGTH_LONG
                             ).show()
                         }
@@ -313,95 +388,31 @@ class PlaylistActivity : AppCompatActivity() {
     // ════════════════════════════════════════════════════════
     private fun parseInBackground(content: String) {
         Thread {
-            runOnUiThread {
-                loadingTitle.text = "شی‌کردنەوەی کەناڵەکان"
-                loadingStatus.text = "شیکردنەوەی داتای پلی‌لیست..."
-                loadingPercent.text = "0%"
-                setProgressWidth(0f)
-            }
-
-            val lines = content.lines()
-            val totalLines = lines.size
-            groupMap.clear()
-
-            var currentName = ""
-            var currentLogo = ""
-            var currentGroup = "گشتی"
-            var currentUserAgent = ""
-            var currentReferrer = ""
-            var channelsFound = 0
-
-            for ((index, line) in lines.withIndex()) {
-                val trimmed = line.trim()
-                when {
-                    trimmed.startsWith("#EXTINF") -> {
-                        currentName = ""
-                        currentLogo = ""
-                        currentGroup = extractAttr(trimmed, "group-title") ?: "گشتی"
-                        currentLogo = extractAttr(trimmed, "tvg-logo") ?: ""
-                        currentUserAgent = ""
-                        currentReferrer = ""
-                        val commaIdx = trimmed.lastIndexOf(',')
-                        if (commaIdx >= 0) currentName = trimmed.substring(commaIdx + 1).trim()
-                    }
-                    trimmed.startsWith("#EXTVLCOPT:", ignoreCase = true) -> {
-                        parseVlcOpt(trimmed)?.let { (key, value) ->
-                            when (key) {
-                                "http-user-agent", "user-agent" -> currentUserAgent = value
-                                "http-referrer", "http-referer", "referrer", "referer" -> currentReferrer = value
-                            }
-                        }
-                    }
-                    trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("rtsp://") || trimmed.startsWith("rtmp://") -> {
-                        if (currentName.isNotEmpty()) {
-                            // Xtream `m3u_plus` sometimes returns channel URLs without reliable
-                            // "movie/live/series" markers. Since this screen already knows what type
-                            // the user selected (intent extra), use `currentType` for filtering stability.
-                            // Correctly identify the content type based on the URL structure,
-                            // rather than forcing everything into the screen the user tapped.
-                            val resolvedType = detectTypeFromUrl(trimmed)
-                            val channel = ChannelsData(
-                                name = currentName,
-                                logo = currentLogo,
-                                url = trimmed,
-                                userAgent = currentUserAgent,
-                                referrer = currentReferrer
-                            )
-                            val key = "$resolvedType|$currentGroup"
-                            groupMap.getOrPut(key) { mutableListOf() }.add(channel)
-                            channelsFound++
-                            currentName = ""
-                        }
-                    }
+            val tmp = File(cacheDir, "m3u_inline_parse.tmp")
+            try {
+                tmp.writeText(content, Charsets.UTF_8)
+            } catch (e: Exception) {
+                android.util.Log.e("PlaylistActivity", "write inline m3u", e)
+                runOnUiThread {
+                    hideLoadingOverlay()
+                    Toast.makeText(this@PlaylistActivity, "نەتوانرا پلەی لیست بنووسرێتەوە.", Toast.LENGTH_LONG).show()
                 }
-                updateParseProgress(index + 1, totalLines, channelsFound)
+                return@Thread
             }
-
-            runOnUiThread {
-                loadingPercent.text = "100%"
-                setProgressWidth(1f)
-                loadingChannelCount.text = "${numberFormat.format(channelsFound)} کەناڵ ئامادەیە"
-                loadingStatus.text = "دروستکردنی لیستی کەناڵ..."
-            }
-
-            val finalChannelsFound = channelsFound
-            runOnUiThread {
-                buildAndShowGroups()
-                handler.postDelayed({ hideLoadingOverlay() }, 400)
-            }
+            parseM3uFromFile(tmp, deleteWhenDone = true)
         }.start()
     }
 
     /**
-     * Parse M3U from disk line-by-line — avoids holding a second full copy in RAM (OOM on huge lists).
+     * Parse M3U from disk line-by-line (low RAM). If [deleteWhenDone], the file is deleted after parse.
      */
-    private fun parseM3uFromDownloadedFile(file: File) {
+    private fun parseM3uFromFile(file: File, deleteWhenDone: Boolean) {
         Thread {
             var reader: java.io.BufferedReader? = null
             try {
                 runOnUiThread {
                     loadingTitle.text = "شی‌کردنەوەی کەناڵەکان"
-                    loadingStatus.text = "شیکردنەوەی داتای پلی‌لیست..."
+                    loadingStatus.text = "شیکردنەوەی داتای پلەی لیست..."
                     loadingPercent.text = "0%"
                     setProgressWidth(0f)
                 }
@@ -492,15 +503,17 @@ class PlaylistActivity : AppCompatActivity() {
                 android.util.Log.e("PlaylistActivity", "parseM3uFromFile", e)
                 runOnUiThread {
                     hideLoadingOverlay()
-                    Toast.makeText(this@PlaylistActivity, "نەتوانرا پەڕگەی پلی‌لیست بخوێندرێتەوە.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@PlaylistActivity, "نەتوانرا پەڕگەی پلەی لیست بخوێندرێتەوە.", Toast.LENGTH_LONG).show()
                 }
             } finally {
                 try {
                     reader?.close()
                 } catch (_: Exception) { }
-                try {
-                    if (file.exists()) file.delete()
-                } catch (_: Exception) { }
+                if (deleteWhenDone) {
+                    try {
+                        if (file.exists()) file.delete()
+                    } catch (_: Exception) { }
+                }
             }
         }.start()
     }
@@ -512,7 +525,11 @@ class PlaylistActivity : AppCompatActivity() {
             "series" -> groupMap.keys.filter { it.startsWith("series|") }
             else -> groupMap.keys.filter { it.startsWith("live|") }
         }
-        val keysToShow = matchingKeys.ifEmpty { groupMap.keys.toList() }
+        // Never fall back to the full playlist for VOD/Series — that incorrectly showed live channels.
+        val keysToShow = when (currentType) {
+            "vod", "series" -> matchingKeys
+            else -> matchingKeys.ifEmpty { groupMap.keys.toList() }
+        }
 
         if (matchingKeys.isEmpty() && currentType != "live") {
             val typeLabel = when (currentType) {
@@ -520,10 +537,11 @@ class PlaylistActivity : AppCompatActivity() {
                 "series" -> "زنجیرە"
                 else -> "پەخشی ڕاستەوخۆ"
             }
-            Toast.makeText(this, "هیچ ناوەڕۆکی $typeLabel لەم پلی‌لیستەدا نەدۆزرایەوە.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "هیچ ناوەڕۆکی $typeLabel لەم پلەی لیستەدا نەدۆزرایەوە.", Toast.LENGTH_LONG).show()
         }
 
-        groupNames.addAll(keysToShow.map { it.substringAfter("|") }.distinct().sorted())
+        val naturalOrder = keysToShow.map { it.substringAfter("|") }.distinct().sorted()
+        groupNames.addAll(PlaylistOrderStore.applyGroupOrder(this, currentType, naturalOrder))
 
         displayGroupMap.clear()
         for (key in keysToShow) {
@@ -540,6 +558,14 @@ class PlaylistActivity : AppCompatActivity() {
 
         if (groupNames.isNotEmpty()) {
             showGroup(groupNames.first())
+        } else if (currentType == "vod" || currentType == "series") {
+            currentGroupChannels.clear()
+            channelAdapter.clear()
+            binding.tvHeaderTitle.text = when (currentType) {
+                "vod" -> "فیلمەکان"
+                "series" -> "زنجیرەکان"
+                else -> binding.tvHeaderTitle.text
+            }
         }
     }
 
@@ -558,21 +584,7 @@ class PlaylistActivity : AppCompatActivity() {
         return key to value
     }
 
-    private fun detectTypeFromUrl(url: String): String {
-        val lower = url.lowercase()
-        return when {
-            lower.contains("/movie/") || lower.contains("/movies/") -> "vod"
-            lower.contains("/series/") || lower.contains("/episode/") -> "series"
-            lower.contains("/live/") || lower.contains("/stream/") -> "live"
-            lower.contains("output=mpegts") || lower.contains("output=ts") || lower.contains("type=m3u_plus") -> "live"
-            lower.endsWith(".mp4") || lower.endsWith(".mkv") ||
-            lower.endsWith(".avi") || lower.endsWith(".mov") ||
-            lower.endsWith(".wmv") || lower.endsWith(".flv") ||
-            lower.endsWith(".ts") || lower.endsWith(".m4v") -> "vod"
-            lower.endsWith(".m3u8") -> "live"
-            else -> "live"
-        }
-    }
+    private fun detectTypeFromUrl(url: String): String = M3uTypeDetect.detectTypeFromUrl(url)
 
     // ════════════════════════════════════════════════════════
     //  GROUP DISPLAY
@@ -625,10 +637,17 @@ class PlaylistActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun applySorting(list: List<ChannelsData>): List<ChannelsData> = when (currentSortMode) {
-        SortMode.DEFAULT -> list
-        SortMode.NAME_AZ -> list.sortedBy { it.name.lowercase() }
-        SortMode.NAME_ZA -> list.sortedByDescending { it.name.lowercase() }
+    private fun applySorting(list: List<ChannelsData>): List<ChannelsData> {
+        val header = binding.tvHeaderTitle.text?.toString()?.trim().orEmpty()
+        val genericHeaders = setOf("فیلمەکان", "زنجیرەکان", "پەخشی ڕاستەوخۆ")
+        return when (currentSortMode) {
+            SortMode.DEFAULT -> {
+                if (header.isEmpty() || header in genericHeaders) list
+                else PlaylistOrderStore.applyChannelOrder(this, currentType, header, list)
+            }
+            SortMode.NAME_AZ -> list.sortedBy { it.name.lowercase() }
+            SortMode.NAME_ZA -> list.sortedByDescending { it.name.lowercase() }
+        }
     }
 
     // ════════════════════════════════════════════════════════
@@ -638,7 +657,7 @@ class PlaylistActivity : AppCompatActivity() {
         try {
             val rawJson = sharedPrefManager.getSpPlaylist()
             if (rawJson.isEmpty() || rawJson == "[]") {
-                Toast.makeText(this, "هیچ پلی‌لیستێک نییە. تکایە یەکەم جار بچۆ ژوورەوە.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "هیچ پلەی لیستێک نییە. تکایە یەکەم جار بچۆ ژوورەوە.", Toast.LENGTH_LONG).show()
                 return
             }
             val gson = Gson()
@@ -651,20 +670,24 @@ class PlaylistActivity : AppCompatActivity() {
             }
 
             val filtered = data.filter { it.title.isNotEmpty() }
+            val byTitle = filtered.distinctBy { it.title }.associateBy { it.title }
+            val titlesSorted = byTitle.keys.sorted()
+            val orderedTitles = PlaylistOrderStore.applyGroupOrder(this, currentType, titlesSorted)
             groupNames.clear()
-            groupNames.addAll(filtered.map { it.title })
+            groupNames.addAll(orderedTitles)
 
             categoryAdapter.clear()
-            categoryAdapter.addAll(filtered)
+            categoryAdapter.addAll(orderedTitles.mapNotNull { byTitle[it] })
 
-            if (filtered.isNotEmpty()) {
-                val first = filtered.first()
+            val orderedList = orderedTitles.mapNotNull { byTitle[it] }
+            if (orderedList.isNotEmpty()) {
+                val first = orderedList.first()
                 binding.tvHeaderTitle.text = first.title.uppercase()
                 loadXtreamChannels(first.link)
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(this, "هەڵە لە بارکردنی پلی‌لیست", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "هەڵە لە بارکردنی پلەی لیست", Toast.LENGTH_SHORT).show()
         }
     }
 

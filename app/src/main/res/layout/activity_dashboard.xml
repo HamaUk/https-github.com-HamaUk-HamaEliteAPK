@@ -71,17 +71,31 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/logo_box" />
 
+    <TextView
+        android:id="@+id/app_status_banner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="#99B71C1C"
+        android:padding="12dp"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/accent_line" />
+
     <!-- Menu Cards Row -->
     <LinearLayout
         android:id="@+id/menu_row"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
+        android:layout_marginTop="16dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/accent_line">
+        app:layout_constraintTop_toBottomOf="@id/app_status_banner">
 
         <!-- LIVE TV (active/highlighted) -->
         <LinearLayout
@@ -235,7 +249,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="پلی‌لیستەکان"
+                android:text="پلەی لیستەکان"
                 android:textColor="#BBBBBB"
                 android:textSize="13sp"
                 android:textStyle="bold"
@@ -282,16 +296,54 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Reload row -->
     <LinearLayout
+        android:id="@+id/row_continue_watching"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="20dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
         android:gravity="center_vertical"
         android:orientation="horizontal"
+        android:padding="8dp"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/menu_row">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_vod"
+            app:tint="#E53935" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="بەردەوام بینین"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05" />
+    </LinearLayout>
+
+    <!-- Reload row -->
+    <LinearLayout
+        android:id="@+id/row_reload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/row_continue_watching">
 
         <ImageView
             android:layout_width="20dp"
@@ -307,6 +359,14 @@
             android:textSize="22sp"
             android:textStyle="bold"
             android:letterSpacing="0.05" />
+        <ProgressBar
+            android:id="@+id/reload_progress"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="12dp"
+            android:indeterminateTint="#E53935"
+            android:visibility="gone" />
     </LinearLayout>
 
     <!-- Bottom-left info -->

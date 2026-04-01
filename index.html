@@ -359,6 +359,20 @@ td {
 
 .copy-icon { cursor: pointer; opacity: 0.5; transition: opacity 0.3s; margin-left: 5px; }
 .copy-icon:hover { opacity: 1; color: var(--accent); }
+
+/* Channel manager */
+.channel-mgr-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; align-items: center; }
+.channel-mgr-table-wrap { overflow-x: auto; max-height: 48vh; border: 1px solid var(--glass-border); border-radius: 12px; background: rgba(0,0,0,0.2); }
+.channel-mgr-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+.channel-mgr-table th { position: sticky; top: 0; background: rgba(0,0,0,0.55); z-index: 1; padding: 10px 8px; text-align: left; }
+.channel-mgr-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: middle; }
+.channel-mgr-table tr:hover { background: rgba(255,255,255,0.04); }
+.tag-hidden { color: #ff9800; font-weight: 700; }
+.tag-adult { color: #ff4b2b; font-weight: 700; }
+.channel-mgr-pager { display: flex; align-items: center; gap: 12px; margin-top: 12px; justify-content: center; }
+.btn-small { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.06); color: #fff; cursor: pointer; font-size: 0.72rem; }
+.btn-small:hover { border-color: var(--accent); }
+.mgr-note { font-size: 0.72rem; color: var(--text-dim); margin-bottom: 10px; line-height: 1.5; }
 .pass-hidden { filter: blur(5px); transition: filter 0.3s; }
 .pass-hidden:hover { filter: none; }
 
@@ -521,6 +535,68 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
   </div>
 </div>
 
+<!-- Channel manager (managed playlist) -->
+<div id="channelManagerModal" class="modal" style="align-items: flex-start; padding: 24px 12px; overflow-y: auto;">
+  <div class="modal-content" style="max-width: 1080px; width: 100%; max-height: none;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+      <div>
+        <h3 style="margin-bottom:8px;">MANAGE CHANNELS</h3>
+        <div class="mgr-note" id="channelMgrSyncKeyLabel">sync key: —</div>
+        <div class="mgr-note">Import from your M3U (profile URL, embedded file on this key, paste, or local file). Remote URL fetch may fail in-browser due to CORS — then use Paste or a profile with embedded <b>content</b>. Saves to <b>managedPlaylist</b> on this sync key. After saving, users must <b>sync the app again</b> (Start / reload); the app then shows logos and names from here for live/vod/series.</div>
+      </div>
+      <button type="button" class="btn-small" onclick="window.closeChannelManager()">CLOSE</button>
+    </div>
+    <div class="channel-mgr-toolbar">
+      <button type="button" class="tool-btn accent" onclick="window.channelMgrImportFromProfile()">IMPORT FROM PROFILE</button>
+      <button type="button" class="tool-btn" onclick="window.channelMgrPickFile()">LOAD .M3U FILE</button>
+      <input type="file" id="channelMgrFile" accept=".m3u,.m3u8" style="display:none" onchange="window.channelMgrOnFile(this)">
+      <button type="button" class="tool-btn" onclick="document.getElementById('channelMgrPaste').style.display=document.getElementById('channelMgrPaste').style.display==='none'?'block':'none'">PASTE M3U</button>
+    </div>
+    <div id="channelMgrPaste" style="display:none; margin-bottom:12px;">
+      <label class="admin-note">Paste M3U text</label>
+      <textarea id="channelMgrPasteTa" style="width:100%; min-height:120px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:12px; color:white; padding:12px; font-family:monospace; font-size:0.72rem;"></textarea>
+      <button type="button" class="tool-btn accent" style="margin-top:8px" onclick="window.channelMgrParsePasted()">PARSE PASTED</button>
+    </div>
+    <input type="text" id="channelMgrFilter" class="search-bar" placeholder="FILTER BY NAME, GROUP, URL..." onkeyup="window.channelMgrRender()" style="margin-bottom:12px;">
+    <div class="channel-mgr-table-wrap">
+      <table class="channel-mgr-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Group</th>
+            <th>Type</th>
+            <th>Flags</th>
+            <th>URL</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="channelMgrTbody"></tbody>
+      </table>
+    </div>
+    <div class="channel-mgr-pager">
+      <button type="button" class="btn-small" onclick="window.channelMgrPrevPage()">PREV</button>
+      <span id="channelMgrPageInfo" style="font-size:0.8rem; color:var(--text-dim)">—</span>
+      <button type="button" class="btn-small" onclick="window.channelMgrNextPage()">NEXT</button>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;">
+      <button type="button" class="sync-btn" style="width:auto; padding:12px 24px;" onclick="window.channelMgrSaveToFirebase()">SAVE MANAGED PLAYLIST TO FIREBASE</button>
+      <span id="channelMgrStatus" class="admin-note" style="align-self:center;"></span>
+    </div>
+  </div>
+</div>
+
+<div id="channelMgrEditModal" class="modal" style="align-items:flex-start;padding:20px 12px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div class="modal-content" style="max-width:480px;margin:24px auto;flex-shrink:0;">
+    <h3 style="margin-bottom:16px;">CHANNEL SETTINGS</h3>
+    <div id="channelMgrEditFields"></div>
+    <div style="display:flex; gap:10px; margin-top:18px;">
+      <button type="button" class="sync-btn" style="flex:1" onclick="window.channelMgrSaveEditRow()">APPLY</button>
+      <button type="button" class="sync-btn" style="flex:1; background:rgba(255,255,255,0.1); color:white;" onclick="window.closeChannelMgrEdit()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
 <script>
   // Fallback so inline onclick never throws before module initializes.
   window.checkAdminLogin = window.checkAdminLogin || function () {
@@ -529,7 +605,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
 </script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+  import { getDatabase, ref, set, get, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
   import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -641,7 +717,9 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
         payload.filename = file.name;
       }
 
-      await set(dbRef, payload);
+      const prevSnap = await get(dbRef);
+      const prev = prevSnap.exists() ? prevSnap.val() : {};
+      await set(dbRef, { ...payload, managedPlaylist: prev.managedPlaylist });
 
       status.innerText = "✅ DATA SENT — users can tap START in the app";
       status.className = "status-msg success";
@@ -744,6 +822,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
             <td style="max-width:350px; overflow:hidden;">${info}</td>
             <td style="font-size:0.75rem">${timeStr}</td>
             <td>
+              <button class="action-btn btn-edit" onclick="window.openChannelManager('${code}')">CHANNELS</button>
               <button class="action-btn btn-edit" onclick="window.openEdit('${code}')">EDIT</button>
               <button class="action-btn btn-delete" onclick="window.deleteAccount('${code}')">DEL</button>
             </td>
@@ -836,7 +915,9 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
       payload.filename = file.name;
     }
     
-    await set(ref(db, 'sync/' + code), payload);
+    const prevSnap = await get(ref(db, 'sync/' + code));
+    const prev = prevSnap.exists() ? prevSnap.val() : {};
+    await set(ref(db, 'sync/' + code), { ...payload, managedPlaylist: prev.managedPlaylist });
     window.closeAddModal();
     window.loadUsers();
   };
@@ -915,11 +996,474 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
           payload.filename = u.filename;
         }
       }
-      
+      if (u.managedPlaylist) payload.managedPlaylist = u.managedPlaylist;
+
       await set(dbRef, payload);
       window.closeModal();
       window.loadUsers();
     } catch (e) { alert(e.message); }
+  };
+
+  /* --- Channel manager (managed playlist) --- */
+  window.channelMgrCode = null;
+  window.channelMgrRows = [];
+  window.channelMgrPage = 1;
+  window.channelMgrPageSize = 75;
+  window.channelMgrEditingId = null;
+  window.channelMgrProfile = null;
+
+  function stableChannelId(url, name) {
+    const s = (url || '') + '\0' + (name || '');
+    let h = 5381;
+    for (let i = 0; i < s.length; i++) {
+      h = Math.imul(33, h) + s.charCodeAt(i);
+    }
+    return 'ch_' + ((h >>> 0).toString(16));
+  }
+
+  function extractAttrM3u(line, attr) {
+    const re = new RegExp(attr + '="([^"]*)"');
+    const m = line.match(re);
+    return m && m[1] ? m[1] : null;
+  }
+
+  function detectTypeFromUrlJs(url) {
+    const lower = (url || '').toLowerCase();
+    if (lower.includes('/movie/') || lower.includes('/movies/')) return 'vod';
+    if (lower.includes('/series/') || lower.includes('/episode/')) return 'series';
+    if (lower.includes('/live/') || lower.includes('/stream/')) return 'live';
+    if (lower.includes('output=mpegts') || lower.includes('output=ts') || lower.includes('type=m3u_plus')) return 'live';
+    if (/\.(mp4|mkv|avi|mov|wmv|flv|ts|m4v)$/i.test(lower)) return 'vod';
+    if (lower.endsWith('.m3u8')) return 'live';
+    return 'live';
+  }
+
+  function parseM3UText(text) {
+    const lines = String(text).split(/\r?\n/);
+    const out = [];
+    let curName = '';
+    let curLogo = '';
+    let curGroup = 'General';
+    for (let i = 0; i < lines.length; i++) {
+      const trimmed = lines[i].trim();
+      if (trimmed.startsWith('#EXTINF')) {
+        curName = '';
+        curLogo = '';
+        curGroup = extractAttrM3u(trimmed, 'group-title') || 'General';
+        curLogo = extractAttrM3u(trimmed, 'tvg-logo') || '';
+        const comma = trimmed.lastIndexOf(',');
+        if (comma >= 0) curName = trimmed.slice(comma + 1).trim();
+      } else if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith('rtsp://') || trimmed.startsWith('rtmp://')) {
+        if (curName) {
+          const url = trimmed;
+          const type = detectTypeFromUrlJs(url);
+          out.push({
+            id: stableChannelId(url, curName),
+            name: curName,
+            url,
+            group: curGroup,
+            logo: curLogo,
+            hidden: false,
+            adult: false,
+            type
+          });
+          curName = '';
+        }
+      }
+    }
+    return out;
+  }
+
+  function mergeRowsFromManaged(parsed, managedItems) {
+    return parsed.map(row => {
+      const old = managedItems && managedItems[row.id];
+      if (!old) return { ...row };
+      return {
+        id: row.id,
+        name: old.name != null ? old.name : row.name,
+        url: row.url,
+        group: old.group != null ? old.group : row.group,
+        logo: old.logo != null ? old.logo : row.logo,
+        hidden: !!old.hidden,
+        adult: !!old.adult,
+        type: old.type || row.type
+      };
+    });
+  }
+
+  function channelMgrEscapeAttr(s) {
+    if (!s) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function channelMgrSyncLogoPreview(logoEl, previewEl) {
+    const v = (logoEl && logoEl.value || '').trim();
+    if (!v) {
+      previewEl.style.display = 'none';
+      previewEl.removeAttribute('src');
+      return;
+    }
+    if (v.startsWith('data:image/') || /^https?:\/\//i.test(v)) {
+      previewEl.src = v;
+      previewEl.style.display = 'block';
+    } else {
+      previewEl.style.display = 'none';
+      previewEl.removeAttribute('src');
+    }
+  }
+
+  /** Downscale + JPEG compress so data URL stays reasonable for Firebase. Transparency → white backing. */
+  function channelMgrDownscaleImageFile(file) {
+    const MAX_DATA_URL_CHARS = 520000;
+    const maxSides = [512, 384, 320, 256, 200];
+    const qualities = [0.88, 0.8, 0.72, 0.64, 0.55, 0.48, 0.42];
+
+    return new Promise((resolve, reject) => {
+      const blobUrl = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(blobUrl);
+        const nw = img.naturalWidth || img.width;
+        const nh = img.naturalHeight || img.height;
+        if (!nw || !nh) {
+          reject(new Error('Invalid image dimensions.'));
+          return;
+        }
+        try {
+          let best = '';
+          for (const maxSide of maxSides) {
+            const scale = Math.min(1, maxSide / Math.max(nw, nh));
+            const dw = Math.max(1, Math.round(nw * scale));
+            const dh = Math.max(1, Math.round(nh * scale));
+            const canvas = document.createElement('canvas');
+            canvas.width = dw;
+            canvas.height = dh;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              reject(new Error('Could not use canvas in this browser.'));
+              return;
+            }
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, dw, dh);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, dw, dh);
+            for (const q of qualities) {
+              const dataUrl = canvas.toDataURL('image/jpeg', q);
+              best = dataUrl;
+              if (dataUrl.length <= MAX_DATA_URL_CHARS) {
+                resolve(dataUrl);
+                return;
+              }
+            }
+          }
+          if (best) resolve(best);
+          else reject(new Error('Could not encode image.'));
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(blobUrl);
+        reject(new Error('Could not read image file.'));
+      };
+      img.src = blobUrl;
+    });
+  }
+
+  window.openChannelManager = async (code) => {
+    window.channelMgrCode = code;
+    window.channelMgrRows = [];
+    window.channelMgrPage = 1;
+    document.getElementById('channelMgrSyncKeyLabel').innerText = 'sync key: ' + code;
+    document.getElementById('channelMgrStatus').innerText = '';
+    document.getElementById('channelManagerModal').style.display = 'flex';
+    try {
+      const snap = await get(ref(db, 'sync/' + code));
+      if (!snap.exists()) {
+        alert('No profile for ' + code);
+        window.closeChannelManager();
+        return;
+      }
+      window.channelMgrProfile = snap.val();
+      const mp = window.channelMgrProfile.managedPlaylist;
+      const items = mp && mp.items;
+      if (items && Object.keys(items).length) {
+        window.channelMgrRows = Object.keys(items).map(k => ({
+          id: k,
+          name: items[k].name || '',
+          url: items[k].url || '',
+          group: items[k].group || 'General',
+          logo: items[k].logo || '',
+          hidden: !!items[k].hidden,
+          adult: !!items[k].adult,
+          type: items[k].type || detectTypeFromUrlJs(items[k].url || '')
+        }));
+      }
+    } catch (e) {
+      alert(e.message);
+    }
+    window.channelMgrRender();
+  };
+
+  window.closeChannelManager = () => {
+    document.getElementById('channelManagerModal').style.display = 'none';
+    window.channelMgrProfile = null;
+  };
+
+  window.channelMgrPickFile = () => document.getElementById('channelMgrFile').click();
+
+  window.channelMgrOnFile = async (input) => {
+    const f = input.files && input.files[0];
+    if (!f) return;
+    try {
+      const text = await readFileContent(f);
+      window.applyParsedM3u(text);
+    } catch (e) {
+      alert(e.message);
+    }
+    input.value = '';
+  };
+
+  window.channelMgrParsePasted = () => {
+    const ta = document.getElementById('channelMgrPasteTa');
+    window.applyParsedM3u(ta.value || '');
+  };
+
+  window.applyParsedM3u = (text) => {
+    const parsed = parseM3UText(text);
+    if (!parsed.length) {
+      alert('No channels found in M3U.');
+      return;
+    }
+    const managedItems = window.channelMgrProfile && window.channelMgrProfile.managedPlaylist && window.channelMgrProfile.managedPlaylist.items;
+    window.channelMgrRows = mergeRowsFromManaged(parsed, managedItems);
+    window.channelMgrPage = 1;
+    document.getElementById('channelMgrStatus').innerText = 'Loaded ' + window.channelMgrRows.length + ' channels (unsaved until you save to Firebase).';
+    window.channelMgrRender();
+  };
+
+  window.channelMgrImportFromProfile = async () => {
+    const u = window.channelMgrProfile;
+    if (!u) return;
+    if (u.content) {
+      window.applyParsedM3u(u.content);
+      return;
+    }
+    if (u.url) {
+      try {
+        const r = await fetch(u.url);
+        const t = await r.text();
+        window.applyParsedM3u(t);
+      } catch (e) {
+        alert('Could not fetch M3U URL (often CORS in browser). Use PASTE M3U, LOAD FILE, or embed file in profile content.');
+      }
+      return;
+    }
+    alert('This profile has no M3U URL or embedded content. For Xtream-only profiles, paste an M3U export or use Load .m3u file.');
+  };
+
+  function channelMgrFiltered() {
+    const el = document.getElementById('channelMgrFilter');
+    const q = (el && el.value || '').trim().toLowerCase();
+    if (!q) return window.channelMgrRows;
+    return window.channelMgrRows.filter(r =>
+      (r.name || '').toLowerCase().includes(q) ||
+      (r.group || '').toLowerCase().includes(q) ||
+      (r.url || '').toLowerCase().includes(q)
+    );
+  }
+
+  window.channelMgrRender = () => {
+    const filtered = channelMgrFiltered();
+    const size = window.channelMgrPageSize;
+    const totalPages = Math.max(1, Math.ceil(filtered.length / size));
+    if (window.channelMgrPage > totalPages) window.channelMgrPage = totalPages;
+    const start = (window.channelMgrPage - 1) * size;
+    const slice = filtered.slice(start, start + size);
+    const tb = document.getElementById('channelMgrTbody');
+    tb.innerHTML = '';
+    slice.forEach((row, i) => {
+      const tr = document.createElement('tr');
+      const flags = [];
+      if (row.hidden) flags.push('<span class="tag-hidden">HIDDEN</span>');
+      if (row.adult) flags.push('<span class="tag-adult">ADULT</span>');
+      tr.innerHTML =
+        '<td>' + (start + i + 1) + '</td>' +
+        '<td>' + channelMgrEscapeAttr(row.name) + '</td>' +
+        '<td>' + channelMgrEscapeAttr(row.group) + '</td>' +
+        '<td>' + channelMgrEscapeAttr(row.type) + '</td>' +
+        '<td>' + (flags.join(' ') || '—') + '</td>' +
+        '<td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + channelMgrEscapeAttr(row.url) + '">' + channelMgrEscapeAttr(row.url) + '</td>' +
+        '<td><button type="button" class="btn-small" data-act="e">EDIT</button></td>';
+      tr.querySelector('button').onclick = () => window.openChannelMgrEdit(row.id);
+      tb.appendChild(tr);
+    });
+    document.getElementById('channelMgrPageInfo').innerText =
+      'Page ' + window.channelMgrPage + ' / ' + totalPages + ' — ' + slice.length + ' of ' + filtered.length + ' (' + window.channelMgrRows.length + ' total)';
+  };
+
+  window.channelMgrPrevPage = () => {
+    if (window.channelMgrPage > 1) {
+      window.channelMgrPage--;
+      window.channelMgrRender();
+    }
+  };
+  window.channelMgrNextPage = () => {
+    const filtered = channelMgrFiltered();
+    const totalPages = Math.max(1, Math.ceil(filtered.length / window.channelMgrPageSize));
+    if (window.channelMgrPage < totalPages) {
+      window.channelMgrPage++;
+      window.channelMgrRender();
+    }
+  };
+
+  window.openChannelMgrEdit = (id) => {
+    const row = window.channelMgrRows.find(r => r.id === id);
+    if (!row) return;
+    window.channelMgrEditingId = id;
+    const f = document.getElementById('channelMgrEditFields');
+    const t = row.type === 'vod' ? 'vod' : row.type === 'series' ? 'series' : 'live';
+    f.innerHTML =
+      '<div class="form-group"><label>Display name</label><input type="text" id="cm-edit-name" value="' + channelMgrEscapeAttr(row.name) + '"></div>' +
+      '<div class="form-group"><label>Group</label><input type="text" id="cm-edit-group" value="' + channelMgrEscapeAttr(row.group) + '"></div>' +
+      '<div class="form-group"><label>Stream URL (read-only)</label><input type="text" id="cm-edit-url" value="' + channelMgrEscapeAttr(row.url) + '" readonly style="opacity:0.85"></div>' +
+      '<div class="form-group"><label>Logo URL (optional)</label><input type="text" id="cm-edit-logo" placeholder="https://… or use &quot;Select logo&quot; below" value=""></div>' +
+      '<div class="form-group"><label>Channel icon — from your device</label>' +
+      '<div class="file-upload-wrapper">' +
+      '<label for="cm-edit-logo-file" class="file-upload-label" style="padding:20px">' +
+      '<span>SELECT LOGO IMAGE</span>' +
+      '<small>Any common image — auto-resized for sync · transparent areas become white</small>' +
+      '<div id="cm-edit-logo-file-name" class="file-selected-name" style="display:none;color:var(--accent);"></div>' +
+      '</label>' +
+      '<input type="file" id="cm-edit-logo-file" class="file-upload-input" accept="image/*">' +
+      '</div>' +
+      '<div class="mgr-note" style="margin-top:10px;">If the list is long, <b>scroll down</b> in this panel for Type and APPLY.</div>' +
+      '<img id="cm-edit-logo-preview" alt="Logo preview" style="display:none;max-width:120px;max-height:120px;margin-top:12px;border-radius:8px;border:1px solid var(--glass-border);object-fit:contain;background:rgba(0,0,0,0.25);"></div>' +
+      '<div class="form-group"><label>Type</label>' +
+      '<select id="cm-edit-type" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:12px; color:white;">' +
+      '<option value="live"' + (t === 'live' ? ' selected' : '') + '>live</option>' +
+      '<option value="vod"' + (t === 'vod' ? ' selected' : '') + '>vod</option>' +
+      '<option value="series"' + (t === 'series' ? ' selected' : '') + '>series</option>' +
+      '</select></div>' +
+      '<div class="form-group"><label><input type="checkbox" id="cm-edit-hidden"' + (row.hidden ? ' checked' : '') + '> Hidden (hide in app)</label></div>' +
+      '<div class="form-group"><label><input type="checkbox" id="cm-edit-adult"' + (row.adult ? ' checked' : '') + '> Adult (18+)</label></div>';
+    const logoEl = document.getElementById('cm-edit-logo');
+    const logoFile = document.getElementById('cm-edit-logo-file');
+    const logoPrev = document.getElementById('cm-edit-logo-preview');
+    logoEl.value = row.logo || '';
+    channelMgrSyncLogoPreview(logoEl, logoPrev);
+    const maxLogoUploadBytes = 18 * 1024 * 1024;
+    const logoFileNameEl = document.getElementById('cm-edit-logo-file-name');
+    logoFile.addEventListener('change', () => {
+      const run = async () => {
+        const file = logoFile.files && logoFile.files[0];
+        if (!file) {
+          if (logoFileNameEl) {
+            logoFileNameEl.style.display = 'none';
+            logoFileNameEl.textContent = '';
+          }
+          return;
+        }
+        if (file.type && !/^image\//i.test(file.type)) {
+          alert('Choose an image file (PNG, JPG, WebP, etc.).');
+          logoFile.value = '';
+          return;
+        }
+        if (file.size > maxLogoUploadBytes) {
+          alert('File is too large (' + Math.round(file.size / (1024 * 1024)) + ' MB). Max ~18 MB before auto-resize, or use a Logo URL.');
+          logoFile.value = '';
+          if (logoFileNameEl) {
+            logoFileNameEl.style.display = 'none';
+            logoFileNameEl.textContent = '';
+          }
+          return;
+        }
+        if (logoFileNameEl) {
+          logoFileNameEl.textContent = file.name + ' — processing…';
+          logoFileNameEl.style.display = 'block';
+        }
+        try {
+          const dataUrl = await channelMgrDownscaleImageFile(file);
+          logoEl.value = dataUrl;
+          channelMgrSyncLogoPreview(logoEl, logoPrev);
+          if (logoFileNameEl) {
+            const kb = Math.round(dataUrl.length / 1024);
+            logoFileNameEl.textContent = file.name + ' · resized (~' + kb + ' KB data)';
+          }
+        } catch (e) {
+          alert((e && e.message) ? e.message : 'Could not process image.');
+          logoFile.value = '';
+          if (logoFileNameEl) {
+            logoFileNameEl.style.display = 'none';
+            logoFileNameEl.textContent = '';
+          }
+        }
+      };
+      run();
+    });
+    logoEl.addEventListener('input', () => channelMgrSyncLogoPreview(logoEl, logoPrev));
+    document.getElementById('channelMgrEditModal').style.display = 'flex';
+  };
+
+  window.closeChannelMgrEdit = () => {
+    document.getElementById('channelMgrEditModal').style.display = 'none';
+    window.channelMgrEditingId = null;
+  };
+
+  window.channelMgrSaveEditRow = () => {
+    const id = window.channelMgrEditingId;
+    const row = window.channelMgrRows.find(r => r.id === id);
+    if (!row) return;
+    row.name = document.getElementById('cm-edit-name').value;
+    row.group = document.getElementById('cm-edit-group').value;
+    row.logo = document.getElementById('cm-edit-logo').value;
+    row.type = document.getElementById('cm-edit-type').value;
+    row.hidden = document.getElementById('cm-edit-hidden').checked;
+    row.adult = document.getElementById('cm-edit-adult').checked;
+    window.closeChannelMgrEdit();
+    window.channelMgrRender();
+  };
+
+  window.channelMgrSaveToFirebase = async () => {
+    const code = window.channelMgrCode;
+    if (!code) return;
+    if (!window.channelMgrRows.length) {
+      alert('No channels to save.');
+      return;
+    }
+    const items = {};
+    for (const r of window.channelMgrRows) {
+      items[r.id] = {
+        name: r.name,
+        url: r.url,
+        group: r.group,
+        logo: r.logo || '',
+        hidden: !!r.hidden,
+        adult: !!r.adult,
+        type: r.type || 'live'
+      };
+    }
+    const st = document.getElementById('channelMgrStatus');
+    st.innerText = 'Saving...';
+    try {
+      await update(ref(db, 'sync/' + code), {
+        managedPlaylist: {
+          schemaVersion: 1,
+          updatedAt: Date.now(),
+          items
+        },
+        timestamp: Date.now()
+      });
+      st.innerText = 'Saved. Users must sync app again to refresh cache.';
+      window.channelMgrProfile = (await get(ref(db, 'sync/' + code))).val();
+    } catch (e) {
+      st.innerText = 'Error: ' + e.message;
+      alert(e.message);
+    }
   };
 </script>
 </body>

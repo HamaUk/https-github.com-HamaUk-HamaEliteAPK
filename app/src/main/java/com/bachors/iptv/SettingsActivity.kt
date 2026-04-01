@@ -133,13 +133,13 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun showSavePlaylistDialog() {
         val input = EditText(this).apply {
-            hint = "ناوی پلی‌لیست"
+            hint = "ناوی پلەی لیست"
             setTextColor(resources.getColor(android.R.color.white, null))
             setHintTextColor(resources.getColor(android.R.color.darker_gray, null))
             setPadding(48, 32, 48, 32)
         }
         MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-            .setTitle("پاشەکەوتکردنی پلی‌لیستی ئێستا")
+            .setTitle("پاشەکەوتکردنی پلەی لیستی ئێستا")
             .setView(input)
             .setPositiveButton("پاشەکەوت") { _, _ ->
                 val name = input.text.toString().trim()
@@ -156,7 +156,7 @@ class SettingsActivity : AppCompatActivity() {
                 sharedPrefManager.saveSPString(SharedPrefManager.SP_SAVED_PLAYLISTS, playlists.toString())
                 sharedPrefManager.saveSPString(SharedPrefManager.SP_ACTIVE_PLAYLIST_NAME, name)
                 updateActivePlaylistLabel()
-                Toast.makeText(this, "پلی‌لیستی '$name' پاشەکەوت کرا", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "پلەی لیستی '$name' پاشەکەوت کرا", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("هەڵوەشاندنەوە", null)
             .show()
@@ -166,11 +166,11 @@ class SettingsActivity : AppCompatActivity() {
         val playlists = getPlaylistsJson()
         val names = playlists.keys().asSequence().toList()
         if (names.isEmpty()) {
-            Toast.makeText(this, "هیچ پلی‌لیستێکی پاشەکەوتکراو نییە", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "هیچ پلەی لیستێکی پاشەکەوتکراو نییە", Toast.LENGTH_SHORT).show()
             return
         }
         MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-            .setTitle("گۆڕینی پلی‌لیست")
+            .setTitle("گۆڕینی پلەی لیست")
             .setItems(names.toTypedArray()) { _, which ->
                 val name = names[which]
                 try {
@@ -182,7 +182,7 @@ class SettingsActivity : AppCompatActivity() {
                     updateActivePlaylistLabel()
                     Toast.makeText(this, "گۆڕدرا بۆ '$name'", Toast.LENGTH_SHORT).show()
                 } catch (_: Exception) {
-                    Toast.makeText(this, "بارکردنی پلی‌لیست شکستی هێنا", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "بارکردنی پلەی لیست شکستی هێنا", Toast.LENGTH_SHORT).show()
                 }
             }
             .show()
@@ -192,11 +192,11 @@ class SettingsActivity : AppCompatActivity() {
         val playlists = getPlaylistsJson()
         val names = playlists.keys().asSequence().toList()
         if (names.isEmpty()) {
-            Toast.makeText(this, "هیچ پلی‌لیستێکی پاشەکەوتکراو نییە", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "هیچ پلەی لیستێکی پاشەکەوتکراو نییە", Toast.LENGTH_SHORT).show()
             return
         }
         MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-            .setTitle("سڕینەوەی پلی‌لیست")
+            .setTitle("سڕینەوەی پلەی لیست")
             .setItems(names.toTypedArray()) { _, which ->
                 val name = names[which]
                 MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)

@@ -29,6 +29,8 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
     private lateinit var sharedPrefManager: SharedPrefManager
     private var onBeforePlay: (() -> Unit)? = null
     private var isLivePlayback: Boolean = true
+    private var contentTypeExtra: String = "live"
+    private var onChannelLongClick: ((ChannelsData) -> Unit)? = null
 
     fun setOnBeforePlayListener(listener: () -> Unit) {
         onBeforePlay = listener
@@ -36,6 +38,14 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
 
     fun setPlaybackMode(isLive: Boolean) {
         isLivePlayback = isLive
+    }
+
+    fun setContentTypeForPlayer(type: String) {
+        contentTypeExtra = type
+    }
+
+    fun setOnChannelLongClickListener(listener: (ChannelsData) -> Unit) {
+        onChannelLongClick = listener
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -101,11 +111,16 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
             intent.putExtra("userAgent", data.userAgent)
             intent.putExtra("referrer", data.referrer)
             intent.putExtra("isLive", isLivePlayback)
+            intent.putExtra("contentType", contentTypeExtra)
             sharedPrefManager.saveSPString(SharedPrefManager.SP_CURRENT_URL, data.url)
             inContext.startActivity(intent)
         }
         h.cardRoot.setOnClickListener(launchPlayer)
         h.lnPlay.setOnClickListener(launchPlayer)
+        h.cardRoot.setOnLongClickListener {
+            onChannelLongClick?.invoke(data)
+            true
+        }
 
         h.btFavorite.setOnClickListener {
             try {
@@ -162,6 +177,7 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
             trimmed.startsWith("http://", ignoreCase = true) ||
                 trimmed.startsWith("https://", ignoreCase = true) -> trimmed
             trimmed.startsWith("//") -> "https:$trimmed"
+            trimmed.startsWith("data:image/", ignoreCase = true) -> trimmed
             else -> ""
         }
         val fallbackTint = ColorStateList.valueOf(Color.parseColor("#55FFFFFF"))
