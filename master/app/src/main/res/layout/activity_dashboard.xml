@@ -394,9 +394,9 @@
         app:layout_constraintStart_toStartOf="parent">
 
         <TextView
+            android:id="@+id/tv_dashboard_version"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="وەشان: 1.0.8"
             android:textColor="#44FFFFFF"
             android:textSize="11sp" />
 

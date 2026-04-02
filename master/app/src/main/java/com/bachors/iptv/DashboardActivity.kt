@@ -39,6 +39,8 @@ class DashboardActivity : AppCompatActivity() {
 
             supportActionBar?.hide()
             sharedPrefManager = SharedPrefManager(this)
+            binding.tvDashboardVersion.text =
+                getString(R.string.dashboard_version_line, BuildConfig.VERSION_NAME)
             setupClock()
             setupDeviceCode()
             setupClickListeners()

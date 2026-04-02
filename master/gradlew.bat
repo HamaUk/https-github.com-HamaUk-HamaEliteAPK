@@ -87,6 +87,8 @@ if "%JVN%"=="" goto execute
 set "JMAJ="
 for /f "tokens=1 delims=." %%m in ("%JVN%") do set "JMAJ=%%m"
 if "%JMAJ%"=="" goto execute
+@rem Empty JMAJ would make "if  LSS 25" invalid on Windows; JDK 25+ needs JBR fallback below
+if not defined JMAJ goto execute
 if %JMAJ% LSS 25 goto execute
 call :useSupportedJdkForGradle
 if errorlevel 1 goto fail
