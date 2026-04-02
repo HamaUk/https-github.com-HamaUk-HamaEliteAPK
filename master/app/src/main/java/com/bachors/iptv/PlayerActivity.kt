@@ -781,8 +781,8 @@ class PlayerActivity : AppCompatActivity() {
         }
         btnAudioTrack.visibility = if (hasMultiAudio) View.VISIBLE else View.GONE
         btnSubtitle.visibility = if (hasSubtitles) View.VISIBLE else View.GONE
-        val showQuality = hasMultiVideo || !isLiveStream
-        btnQuality.visibility = if (showQuality) View.VISIBLE else View.GONE
+        // Always show quality — ABR presets (Auto/720p/1080p/4K) work even on single-track live streams
+        btnQuality.visibility = View.VISIBLE
     }
 
     private fun showAudioTrackSelector() {
@@ -1149,7 +1149,6 @@ class PlayerActivity : AppCompatActivity() {
 
         btnAudioTrack.visibility = View.GONE
         btnSubtitle.visibility = View.GONE
-        btnQuality.visibility = View.GONE
     }
 
     private fun setupControls() {
