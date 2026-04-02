@@ -38,7 +38,7 @@ class SettingsActivity : AppCompatActivity() {
             packageManager.getPackageInfo(packageName, 0).versionName
         }.getOrNull() ?: "—"
 
-        binding.tvPkg.text = "پاکێج: HAMA UK ELITE"
+        binding.tvPkg.text = getString(R.string.settings_package_line, packageName)
         binding.tvMac.text = getString(R.string.settings_version_line, ver)
         binding.tvExpiry.text = "دۆخ: پڕیمیۆمی چالاک"
 

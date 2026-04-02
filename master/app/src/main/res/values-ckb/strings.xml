@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">HAMA UK PLAYER</string>
-    <string name="app_name_part_hama">HAMA</string>
-    <string name="app_name_part_uk">UK</string>
-    <string name="app_v">bachors.js.org</string>
+    <string name="app_name">OpTiC GhOsT</string>
+    <string name="app_name_part_hama">OpTiC</string>
+    <string name="app_name_part_uk">GhOsT</string>
+    <string name="app_v">IPTV</string>
 
     <string name="main_subtitle">چالاککردنی پریمیۆم</string>
     <string name="btn_start">دەستپێکردن</string>
@@ -13,6 +13,7 @@
     <string name="sync_error">هەڵەی هاوبەشکردن: %1$s</string>
     <string name="auto_resume_failed">نەتوانرا بەرنامەکە بکرێتەوە. دووبارە «دەستپێکردن» دابگرە.</string>
     <string name="settings_version_line">وەشان: %1$s</string>
+    <string name="settings_package_line">پاکێج: %1$s</string>
 
     <string name="search">گەڕان…</string>
     <string name="playlist">لیست</string>

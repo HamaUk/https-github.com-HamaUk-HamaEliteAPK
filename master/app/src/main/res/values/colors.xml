@@ -12,7 +12,7 @@
     <color name="md_theme_background">#050505</color>
     <color name="md_theme_on_background">#FFFFFF</color>
 
-    <!-- HAMA Premium — Dark Crimson Palette -->
+    <!-- Dark crimson palette -->
     <color name="vu_purple">#E53935</color>
     <color name="vu_accent">#FF6E6E</color>
     <color name="vu_bg_dark">#0A0A0A</color>

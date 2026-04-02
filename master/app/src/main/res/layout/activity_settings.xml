@@ -546,7 +546,7 @@
                             android:id="@+id/tv_pkg"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="پاکێج: HAMA UK PLAYER"
+                            android:text=""
                             android:textColor="#FFFFFF" />
                         <TextView
                             android:id="@+id/tv_mac"
