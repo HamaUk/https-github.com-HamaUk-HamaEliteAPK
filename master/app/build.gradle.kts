@@ -11,8 +11,8 @@ android {
         applicationId = "com.bachors.iptv"
         minSdk = 21
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.0.9"
+        versionCode = 3
+        versionName = "1.0.10"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
