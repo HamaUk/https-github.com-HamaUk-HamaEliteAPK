@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bachors.iptv.adapters.FavoritesAdapter
 import com.bachors.iptv.models.ChannelsData
 import com.bachors.iptv.utils.RecyclerTouchListener
+import com.bachors.iptv.utils.PlayerLauncher
 import com.bachors.iptv.utils.SharedPrefManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -103,7 +104,7 @@ class FavoritesActivity : AppCompatActivity() {
         intent.putExtra("userAgent", allData[key].userAgent)
         intent.putExtra("referrer", allData[key].referrer)
         intent.putExtra("isLive", isLikelyLiveUrl(allData[key].url))
-        startActivity(intent)
+        PlayerLauncher.start(mcon, intent)
     }
 
     private fun isLikelyLiveUrl(url: String): Boolean {

@@ -37,8 +37,17 @@ dependencyResolutionManagement {
         maven {
             url = uri("https://jitpack.io")
         }
+        // Legacy Bilibili IJK native AARs (read-only mirror)
+        maven {
+            url = uri("https://maven.aliyun.com/repository/jcenter")
+            content {
+                includeGroup("tv.danmaku.android")
+            }
+        }
     }
 }
 
 rootProject.name = "IPTV"
 include(":app")
+include(":ijkplayer-java")
+project(":ijkplayer-java").projectDir = file("app/libraries/ijkplayer-java")

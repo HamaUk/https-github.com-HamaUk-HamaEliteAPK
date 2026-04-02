@@ -253,6 +253,77 @@
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
+                <!-- Playback engine (Exo vs LibVLC) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:strokeColor="@color/white_opacity_10"
+                    app:strokeWidth="1dp"
+                    style="@style/VuCard">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="بزوێنەری پەخش"
+                            android:textColor="#FFFFFF"
+                            android:textSize="16sp" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="پڕۆفایلەکانی جیا: Cinema/Arena هەمان Media3ن بە بۆفەری جیا. Web HLS = Chromium+hls.js (تەنها .m3u8). LibVLC = LGPL. IJK = FFmpeg (مۆڵەت بەپێی build)."
+                            android:textColor="#8890A0"
+                            android:textSize="12sp" />
+                        <RadioGroup
+                            android:id="@+id/rg_player_engine"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp">
+                            <RadioButton
+                                android:id="@+id/rb_player_exo"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="ExoPlayer · Standard (هاوسەنگ)"
+                                android:textColor="#B0B0C0" />
+                            <RadioButton
+                                android:id="@+id/rb_player_exo_cinema"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="ExoPlayer · Cinema (بۆفەری قووڵ، تۆڕی لاواز)"
+                                android:textColor="#B0B0C0" />
+                            <RadioButton
+                                android:id="@+id/rb_player_exo_arena"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="ExoPlayer · Arena (کەمترین دواخستن بۆ live)"
+                                android:textColor="#B0B0C0" />
+                            <RadioButton
+                                android:id="@+id/rb_player_web_hls"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Chromium · Web HLS (hls.js)"
+                                android:textColor="#B0B0C0" />
+                            <RadioButton
+                                android:id="@+id/rb_player_vlc"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="LibVLC (VLC)"
+                                android:textColor="#B0B0C0" />
+                            <RadioButton
+                                android:id="@+id/rb_player_ijk"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="IJKPlayer (FFmpeg)"
+                                android:textColor="#B0B0C0" />
+                        </RadioGroup>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <!-- Buffer Size -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"

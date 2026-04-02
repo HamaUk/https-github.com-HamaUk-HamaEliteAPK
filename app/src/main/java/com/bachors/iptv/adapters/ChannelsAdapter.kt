@@ -19,6 +19,7 @@ import com.bachors.iptv.PlayerActivity
 import com.bachors.iptv.R
 import com.bachors.iptv.models.ChannelsData
 import com.bachors.iptv.utils.ChannelLogoUri
+import com.bachors.iptv.utils.PlayerLauncher
 import com.bachors.iptv.utils.SharedPrefManager
 import com.google.android.material.card.MaterialCardView
 import com.squareup.picasso.Callback
@@ -115,7 +116,7 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
             intent.putExtra("isLive", isLivePlayback)
             intent.putExtra("contentType", contentTypeExtra)
             sharedPrefManager.saveSPString(SharedPrefManager.SP_CURRENT_URL, data.url)
-            inContext.startActivity(intent)
+            PlayerLauncher.start(inContext, intent)
         }
         h.cardRoot.setOnClickListener(launchPlayer)
         h.lnPlay.setOnClickListener(launchPlayer)

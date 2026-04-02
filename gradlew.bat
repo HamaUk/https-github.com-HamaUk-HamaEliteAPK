@@ -40,7 +40,7 @@ if defined JAVA_HOME goto findJavaFromJavaHome
 
 set JAVA_EXE=java.exe
 %JAVA_EXE% -version >NUL 2>&1
-if "%ERRORLEVEL%" == "0" goto execute
+if "%ERRORLEVEL%" == "0" goto preExecute
 
 echo.
 echo ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
@@ -54,7 +54,7 @@ goto fail
 set JAVA_HOME=%JAVA_HOME:"=%
 set JAVA_EXE=%JAVA_HOME%/bin/java.exe
 
-if exist "%JAVA_EXE%" goto execute
+if exist "%JAVA_EXE%" goto preExecute
 
 echo.
 echo ERROR: JAVA_HOME is set to an invalid directory: %JAVA_HOME%
@@ -63,6 +63,85 @@ echo Please set the JAVA_HOME variable in your environment to match the
 echo location of your Java installation.
 
 goto fail
+
+@rem Prefer JDK 17-21 when JAVA_HOME / PATH points to JDK 25+ (Kotlin DSL script compiler).
+:preExecute
+if defined GRADLE_JAVA_HOME (
+    set "JAVA_HOME=%GRADLE_JAVA_HOME:"=%"
+    set "JAVA_EXE=%JAVA_HOME%\bin\java.exe"
+    if exist "%JAVA_EXE%" goto execute
+    echo ERROR: GRADLE_JAVA_HOME is invalid: %GRADLE_JAVA_HOME%
+    goto fail
+)
+@rem Parse major version from first line (java/openjdk version "MAJOR...") — works with stderr and avoids findstr quoting bugs
+set "JVL="
+for /f "tokens=* usebackq" %%i in (`"%JAVA_EXE%" -version 2^>^&1`) do (
+    set "JVL=%%i"
+    goto gradle_jv_got
+)
+:gradle_jv_got
+if "%JVL%"=="" goto execute
+set "JVN="
+for /f "tokens=2 delims=^"" %%a in ("%JVL%") do set "JVN=%%a"
+if "%JVN%"=="" goto execute
+set "JMAJ="
+for /f "tokens=1 delims=." %%m in ("%JVN%") do set "JMAJ=%%m"
+if "%JMAJ%"=="" goto execute
+if %JMAJ% LSS 25 goto execute
+call :useSupportedJdkForGradle
+if errorlevel 1 goto fail
+goto execute
+
+:useSupportedJdkForGradle
+if exist "%ProgramFiles%\Android\Android Studio\jbr\bin\java.exe" (
+    set "JAVA_HOME=%ProgramFiles%\Android\Android Studio\jbr"
+    set "JAVA_EXE=%JAVA_HOME%\bin\java.exe"
+    echo Gradle: using Android Studio JBR at %JAVA_HOME% ^(not JDK 25+^).
+    exit /b 0
+)
+if exist "%LOCALAPPDATA%\Programs\Android Studio\jbr\bin\java.exe" (
+    set "JAVA_HOME=%LOCALAPPDATA%\Programs\Android Studio\jbr"
+    set "JAVA_EXE=%JAVA_HOME%\bin\java.exe"
+    echo Gradle: using Android Studio JBR ^(user install^).
+    exit /b 0
+)
+for /d %%D in ("%ProgramFiles%\Eclipse Adoptium\jdk-21*") do (
+    if exist "%%D\bin\java.exe" (
+        set "JAVA_HOME=%%D"
+        set "JAVA_EXE=%%D\bin\java.exe"
+        echo Gradle: using %%D
+        exit /b 0
+    )
+)
+for /d %%D in ("%ProgramFiles%\Microsoft\jdk-21*") do (
+    if exist "%%D\bin\java.exe" (
+        set "JAVA_HOME=%%D"
+        set "JAVA_EXE=%%D\bin\java.exe"
+        echo Gradle: using %%D
+        exit /b 0
+    )
+)
+for /d %%D in ("%ProgramFiles%\Java\jdk-21*") do (
+    if exist "%%D\bin\java.exe" (
+        set "JAVA_HOME=%%D"
+        set "JAVA_EXE=%%D\bin\java.exe"
+        echo Gradle: using %%D
+        exit /b 0
+    )
+)
+for /d %%D in ("%ProgramFiles%\Java\jdk-17*") do (
+    if exist "%%D\bin\java.exe" (
+        set "JAVA_HOME=%%D"
+        set "JAVA_EXE=%%D\bin\java.exe"
+        echo Gradle: using %%D
+        exit /b 0
+    )
+)
+echo.
+echo ERROR: JAVA_HOME points to JDK 25 or newer. Gradle's Kotlin DSL cannot use that JVM yet.
+echo Install JDK 21, or set GRADLE_JAVA_HOME to a JDK 17-21 folder, or install Android Studio ^(JBR^).
+echo.
+exit /b 1
 
 :execute
 @rem Setup the command line

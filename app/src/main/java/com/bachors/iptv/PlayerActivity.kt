@@ -46,6 +46,7 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.bachors.iptv.models.ChannelsData
 import com.bachors.iptv.utils.ContinueWatchingStore
+import com.bachors.iptv.utils.PlayerLauncher
 import com.bachors.iptv.utils.SharedPrefManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
@@ -148,10 +149,6 @@ class PlayerActivity : AppCompatActivity() {
     private var seekbarUserDragging = false
     private var lastContinueWatchSaveAt = 0L
 
-    /** Live: detect READY+playing but timeline position not advancing (frozen stream). */
-    private var liveStallWatchLastWallMs = 0L
-    private var liveStallWatchLastPosition = 0L
-
     private val handler = Handler(Looper.getMainLooper())
     private val hideControlsRunnable = Runnable { hideControls() }
     private val hideVolumeOsdRunnable = Runnable { fadeOutVolumeOsd() }
@@ -159,9 +156,6 @@ class PlayerActivity : AppCompatActivity() {
     companion object {
         private const val LIVE_MAX_VIDEO_BITRATE = 1_500_000
         private const val LIVE_BUFFERING_WATCHDOG_MS = 12_000L
-        /** If position moves less than this over [LIVE_STALL_CHECK_INTERVAL_MS], treat as frozen. */
-        private const val LIVE_STALL_POSITION_DELTA_MS = 50L
-        private const val LIVE_STALL_CHECK_INTERVAL_MS = 10_000L
     }
 
     private val clockRunnable = object : Runnable {
@@ -186,35 +180,8 @@ class PlayerActivity : AppCompatActivity() {
                     lastContinueWatchSaveAt = now
                 }
             }
-            if (p != null && isLiveStream && p.playWhenReady && p.playbackState == Player.STATE_READY && p.isPlaying) {
-                checkLiveTimelineStall(p)
-            } else {
-                liveStallWatchLastWallMs = 0L
-            }
             handler.postDelayed(this, 500L)
         }
-    }
-
-    private fun checkLiveTimelineStall(p: ExoPlayer) {
-        if (lastRequestedUrl.isBlank()) return
-        val now = System.currentTimeMillis()
-        val pos = p.currentPosition
-        if (liveStallWatchLastWallMs == 0L) {
-            liveStallWatchLastWallMs = now
-            liveStallWatchLastPosition = pos
-            return
-        }
-        if (now - liveStallWatchLastWallMs < LIVE_STALL_CHECK_INTERVAL_MS) return
-        if (pos <= liveStallWatchLastPosition + LIVE_STALL_POSITION_DELTA_MS) {
-            liveStallWatchLastWallMs = 0L
-            reconnectAttempts = 0
-            reconnectPending = false
-            handler.removeCallbacks(reconnectRunnable)
-            startPlayback(lastRequestedUrl, currentChannelName)
-            return
-        }
-        liveStallWatchLastWallMs = now
-        liveStallWatchLastPosition = pos
     }
 
     private fun videoCapsForPreset(preset: Int): Triple<Int, Int, Int> {
@@ -562,14 +529,30 @@ class PlayerActivity : AppCompatActivity() {
     // ════════════════════════════════════════════════════════
     //  PLAYER
     // ════════════════════════════════════════════════════════
+    private fun activePlaybackEngine(): String {
+        val e = SharedPrefManager(this).getSpString(SharedPrefManager.SP_PLAYER_ENGINE).trim().lowercase()
+        return when (e) {
+            PlayerLauncher.ENGINE_EXO_CINEMA -> PlayerLauncher.ENGINE_EXO_CINEMA
+            PlayerLauncher.ENGINE_EXO_ARENA -> PlayerLauncher.ENGINE_EXO_ARENA
+            PlayerLauncher.ENGINE_EXO -> PlayerLauncher.ENGINE_EXO
+            else -> PlayerLauncher.ENGINE_EXO
+        }
+    }
+
     private fun initPlayer() {
         val savedResize = SharedPrefManager(this).getSpString(SharedPrefManager.SP_RESIZE_MODE)
         currentResizeIndex = resizeModes.indexOfFirst { it.toString() == savedResize }.coerceAtLeast(0)
         playerView.resizeMode = resizeModes[currentResizeIndex]
 
+        val engine = activePlaybackEngine()
+        val (connectSec, readSec) = when (engine) {
+            PlayerLauncher.ENGINE_EXO_CINEMA -> 20L to 90L
+            PlayerLauncher.ENGINE_EXO_ARENA -> 8L to 20L
+            else -> 12L to 30L
+        }
         val okHttp = OkHttpClient.Builder()
-            .connectTimeout(12, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(connectSec, TimeUnit.SECONDS)
+            .readTimeout(readSec, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
             .build()
         okHttpClient = okHttp
@@ -591,29 +574,35 @@ class PlayerActivity : AppCompatActivity() {
             .build() as DefaultTrackSelector.Parameters
         trackSelector.parameters = trackParams
 
-        // Live: balance zapping vs stalls — slightly higher min buffer than before to reduce frozen-edge cases.
-        // VOD: keep safer defaults for seeking stability.
+        // Buffer / latency profiles (settings → بزوێنەری پەخش): Standard, Cinema, Arena.
         val loadControlBuilder = DefaultLoadControl.Builder()
         if (isLiveStream) {
-            loadControlBuilder.setBufferDurationsMs(
-                2200,
-                15000,
-                600,
-                1300
-            )
+            when (engine) {
+                PlayerLauncher.ENGINE_EXO_CINEMA ->
+                    loadControlBuilder.setBufferDurationsMs(12_000, 60_000, 4000, 8000)
+                PlayerLauncher.ENGINE_EXO_ARENA ->
+                    loadControlBuilder.setBufferDurationsMs(800, 15_000, 250, 600)
+                else ->
+                    loadControlBuilder.setBufferDurationsMs(3000, 20_000, 1000, 2000)
+            }
         } else {
-            loadControlBuilder.setBufferDurationsMs(
-                2500,
-                15000,
-                800,
-                1500
-            )
+            when (engine) {
+                PlayerLauncher.ENGINE_EXO_CINEMA ->
+                    loadControlBuilder.setBufferDurationsMs(8000, 120_000, 3000, 6000)
+                PlayerLauncher.ENGINE_EXO_ARENA ->
+                    loadControlBuilder.setBufferDurationsMs(1500, 20_000, 500, 1000)
+                else ->
+                    loadControlBuilder.setBufferDurationsMs(2500, 15_000, 800, 1500)
+            }
         }
         val loadControl = loadControlBuilder.build()
 
+        val extMode = when (engine) {
+            PlayerLauncher.ENGINE_EXO_CINEMA -> DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON
+            else -> DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
+        }
         val renderersFactory = DefaultRenderersFactory(this)
-            // Prefer FFmpeg extension when present (AC-3 / E-AC-3 etc.); ON often never picks it for “supported” HW tracks.
-            .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
+            .setExtensionRendererMode(extMode)
             .setEnableDecoderFallback(true)
         exoPlayer = ExoPlayer.Builder(this, renderersFactory)
             .setTrackSelector(trackSelector)
@@ -632,13 +621,11 @@ class PlayerActivity : AppCompatActivity() {
                 override fun onPlaybackStateChanged(state: Int) {
                     when (state) {
                         Player.STATE_BUFFERING -> {
-                            liveStallWatchLastWallMs = 0L
                             loadingBar.visibility = View.VISIBLE
                             errorText.visibility  = View.GONE
                             startBufferingWatchdogIfLive()
                         }
                         Player.STATE_READY -> {
-                            liveStallWatchLastWallMs = 0L
                             loadingBar.visibility = View.GONE
                             errorText.visibility  = View.GONE
                             reconnectAttempts = 0
@@ -668,18 +655,9 @@ class PlayerActivity : AppCompatActivity() {
                         Player.STATE_IDLE -> {
                             // After stop() during channel change, IDLE appears before BUFFERING.
                             // Do not hide loading here — that caused the spinner to flash off.
-                            liveStallWatchLastWallMs = 0L
                             cancelBufferingWatchdog()
                         }
                     }
-                }
-
-                override fun onIsLoadingChanged(isLoading: Boolean) {
-                    if (isLoading) {
-                        loadingBar.visibility = View.VISIBLE
-                        errorText.visibility = View.GONE
-                    }
-                    // When false, READY / ENDED / onPlayerError control hiding the spinner.
                 }
 
                 override fun onIsPlayingChanged(isPlaying: Boolean) = updatePlayPauseIcon()
@@ -752,7 +730,6 @@ class PlayerActivity : AppCompatActivity() {
         reconnectPending = false
         handler.removeCallbacks(reconnectRunnable)
         cancelBufferingWatchdog()
-        liveStallWatchLastWallMs = 0L
         forceHlsForCurrentUrl = null
         sourceFallbackTriedForUrl = ""
         fallbackTriedForUrl = ""
@@ -947,7 +924,6 @@ class PlayerActivity : AppCompatActivity() {
         reconnectPending = false
         cancelBufferingWatchdog()
         handler.removeCallbacks(reconnectRunnable)
-        liveStallWatchLastWallMs = 0L
         val currentChannel = channelList.firstOrNull { it.url == url.trim() }
         currentUserAgent = currentChannel?.userAgent?.trim().orEmpty().ifEmpty { intentUserAgent }
         currentReferrer = currentChannel?.referrer?.trim().orEmpty().ifEmpty { intentReferrer }

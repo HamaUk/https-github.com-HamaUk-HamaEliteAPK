@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bachors.iptv.utils.ContinueWatchingEntry
 import com.bachors.iptv.utils.ContinueWatchingStore
+import com.bachors.iptv.utils.PlayerLauncher
 import com.bachors.iptv.utils.SharedPrefManager
 
 class ContinueWatchingActivity : AppCompatActivity() {
@@ -43,7 +44,7 @@ class ContinueWatchingActivity : AppCompatActivity() {
             i.putExtra("isLive", false)
             i.putExtra("contentType", entry.contentType.ifBlank { "vod" })
             SharedPrefManager(this).saveSPString(SharedPrefManager.SP_CURRENT_URL, entry.url)
-            startActivity(i)
+            PlayerLauncher.start(this, i)
         }
     }
 

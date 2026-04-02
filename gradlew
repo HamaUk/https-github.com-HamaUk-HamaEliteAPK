@@ -105,6 +105,42 @@ Please set the JAVA_HOME variable in your environment to match the
 location of your Java installation."
 fi
 
+# JDK 25+: Gradle's Kotlin DSL script compiler may throw JavaVersion.parse errors. Prefer 17-21.
+if [ -n "$GRADLE_JAVA_HOME" ] && [ -x "$GRADLE_JAVA_HOME/bin/java" ]; then
+    JAVA_HOME="$GRADLE_JAVA_HOME"
+    JAVACMD="$JAVA_HOME/bin/java"
+elif "$JAVACMD" -version 2>&1 | grep -qE 'version "(2[5-9]|[3-9][0-9])\.'; then
+    _pick_gradle_jdk() {
+        if [ -x "$1/bin/java" ]; then
+            JAVA_HOME="$1"
+            JAVACMD="$1/bin/java"
+            echo "Gradle: using $1 (not JDK 25+)." >&2
+            return 0
+        fi
+        return 1
+    }
+    _found=""
+    if $darwin; then
+        _pick_gradle_jdk "/Applications/Android Studio.app/Contents/jbr/Contents/Home" && _found=y
+        [ -z "$_found" ] && _pick_gradle_jdk "/Applications/Android Studio Preview.app/Contents/jbr/Contents/Home" && _found=y
+    elif [ "$msys" = "true" ] || [ "$cygwin" = "true" ]; then
+        _pick_gradle_jdk "/c/Program Files/Android/Android Studio/jbr" && _found=y
+        [ -z "$_found" ] && [ -n "$USERPROFILE" ] && _pick_gradle_jdk "$USERPROFILE/AppData/Local/Programs/Android Studio/jbr" && _found=y
+    else
+        _pick_gradle_jdk "/opt/android-studio/jbr" && _found=y
+        [ -z "$_found" ] && _pick_gradle_jdk "$HOME/android-studio/jbr" && _found=y
+        [ -z "$_found" ] && _pick_gradle_jdk "/usr/lib/jvm/java-21-openjdk-amd64" && _found=y
+        [ -z "$_found" ] && _pick_gradle_jdk "/usr/lib/jvm/java-21-openjdk" && _found=y
+        [ -z "$_found" ] && _pick_gradle_jdk "/usr/lib/jvm/java-17-openjdk-amd64" && _found=y
+        [ -z "$_found" ] && _pick_gradle_jdk "/usr/lib/jvm/java-17-openjdk" && _found=y
+    fi
+    if [ -z "$_found" ]; then
+        die "ERROR: Your Java is JDK 25 or newer; Gradle Kotlin DSL does not support it yet.
+
+Install JDK 21, set GRADLE_JAVA_HOME to its folder, or use Android Studio's bundled JBR."
+    fi
+fi
+
 # Increase the maximum file descriptors if we can.
 if [ "$cygwin" = "false" -a "$darwin" = "false" -a "$nonstop" = "false" ] ; then
     MAX_FD_LIMIT=`ulimit -H -n`

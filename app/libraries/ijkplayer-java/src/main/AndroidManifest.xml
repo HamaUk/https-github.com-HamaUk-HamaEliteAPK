@@ -1,4 +1,1 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="tv.danmaku.ijk.media.player" >
-
-</manifest>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />

@@ -26,6 +26,8 @@ class SharedPrefManager(context: Context) {
         const val SP_CONTINUE_WATCHING = "spContinueWatching"
         /** 0=auto, 1=720p cap, 2=1080p cap, 3=4K cap (max dimensions / ABR) */
         const val SP_VIDEO_QUALITY_PRESET = "spVideoQualityPreset"
+        /** See [com.bachors.iptv.utils.PlayerLauncher] for values (exo, exo_cinema, exo_arena, web_hls, vlc). */
+        const val SP_PLAYER_ENGINE = "spPlayerEngine"
     }
 
     private val sp: SharedPreferences = context.getSharedPreferences(SP_SS_APP, Context.MODE_PRIVATE)
