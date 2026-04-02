@@ -37,7 +37,9 @@ data class ManagedChannelItem(
     val logo: String? = null,
     val hidden: Boolean? = false,
     val adult: Boolean? = false,
-    val type: String? = null
+    val type: String? = null,
+    /** Display order within managed playlist (set by admin web UI). */
+    val order: Int? = null
 )
 
 data class ManagedPlaylist(

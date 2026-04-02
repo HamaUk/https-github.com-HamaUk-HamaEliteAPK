@@ -373,6 +373,16 @@ td {
 .tag-hidden { color: #ff9800; font-weight: 700; }
 .tag-adult { color: #ff4b2b; font-weight: 700; }
 .channel-mgr-pager { display: flex; align-items: center; gap: 12px; margin-top: 12px; justify-content: center; }
+.channel-mgr-table tr.cm-dragging { opacity: 0.45; }
+.channel-mgr-table tr.cm-drag-over { outline: 2px dashed var(--accent); outline-offset: -2px; }
+.channel-mgr-validation { font-size: 0.72rem; padding: 10px 12px; border-radius: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); }
+.channel-mgr-validation .val-err { color: var(--error); font-weight: 700; }
+.channel-mgr-validation .val-warn { color: #ff9800; font-weight: 700; }
+.channel-mgr-validation .val-ok { color: #8bc34a; font-weight: 700; }
+.channel-mgr-bulk-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; padding: 10px; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); }
+.cm-move-cell .btn-small { padding: 2px 6px; min-width: 28px; }
+.cm-drag-handle { cursor: grab; display: inline-block; padding: 2px 4px; user-select: none; opacity: 0.85; font-size: 1rem; line-height: 1; vertical-align: middle; }
+.cm-drag-handle:active { cursor: grabbing; }
 .btn-small { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.06); color: #fff; cursor: pointer; font-size: 0.72rem; }
 .btn-small:hover { border-color: var(--accent); }
 .mgr-note { font-size: 0.72rem; color: var(--text-dim); margin-bottom: 10px; line-height: 1.5; }
@@ -545,7 +555,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
       <div>
         <h3 style="margin-bottom:8px;">MANAGE CHANNELS</h3>
         <div class="mgr-note" id="channelMgrSyncKeyLabel">sync key: —</div>
-        <div class="mgr-note">Import from your M3U (profile URL, embedded file on this key, paste, or local file). Remote URL fetch may fail in-browser due to CORS — then use Paste or a profile with embedded <b>content</b>. Saves to <b>managedPlaylist</b> on this sync key. After editing logos/names, click <b>SAVE MANAGED PLAYLIST TO FIREBASE</b>, then users must <b>sync the app again</b> (same sync key) so icons appear in the app. The <b>Logo</b> column below shows a thumbnail when the URL or embedded image loads.</div>
+        <div class="mgr-note">Import from your M3U (profile URL, embedded file on this key, paste, or local file), or use <b>ADD ONE CHANNEL</b> for a single name + stream URL + optional local icon. Use <b>DELETE</b> on a row to remove a channel. Remote URL fetch may fail in-browser due to CORS — then use Paste or a profile with embedded <b>content</b>. Saves to <b>managedPlaylist</b> on this sync key. After editing logos/names, click <b>SAVE MANAGED PLAYLIST TO FIREBASE</b>, then users must <b>sync the app again</b> (same sync key) so icons appear in the app. The <b>Logo</b> column below shows a thumbnail when the URL or embedded image loads.</div>
       </div>
       <button type="button" class="btn-small" onclick="window.closeChannelManager()">CLOSE</button>
     </div>
@@ -554,17 +564,72 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
       <button type="button" class="tool-btn" onclick="window.channelMgrPickFile()">LOAD .M3U FILE</button>
       <input type="file" id="channelMgrFile" accept=".m3u,.m3u8,.txt,application/vnd.apple.mpegurl,text/plain" style="display:none" onchange="window.channelMgrOnFile(this)">
       <button type="button" class="tool-btn" onclick="document.getElementById('channelMgrPaste').style.display=document.getElementById('channelMgrPaste').style.display==='none'?'block':'none'">PASTE M3U</button>
+      <button type="button" class="tool-btn accent" onclick="window.channelMgrToggleAddSingle()">+ ADD ONE CHANNEL</button>
     </div>
     <div id="channelMgrPaste" style="display:none; margin-bottom:12px;">
       <label class="admin-note">Paste M3U text</label>
       <textarea id="channelMgrPasteTa" style="width:100%; min-height:120px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:12px; color:white; padding:12px; font-family:monospace; font-size:0.72rem;"></textarea>
       <button type="button" class="tool-btn accent" style="margin-top:8px" onclick="window.channelMgrParsePasted()">PARSE PASTED</button>
     </div>
+    <div id="channelMgrAddSinglePanel" style="display:none; margin-bottom:16px; padding:14px; border:1px solid var(--glass-border); border-radius:12px; background:rgba(0,0,0,0.2);">
+      <div class="mgr-note" style="margin-bottom:10px;">Add a single stream without replacing the whole list. URL can be <b>.m3u8</b>, <b>.ts</b>, <b>.m3u</b> playlist link, or other stream URL. Logo is optional (local image or leave empty).</div>
+      <div class="row" style="display:flex; flex-wrap:wrap; gap:12px;">
+        <div class="form-group" style="flex:1; min-width:160px;">
+          <label>Channel name</label>
+          <input type="text" id="channelMgrAddName" placeholder="e.g. Kurdistan TV" autocomplete="off">
+        </div>
+        <div class="form-group" style="flex:1; min-width:160px;">
+          <label>Group</label>
+          <input type="text" id="channelMgrAddGroup" value="General" placeholder="General" autocomplete="off">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:8px;">
+        <label>Stream URL</label>
+        <input type="text" id="channelMgrAddUrl" placeholder="https://…/stream.m3u8 or .ts or .m3u" spellcheck="false" autocomplete="off" style="width:100%;">
+      </div>
+      <div class="row" style="display:flex; flex-wrap:wrap; gap:12px; margin-top:8px; align-items:flex-end;">
+        <div class="form-group" style="flex:1; min-width:140px;">
+          <label>Type</label>
+          <select id="channelMgrAddType" style="width:100%; padding:10px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:10px; color:white;">
+            <option value="auto">Auto (from URL)</option>
+            <option value="live">live</option>
+            <option value="vod">vod</option>
+            <option value="series">series</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:2; min-width:200px;">
+          <label>Logo (optional)</label>
+          <div class="file-upload-wrapper">
+            <label for="channelMgrAddLogoFile" class="file-upload-label" style="padding:12px 16px;">
+              <span>CHOOSE ICON FILE</span>
+              <small>PNG / JPG — auto-resized like EDIT</small>
+            </label>
+            <input type="file" id="channelMgrAddLogoFile" class="file-upload-input" accept="image/*">
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+        <button type="button" class="sync-btn" style="width:auto; padding:10px 20px;" onclick="window.channelMgrAddSingleChannel()">ADD TO LIST</button>
+        <button type="button" class="sync-btn" style="width:auto; padding:10px 20px; background:rgba(255,255,255,0.1); color:white;" onclick="window.channelMgrClearAddSingleForm()">CLEAR FORM</button>
+      </div>
+    </div>
     <input type="text" id="channelMgrFilter" class="search-bar" placeholder="FILTER BY NAME, GROUP, URL..." onkeyup="window.channelMgrRender()" style="margin-bottom:12px;">
+    <div id="channelMgrValidation" class="channel-mgr-validation" style="display:none;"></div>
+    <div class="channel-mgr-bulk-bar">
+      <span class="admin-note" style="margin:0;">Bulk (checked rows):</span>
+      <button type="button" class="btn-small" onclick="window.channelMgrSelectPage()">SELECT PAGE</button>
+      <button type="button" class="btn-small" onclick="window.channelMgrClearSelection()">CLEAR</button>
+      <button type="button" class="btn-small" onclick="window.channelMgrBulkHide()">HIDE</button>
+      <button type="button" class="btn-small" style="color:var(--error);border-color:var(--error);" onclick="window.channelMgrBulkDelete()">DELETE</button>
+      <button type="button" class="btn-small" onclick="window.channelMgrBulkMoveGroup()">MOVE GROUP…</button>
+      <button type="button" class="btn-small" style="background:var(--accent);color:#000;border-color:var(--accent);font-weight:700;" onclick="window.channelMgrBulkExportM3u()">EXPORT M3U SNIPPET</button>
+    </div>
     <div class="channel-mgr-table-wrap">
       <table class="channel-mgr-table">
         <thead>
           <tr>
+            <th class="checkbox-col"><input type="checkbox" id="channelMgrCbAllPage" title="Select visible page"></th>
+            <th style="width:72px;">⇅</th>
             <th>#</th>
             <th>Logo</th>
             <th>Name</th>
@@ -1090,6 +1155,24 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
   window.channelMgrPageSize = 75;
   window.channelMgrEditingId = null;
   window.channelMgrProfile = null;
+  /** @type {Record<string, boolean>} */
+  window.channelMgrSelected = {};
+  window.channelMgrDraggedRowId = null;
+
+  function channelMgrNormalizeOrders() {
+    window.channelMgrRows.forEach((r, i) => { r.order = i; });
+  }
+
+  /** Firebase may store order as number, string, or (rarely) double. */
+  function channelMgrCoerceOrder(v) {
+    if (v == null) return null;
+    if (typeof v === 'number' && !Number.isNaN(v)) return Math.floor(v);
+    if (typeof v === 'string' && v.trim() !== '') {
+      const n = parseInt(v.trim(), 10);
+      return Number.isNaN(n) ? null : n;
+    }
+    return null;
+  }
 
   function stableChannelId(url, name) {
     const s = (url || '') + '\0' + (name || '');
@@ -1113,9 +1196,325 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     if (lower.includes('/live/') || lower.includes('/stream/')) return 'live';
     if (lower.includes('output=mpegts') || lower.includes('output=ts') || lower.includes('type=m3u_plus')) return 'live';
     if (/\.(mp4|mkv|avi|mov|wmv|flv|ts|m4v)$/i.test(lower)) return 'vod';
-    if (lower.endsWith('.m3u8')) return 'live';
+    if (lower.endsWith('.m3u8') || lower.endsWith('.m3u')) return 'live';
     return 'live';
   }
+
+  function channelMgrIsValidStreamUrl(u) {
+    const t = (u || '').trim();
+    if (!t) return false;
+    return (
+      /^https?:\/\//i.test(t) ||
+      /^rtsp:\/\//i.test(t) ||
+      /^rtmp:\/\//i.test(t) ||
+      /^udp:\/\//i.test(t) ||
+      /^rtp:\/\//i.test(t) ||
+      /^mmsh:\/\//i.test(t) ||
+      /^mmst:\/\//i.test(t)
+    );
+  }
+
+  function channelMgrUniqueChannelId(url, name) {
+    let id = stableChannelId(url, name);
+    let n = 0;
+    while (window.channelMgrRows.some(r => r.id === id)) {
+      n++;
+      id = stableChannelId(url, (name || '') + ' #' + n);
+    }
+    return id;
+  }
+
+  window.channelMgrToggleAddSingle = () => {
+    const p = document.getElementById('channelMgrAddSinglePanel');
+    if (!p) return;
+    const open = p.style.display === 'none' || p.style.display === '';
+    p.style.display = open ? 'block' : 'none';
+    if (open) {
+      const n = document.getElementById('channelMgrAddName');
+      if (n) n.focus();
+    }
+  };
+
+  window.channelMgrClearAddSingleForm = () => {
+    const name = document.getElementById('channelMgrAddName');
+    const group = document.getElementById('channelMgrAddGroup');
+    const url = document.getElementById('channelMgrAddUrl');
+    const type = document.getElementById('channelMgrAddType');
+    const f = document.getElementById('channelMgrAddLogoFile');
+    if (name) name.value = '';
+    if (group) group.value = 'General';
+    if (url) url.value = '';
+    if (type) type.value = 'auto';
+    if (f) f.value = '';
+  };
+
+  window.channelMgrDeleteRow = (id) => {
+    if (!confirm('Remove this channel from the list? Click SAVE MANAGED PLAYLIST TO FIREBASE when you are done.')) return;
+    window.channelMgrRows = window.channelMgrRows.filter(r => r.id !== id);
+    delete window.channelMgrSelected[id];
+    channelMgrNormalizeOrders();
+    const st = document.getElementById('channelMgrStatus');
+    if (st) st.innerText = 'List updated — unsaved until you save to Firebase.';
+    window.channelMgrRender();
+  };
+
+  function channelMgrComputeValidation() {
+    const rows = window.channelMgrRows;
+    const emptyUrl = rows.filter(r => !(r.url || '').trim());
+    const byNorm = {};
+    rows.forEach(r => {
+      const u = (r.url || '').trim().toLowerCase();
+      if (!u) return;
+      (byNorm[u] = byNorm[u] || []).push(r);
+    });
+    const dupGroups = Object.values(byNorm).filter(a => a.length > 1);
+    const dupSeen = new Set();
+    dupGroups.forEach(list => list.forEach(r => dupSeen.add(r)));
+    const dupUrlRows = Array.from(dupSeen);
+    const badLogo = rows.filter(r => r.logoHttpBroken);
+    return { emptyUrl, dupUrlRows, dupGroupCount: dupGroups.length, badLogo };
+  }
+
+  function channelMgrUpdateValidationStrip() {
+    const el = document.getElementById('channelMgrValidation');
+    if (!el) return;
+    if (!window.channelMgrRows.length) {
+      el.style.display = 'none';
+      el.innerHTML = '';
+      return;
+    }
+    el.style.display = 'block';
+    const v = channelMgrComputeValidation();
+    const parts = [];
+    if (v.emptyUrl.length) parts.push('<span class="val-err">' + v.emptyUrl.length + ' empty stream URL</span>');
+    if (v.dupUrlRows.length) {
+      parts.push('<span class="val-warn">' + v.dupGroupCount + ' duplicate URL group(s), ' + v.dupUrlRows.length + ' row(s)</span>');
+    }
+    if (v.badLogo.length) parts.push('<span class="val-warn">' + v.badLogo.length + ' broken http(s) logo (thumbnail failed)</span>');
+    el.innerHTML = parts.length
+      ? '<strong>Pre-save checks:</strong> ' + parts.join(' · ') + ' — fix in EDIT or confirm on save.'
+      : '<strong>Pre-save checks:</strong> <span class="val-ok">OK</span>';
+  }
+
+  function channelMgrM3uEscapeAttr(s) {
+    return String(s || '').replace(/"/g, '\\"').replace(/\r|\n/g, ' ').trim();
+  }
+
+  function channelMgrRowsInSaveOrder() {
+    return window.channelMgrRows.slice();
+  }
+
+  window.channelMgrSelectPage = () => {
+    const filtered = channelMgrFiltered();
+    const size = window.channelMgrPageSize;
+    const start = (window.channelMgrPage - 1) * size;
+    filtered.slice(start, start + size).forEach(r => { window.channelMgrSelected[r.id] = true; });
+    window.channelMgrRender();
+  };
+
+  window.channelMgrClearSelection = () => {
+    window.channelMgrSelected = {};
+    window.channelMgrRender();
+  };
+
+  window.channelMgrBulkHide = () => {
+    const ids = Object.keys(window.channelMgrSelected).filter(id => window.channelMgrSelected[id]);
+    if (!ids.length) {
+      alert('Check one or more rows first (or use SELECT PAGE).');
+      return;
+    }
+    ids.forEach(id => {
+      const row = window.channelMgrRows.find(r => r.id === id);
+      if (row) row.hidden = true;
+    });
+    document.getElementById('channelMgrStatus').innerText = 'Marked ' + ids.length + ' hidden — unsaved until Firebase save.';
+    window.channelMgrRender();
+  };
+
+  window.channelMgrBulkDelete = () => {
+    const ids = Object.keys(window.channelMgrSelected).filter(id => window.channelMgrSelected[id]);
+    if (!ids.length) {
+      alert('Check one or more rows first.');
+      return;
+    }
+    if (!confirm('Delete ' + ids.length + ' channel(s) from this list? Save to Firebase when done.')) return;
+    const idSet = new Set(ids);
+    window.channelMgrRows = window.channelMgrRows.filter(r => !idSet.has(r.id));
+    window.channelMgrSelected = {};
+    channelMgrNormalizeOrders();
+    document.getElementById('channelMgrStatus').innerText = 'Removed ' + ids.length + ' row(s) — unsaved until save.';
+    window.channelMgrRender();
+  };
+
+  window.channelMgrBulkMoveGroup = () => {
+    const ids = Object.keys(window.channelMgrSelected).filter(id => window.channelMgrSelected[id]);
+    if (!ids.length) {
+      alert('Check one or more rows first.');
+      return;
+    }
+    const g = prompt('New group title for ' + ids.length + ' channel(s):', 'General');
+    if (g == null) return;
+    const group = String(g).trim() || 'General';
+    ids.forEach(id => {
+      const row = window.channelMgrRows.find(r => r.id === id);
+      if (row) row.group = group;
+    });
+    document.getElementById('channelMgrStatus').innerText = 'Moved ' + ids.length + ' to group “' + group + '” — unsaved until save.';
+    window.channelMgrRender();
+  };
+
+  window.channelMgrBulkExportM3u = () => {
+    const ids = Object.keys(window.channelMgrSelected).filter(id => window.channelMgrSelected[id]);
+    if (!ids.length) {
+      alert('Check one or more rows to export as M3U.');
+      return;
+    }
+    const idOrder = new Map();
+    channelMgrRowsInSaveOrder().forEach((r, i) => idOrder.set(r.id, i));
+    const picked = window.channelMgrRows.filter(r => ids.includes(r.id))
+      .sort((a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0));
+    const lines = ['#EXTM3U'];
+    picked.forEach(r => {
+      const logo = channelMgrM3uEscapeAttr(r.logo || '');
+      const grp = channelMgrM3uEscapeAttr(r.group || 'General');
+      const nm = channelMgrM3uEscapeAttr(r.name || 'Channel');
+      lines.push('#EXTINF:-1 tvg-logo="' + logo + '" group-title="' + grp + '",' + nm);
+      lines.push((r.url || '').trim());
+    });
+    const blob = new Blob([lines.join('\n')], { type: 'audio/x-mpegurl;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'channels-snippet.m3u';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  window.channelMgrMoveRowUp = (id) => {
+    const arr = window.channelMgrRows;
+    const i = arr.findIndex(r => r.id === id);
+    if (i <= 0) return;
+    const t = arr[i - 1];
+    arr[i - 1] = arr[i];
+    arr[i] = t;
+    channelMgrNormalizeOrders();
+    window.channelMgrRender();
+  };
+
+  window.channelMgrMoveRowDown = (id) => {
+    const arr = window.channelMgrRows;
+    const i = arr.findIndex(r => r.id === id);
+    if (i < 0 || i >= arr.length - 1) return;
+    const t = arr[i + 1];
+    arr[i + 1] = arr[i];
+    arr[i] = t;
+    channelMgrNormalizeOrders();
+    window.channelMgrRender();
+  };
+
+  window.channelMgrCloneRow = (id) => {
+    const row = window.channelMgrRows.find(r => r.id === id);
+    if (!row) return;
+    const baseName = (row.name || 'Channel').trim() || 'Channel';
+    const newName = baseName + ' (copy)';
+    const newId = channelMgrUniqueChannelId(row.url, newName);
+    const idx = window.channelMgrRows.findIndex(r => r.id === id);
+    const clone = {
+      id: newId,
+      name: newName,
+      url: row.url,
+      group: row.group || 'General',
+      logo: row.logo || '',
+      hidden: !!row.hidden,
+      adult: !!row.adult,
+      type: row.type || 'live',
+      logoHttpBroken: false
+    };
+    window.channelMgrRows.splice(idx + 1, 0, clone);
+    channelMgrNormalizeOrders();
+    document.getElementById('channelMgrStatus').innerText = 'Cloned row — unsaved until save.';
+    window.channelMgrRender();
+  };
+
+  window.channelMgrDropRowOn = (dragId, targetId) => {
+    if (!dragId || !targetId || dragId === targetId) return;
+    const arr = window.channelMgrRows;
+    let from = arr.findIndex(r => r.id === dragId);
+    let to = arr.findIndex(r => r.id === targetId);
+    if (from < 0 || to < 0) return;
+    const [item] = arr.splice(from, 1);
+    if (from < to) to--;
+    arr.splice(to, 0, item);
+    channelMgrNormalizeOrders();
+    window.channelMgrRender();
+  };
+
+  window.channelMgrAddSingleChannel = async () => {
+    const nameEl = document.getElementById('channelMgrAddName');
+    const groupEl = document.getElementById('channelMgrAddGroup');
+    const urlEl = document.getElementById('channelMgrAddUrl');
+    const typeEl = document.getElementById('channelMgrAddType');
+    const fileEl = document.getElementById('channelMgrAddLogoFile');
+    const name = (nameEl && nameEl.value || '').trim();
+    const streamUrl = (urlEl && urlEl.value || '').trim();
+    const group = (groupEl && groupEl.value || '').trim() || 'General';
+    const typeMode = (typeEl && typeEl.value) || 'auto';
+    if (!name) {
+      alert('Enter a channel name.');
+      return;
+    }
+    if (!channelMgrIsValidStreamUrl(streamUrl)) {
+      alert('Enter a valid stream URL (http(s), rtsp, rtmp, udp, etc.) ending with or containing your stream path (.m3u8, .ts, .m3u, …).');
+      return;
+    }
+    let logo = '';
+    const file = fileEl && fileEl.files && fileEl.files[0];
+    const maxBytes = 18 * 1024 * 1024;
+    if (file) {
+      if (file.type && !/^image\//i.test(file.type)) {
+        alert('Logo must be an image file.');
+        return;
+      }
+      if (file.size > maxBytes) {
+        alert('Logo file is too large (max ~18 MB).');
+        return;
+      }
+      try {
+        logo = await channelMgrDownscaleImageFile(file);
+      } catch (e) {
+        alert((e && e.message) ? e.message : 'Could not process logo image.');
+        return;
+      }
+    }
+    const t = typeMode === 'auto' ? detectTypeFromUrlJs(streamUrl) : typeMode;
+    const id = channelMgrUniqueChannelId(streamUrl, name);
+    window.channelMgrRows.push({
+      id,
+      name,
+      url: streamUrl,
+      group,
+      logo,
+      hidden: false,
+      adult: false,
+      type: t,
+      logoHttpBroken: false
+    });
+    channelMgrNormalizeOrders();
+    const filtered = channelMgrFiltered();
+    const idx = filtered.findIndex(r => r.id === id);
+    const size = window.channelMgrPageSize;
+    if (idx >= 0) {
+      window.channelMgrPage = Math.max(1, Math.floor(idx / size) + 1);
+    } else {
+      window.channelMgrPage = Math.max(1, Math.ceil(filtered.length / size));
+    }
+    const st = document.getElementById('channelMgrStatus');
+    if (st) {
+      st.innerText = 'Added “' + name + '” — unsaved until you save to Firebase.';
+      if (idx < 0) st.innerText += ' Clear the filter box if you do not see the new row.';
+    }
+    window.channelMgrClearAddSingleForm();
+    window.channelMgrRender();
+  };
 
   function parseM3UText(text) {
     const lines = String(text).split(/\r?\n/);
@@ -1132,7 +1531,15 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
         curLogo = extractAttrM3u(trimmed, 'tvg-logo') || '';
         const comma = trimmed.lastIndexOf(',');
         if (comma >= 0) curName = trimmed.slice(comma + 1).trim();
-      } else if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith('rtsp://') || trimmed.startsWith('rtmp://')) {
+      } else if (
+        /^https?:\/\//i.test(trimmed) ||
+        trimmed.startsWith('rtsp://') ||
+        trimmed.startsWith('rtmp://') ||
+        trimmed.startsWith('udp://') ||
+        trimmed.startsWith('rtp://') ||
+        trimmed.startsWith('mmsh://') ||
+        trimmed.startsWith('mmst://')
+      ) {
         if (curName) {
           const url = trimmed;
           const type = detectTypeFromUrlJs(url);
@@ -1144,7 +1551,8 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
             logo: curLogo,
             hidden: false,
             adult: false,
-            type
+            type,
+            logoHttpBroken: false
           });
           curName = '';
         }
@@ -1154,20 +1562,28 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
   }
 
   function mergeRowsFromManaged(parsed, managedItems) {
-    return parsed.map(row => {
+    const merged = parsed.map((row, parsedIdx) => {
       const old = managedItems && managedItems[row.id];
-      if (!old) return { ...row };
-      const oldLogo = old.logo != null ? String(old.logo).trim() : '';
+      const oldLogo = old && old.logo != null ? String(old.logo).trim() : '';
+      const ord = old ? channelMgrCoerceOrder(old.order) : null;
+      const sortKey = ord != null ? ord : 1000000 + parsedIdx;
       return {
         id: row.id,
-        name: old.name != null ? old.name : row.name,
+        name: old && old.name != null ? old.name : row.name,
         url: row.url,
-        group: old.group != null ? old.group : row.group,
+        group: old && old.group != null ? old.group : row.group,
         logo: oldLogo !== '' ? oldLogo : row.logo,
-        hidden: !!old.hidden,
-        adult: !!old.adult,
-        type: old.type || row.type
+        hidden: !!(old && old.hidden),
+        adult: !!(old && old.adult),
+        type: (old && old.type) || row.type,
+        logoHttpBroken: false,
+        _sortKey: sortKey
       };
+    });
+    merged.sort((a, b) => a._sortKey - b._sortKey);
+    return merged.map((r, i) => {
+      const { _sortKey, ...rest } = r;
+      return { ...rest, order: i };
     });
   }
 
@@ -1259,6 +1675,8 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     window.channelMgrCode = code;
     window.channelMgrRows = [];
     window.channelMgrPage = 1;
+    window.channelMgrSelected = {};
+    window.channelMgrDraggedRowId = null;
     document.getElementById('channelMgrSyncKeyLabel').innerText = 'sync key: ' + code;
     document.getElementById('channelMgrStatus').innerText = '';
     document.getElementById('channelManagerModal').style.display = 'flex';
@@ -1281,8 +1699,14 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
           logo: items[k].logo || '',
           hidden: !!items[k].hidden,
           adult: !!items[k].adult,
-          type: items[k].type || detectTypeFromUrlJs(items[k].url || '')
+          type: items[k].type || detectTypeFromUrlJs(items[k].url || ''),
+          order: channelMgrCoerceOrder(items[k].order),
+          logoHttpBroken: false
         }));
+        window.channelMgrRows.sort((a, b) =>
+          (a.order ?? 1e9) - (b.order ?? 1e9) || String(a.id).localeCompare(String(b.id))
+        );
+        channelMgrNormalizeOrders();
       }
     } catch (e) {
       alert(e.message);
@@ -1322,6 +1746,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     }
     const managedItems = window.channelMgrProfile && window.channelMgrProfile.managedPlaylist && window.channelMgrProfile.managedPlaylist.items;
     window.channelMgrRows = mergeRowsFromManaged(parsed, managedItems);
+    channelMgrNormalizeOrders();
     window.channelMgrPage = 1;
     document.getElementById('channelMgrStatus').innerText = 'Loaded ' + window.channelMgrRows.length + ' channels (unsaved until you save to Firebase).';
     window.channelMgrRender();
@@ -1367,20 +1792,35 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     const slice = filtered.slice(start, start + size);
     const tb = document.getElementById('channelMgrTbody');
     tb.innerHTML = '';
-    slice.forEach((row, i) => {
+    slice.forEach((row) => {
+      const globalIdx = window.channelMgrRows.findIndex(x => x.id === row.id) + 1;
       const tr = document.createElement('tr');
+      tr.className = 'cm-data-row';
+      tr.dataset.rowId = row.id;
       const flags = [];
       if (row.hidden) flags.push('<span class="tag-hidden">HIDDEN</span>');
       if (row.adult) flags.push('<span class="tag-adult">ADULT</span>');
+      const rid = channelMgrEscapeAttr(row.id);
+      const cbChecked = window.channelMgrSelected[row.id] ? ' checked' : '';
       tr.innerHTML =
-        '<td>' + (start + i + 1) + '</td>' +
+        '<td class="checkbox-col"><input type="checkbox" class="cm-row-cb"' + cbChecked + ' data-id="' + rid + '"></td>' +
+        '<td class="cm-move-cell">' +
+        '<span class="cm-drag-handle" draggable="true" title="Drag to reorder">⠿</span> ' +
+        '<button type="button" class="btn-small cm-move-up" title="Move up in list">↑</button> ' +
+        '<button type="button" class="btn-small cm-move-down" title="Move down in list">↓</button>' +
+        '</td>' +
+        '<td>' + globalIdx + '</td>' +
         '<td class="channel-mgr-logo-cell"></td>' +
         '<td>' + channelMgrEscapeAttr(row.name) + '</td>' +
         '<td>' + channelMgrEscapeAttr(row.group) + '</td>' +
         '<td>' + channelMgrEscapeAttr(row.type) + '</td>' +
         '<td>' + (flags.join(' ') || '—') + '</td>' +
         '<td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + channelMgrEscapeAttr(row.url) + '">' + channelMgrEscapeAttr(row.url) + '</td>' +
-        '<td><button type="button" class="btn-small" data-act="e">EDIT</button></td>';
+        '<td style="white-space:nowrap">' +
+        '<button type="button" class="btn-small cm-row-edit">EDIT</button> ' +
+        '<button type="button" class="btn-small cm-row-clone">CLONE</button> ' +
+        '<button type="button" class="btn-small cm-row-del" style="color:var(--error);border-color:var(--error);">DEL</button>' +
+        '</td>';
       const logoTd = tr.querySelector('.channel-mgr-logo-cell');
       const lg = (row.logo && String(row.logo).trim()) || '';
       if (lg.startsWith('data:image/') || /^https?:\/\//i.test(lg)) {
@@ -1391,8 +1831,11 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
         img.decoding = 'async';
         img.src = lg;
         img.onerror = function () {
+          const targetRow = window.channelMgrRows.find(r => r.id === row.id);
+          if (targetRow && /^https?:\/\//i.test((targetRow.logo || '').trim())) targetRow.logoHttpBroken = true;
           logoTd.textContent = '×';
           logoTd.title = 'Image failed to load';
+          channelMgrUpdateValidationStrip();
         };
         logoTd.appendChild(img);
       } else if (lg.length > 0) {
@@ -1401,9 +1844,79 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
       } else {
         logoTd.textContent = '—';
       }
-      tr.querySelector('button').onclick = () => window.openChannelMgrEdit(row.id);
+      const cb = tr.querySelector('.cm-row-cb');
+      if (cb) {
+        cb.addEventListener('change', () => {
+          if (cb.checked) window.channelMgrSelected[row.id] = true;
+          else delete window.channelMgrSelected[row.id];
+          const allCb = document.getElementById('channelMgrCbAllPage');
+          if (allCb) {
+            const ids = slice.map(r => r.id);
+            const allOn = ids.length && ids.every(id => window.channelMgrSelected[id]);
+            const some = ids.some(id => window.channelMgrSelected[id]);
+            allCb.checked = allOn;
+            allCb.indeterminate = !allOn && some;
+          }
+        });
+      }
+      const mu = tr.querySelector('.cm-move-up');
+      const md = tr.querySelector('.cm-move-down');
+      if (mu) mu.onclick = (e) => { e.stopPropagation(); window.channelMgrMoveRowUp(row.id); };
+      if (md) md.onclick = (e) => { e.stopPropagation(); window.channelMgrMoveRowDown(row.id); };
+      const editBtn = tr.querySelector('.cm-row-edit');
+      const cloneBtn = tr.querySelector('.cm-row-clone');
+      const delBtn = tr.querySelector('.cm-row-del');
+      if (editBtn) editBtn.onclick = () => window.openChannelMgrEdit(row.id);
+      if (cloneBtn) cloneBtn.onclick = () => window.channelMgrCloneRow(row.id);
+      if (delBtn) delBtn.onclick = () => window.channelMgrDeleteRow(row.id);
+
+      const dragHandle = tr.querySelector('.cm-drag-handle');
+      if (dragHandle) {
+        dragHandle.addEventListener('dragstart', (e) => {
+          e.stopPropagation();
+          window.channelMgrDraggedRowId = row.id;
+          tr.classList.add('cm-dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', row.id);
+        });
+        dragHandle.addEventListener('dragend', () => {
+          tr.classList.remove('cm-dragging');
+          document.querySelectorAll('.channel-mgr-table tr.cm-drag-over').forEach(x => x.classList.remove('cm-drag-over'));
+          window.channelMgrDraggedRowId = null;
+        });
+      }
+      tr.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        tr.classList.add('cm-drag-over');
+      });
+      tr.addEventListener('dragleave', () => { tr.classList.remove('cm-drag-over'); });
+      tr.addEventListener('drop', (e) => {
+        e.preventDefault();
+        tr.classList.remove('cm-drag-over');
+        const fromId = e.dataTransfer.getData('text/plain') || window.channelMgrDraggedRowId;
+        window.channelMgrDropRowOn(fromId, row.id);
+      });
+
       tb.appendChild(tr);
     });
+    const allCb = document.getElementById('channelMgrCbAllPage');
+    if (allCb) {
+      const ids = slice.map(r => r.id);
+      const allOn = ids.length && ids.every(id => window.channelMgrSelected[id]);
+      const some = ids.some(id => window.channelMgrSelected[id]);
+      allCb.checked = allOn;
+      allCb.indeterminate = !allOn && some;
+      allCb.onchange = () => {
+        const on = allCb.checked;
+        slice.forEach(r => {
+          if (on) window.channelMgrSelected[r.id] = true;
+          else delete window.channelMgrSelected[r.id];
+        });
+        window.channelMgrRender();
+      };
+    }
+    channelMgrUpdateValidationStrip();
     document.getElementById('channelMgrPageInfo').innerText =
       'Page ' + window.channelMgrPage + ' / ' + totalPages + ' — ' + slice.length + ' of ' + filtered.length + ' (' + window.channelMgrRows.length + ' total)';
   };
@@ -1534,6 +2047,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     row.name = document.getElementById('cm-edit-name').value;
     row.group = document.getElementById('cm-edit-group').value;
     row.url = newUrl;
+    row.logoHttpBroken = false;
     const logoTa = document.getElementById('cm-edit-logo');
     const fromTextarea = (logoTa && logoTa.value) ? logoTa.value.trim() : '';
     row.logo = (window.channelMgrPendingLogoDataUrl != null && window.channelMgrPendingLogoDataUrl !== '')
@@ -1554,6 +2068,17 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
       alert('No channels to save.');
       return;
     }
+    const v = channelMgrComputeValidation();
+    const problemCount = v.emptyUrl.length + v.dupUrlRows.length + v.badLogo.length;
+    if (problemCount > 0) {
+      let msg = 'Pre-save checks found issues:\n';
+      if (v.emptyUrl.length) msg += '• ' + v.emptyUrl.length + ' empty stream URL(s)\n';
+      if (v.dupUrlRows.length) msg += '• duplicate stream URL(s) (' + v.dupUrlRows.length + ' rows)\n';
+      if (v.badLogo.length) msg += '• ' + v.badLogo.length + ' broken http(s) logo(s)\n';
+      msg += '\nSave to Firebase anyway?';
+      if (!confirm(msg)) return;
+    }
+    channelMgrNormalizeOrders();
     const items = {};
     for (const r of window.channelMgrRows) {
       items[r.id] = {
@@ -1563,7 +2088,8 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
         logo: r.logo || '',
         hidden: !!r.hidden,
         adult: !!r.adult,
-        type: r.type || 'live'
+        type: r.type || 'live',
+        order: typeof r.order === 'number' ? r.order : 0
       };
     }
     const st = document.getElementById('channelMgrStatus');

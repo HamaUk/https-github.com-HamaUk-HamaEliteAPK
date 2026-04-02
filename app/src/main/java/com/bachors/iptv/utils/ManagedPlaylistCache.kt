@@ -64,7 +64,11 @@ object ManagedPlaylistCache {
         if (items.isEmpty()) return false
 
         groupMap.clear()
-        for ((_, item) in items) {
+        val sortedEntries = items.entries.sortedWith(
+            compareBy<Map.Entry<String, ManagedChannelItem>> { it.value.order ?: Int.MAX_VALUE }
+                .thenBy { it.key }
+        )
+        for ((_, item) in sortedEntries) {
             if (item.hidden == true) continue
             val url = item.url?.trim().orEmpty()
             if (url.isEmpty()) continue
