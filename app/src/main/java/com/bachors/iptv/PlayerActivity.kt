@@ -71,10 +71,6 @@ class PlayerActivity : AppCompatActivity() {
     // ── Controls ────────────────────────────────────────────
     private lateinit var topBar: View
     private lateinit var bottomBar: View
-    private lateinit var liveSideBar: View
-    private lateinit var liveBtnResize: ImageView
-    private lateinit var liveBtnAudio: ImageView
-    private lateinit var liveBtnPlayPause: ImageView
     private lateinit var btnBack: ImageView
     private lateinit var btnPlayPause: ImageView
     private lateinit var btnPrev: ImageView
@@ -260,8 +256,6 @@ class PlayerActivity : AppCompatActivity() {
         shouldTrackContinueWatching =
             contentTypeForPlayer == "vod" || contentTypeForPlayer == "series"
 
-        applyLiveControlsMode()
-
         if (url.isEmpty()) {
             Toast.makeText(this, "بەستەری پەخش نییە", Toast.LENGTH_SHORT).show()
             finish(); return
@@ -315,7 +309,6 @@ class PlayerActivity : AppCompatActivity() {
         if (isInPictureInPictureMode) {
             topBar.visibility = View.GONE
             bottomBar.visibility = View.GONE
-            liveSideBar.visibility = View.GONE
             controlsVisible = false
         } else {
             showControls()
@@ -363,8 +356,8 @@ class PlayerActivity : AppCompatActivity() {
             // Only jump into the bottom bar when focus isn't already there — otherwise we steal
             // DPAD_RIGHT and reset focus to the first button, so audio / fullscreen stay unreachable.
             KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                if (isFocusInsidePlaybackChrome()) return super.onKeyDown(keyCode, event)
-                focusPlaybackControls()
+                if (isFocusInsideBottomBar()) return super.onKeyDown(keyCode, event)
+                focusBottomControls()
                 true
             }
 
@@ -382,7 +375,7 @@ class PlayerActivity : AppCompatActivity() {
             }
 
             KeyEvent.KEYCODE_DPAD_LEFT -> {
-                if (isFocusInsidePlaybackChrome()) return super.onKeyDown(keyCode, event)
+                if (isFocusInsideBottomBar()) return super.onKeyDown(keyCode, event)
                 finish()
                 true
             }
@@ -787,18 +780,6 @@ class PlayerActivity : AppCompatActivity() {
             }
         }
         btnAudioTrack.visibility = if (hasMultiAudio) View.VISIBLE else View.GONE
-        if (isLiveStream) {
-            liveBtnAudio.visibility = if (hasMultiAudio) View.VISIBLE else View.GONE
-            if (hasMultiAudio) {
-                liveBtnResize.nextFocusDownId = R.id.live_btn_audio
-                liveBtnAudio.nextFocusUpId = R.id.live_btn_resize
-                liveBtnAudio.nextFocusDownId = R.id.live_btn_play_pause
-                liveBtnPlayPause.nextFocusUpId = R.id.live_btn_audio
-            } else {
-                liveBtnResize.nextFocusDownId = R.id.live_btn_play_pause
-                liveBtnPlayPause.nextFocusUpId = R.id.live_btn_resize
-            }
-        }
         btnSubtitle.visibility = if (hasSubtitles) View.VISIBLE else View.GONE
         val showQuality = hasMultiVideo || !isLiveStream
         btnQuality.visibility = if (showQuality) View.VISIBLE else View.GONE
@@ -1145,10 +1126,6 @@ class PlayerActivity : AppCompatActivity() {
         errorText       = findViewById(R.id.player_error)
         topBar          = findViewById(R.id.player_top_bar)
         bottomBar       = findViewById(R.id.player_bottom_bar)
-        liveSideBar     = findViewById(R.id.live_side_bar)
-        liveBtnResize   = findViewById(R.id.live_btn_resize)
-        liveBtnAudio    = findViewById(R.id.live_btn_audio)
-        liveBtnPlayPause = findViewById(R.id.live_btn_play_pause)
         btnBack         = findViewById(R.id.btn_back)
         btnPlayPause    = findViewById(R.id.btn_play_pause)
         btnPrev         = findViewById(R.id.btn_prev_channel)
@@ -1187,13 +1164,6 @@ class PlayerActivity : AppCompatActivity() {
         btnSpeed.setOnClickListener { cyclePlaybackSpeed() }
         btnQuality.setOnClickListener { showQualitySelector() }
 
-        liveBtnResize.setOnClickListener { cycleResizeMode() }
-        liveBtnAudio.setOnClickListener { showAudioTrackSelector() }
-        liveBtnPlayPause.setOnClickListener {
-            togglePlayPause()
-            scheduleHideControls()
-        }
-
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {}
             override fun onStartTrackingTouch(seekBar: SeekBar?) { seekbarUserDragging = true }
@@ -1215,49 +1185,24 @@ class PlayerActivity : AppCompatActivity() {
             it.isFocusable = true
             it.isFocusableInTouchMode = true
         }
-        listOf(liveBtnResize, liveBtnAudio, liveBtnPlayPause).forEach {
-            it.isFocusable = true
-            it.isFocusableInTouchMode = true
-        }
     }
 
-    /** Live TV: compact right rail; VOD/Series: full bottom bar (fit, audio, subs, speed, quality, etc.). */
-    private fun applyLiveControlsMode() {
-        if (isLiveStream) {
-            bottomBar.visibility = View.GONE
-            liveSideBar.visibility = View.VISIBLE
-            liveSideBar.alpha = 1f
-        } else {
-            liveSideBar.visibility = View.GONE
-            bottomBar.visibility = View.VISIBLE
-            bottomBar.alpha = 1f
-        }
-    }
-
-    private fun isFocusInsidePlaybackChrome(): Boolean {
+    private fun isFocusInsideBottomBar(): Boolean {
         var v: View? = currentFocus
         while (v != null) {
-            if (v === bottomBar || v === liveSideBar) return true
+            if (v === bottomBar) return true
             v = v.parent as? View
         }
         return false
     }
 
-    private fun focusPlaybackControls() {
+    private fun focusBottomControls() {
         showControls()
-        if (isLiveStream) {
-            when {
-                liveBtnPlayPause.visibility == View.VISIBLE -> liveBtnPlayPause.requestFocus()
-                liveBtnAudio.visibility == View.VISIBLE -> liveBtnAudio.requestFocus()
-                else -> liveBtnResize.requestFocus()
-            }
-        } else {
-            val target = listOf(
-                btnPlayPause, btnNext, btnPrev, btnAudioTrack, btnSubtitle,
-                btnSpeed, btnQuality, btnResize
-            ).firstOrNull { it.visibility == View.VISIBLE && it.isFocusable }
-            target?.requestFocus()
-        }
+        val target = listOf(
+            btnPlayPause, btnNext, btnPrev, btnAudioTrack, btnSubtitle,
+            btnSpeed, btnQuality, btnResize
+        ).firstOrNull { it.visibility == View.VISIBLE && it.isFocusable }
+        target?.requestFocus()
     }
 
     private fun togglePlayPause() {
@@ -1266,10 +1211,9 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun updatePlayPauseIcon() {
-        val icon =
+        btnPlayPause.setImageResource(
             if (exoPlayer?.isPlaying == true) R.drawable.ic_pause_white else R.drawable.ic_play_white
-        btnPlayPause.setImageResource(icon)
-        if (isLiveStream) liveBtnPlayPause.setImageResource(icon)
+        )
     }
 
     private fun toggleControls() {
@@ -1280,16 +1224,9 @@ class PlayerActivity : AppCompatActivity() {
         if (isInPipMode) return
         controlsVisible      = true
         topBar.visibility    = View.VISIBLE
+        bottomBar.visibility = View.VISIBLE
         topBar.animate().alpha(1f).setDuration(200).start()
-        if (isLiveStream) {
-            bottomBar.visibility = View.GONE
-            liveSideBar.visibility = View.VISIBLE
-            liveSideBar.animate().alpha(1f).setDuration(200).start()
-        } else {
-            liveSideBar.visibility = View.GONE
-            bottomBar.visibility = View.VISIBLE
-            bottomBar.animate().alpha(1f).setDuration(200).start()
-        }
+        bottomBar.animate().alpha(1f).setDuration(200).start()
         scheduleHideControls()
     }
 
@@ -1297,13 +1234,8 @@ class PlayerActivity : AppCompatActivity() {
         controlsVisible = false
         topBar.animate().alpha(0f).setDuration(300)
             .withEndAction { topBar.visibility = View.INVISIBLE }.start()
-        if (isLiveStream) {
-            liveSideBar.animate().alpha(0f).setDuration(300)
-                .withEndAction { liveSideBar.visibility = View.INVISIBLE }.start()
-        } else {
-            bottomBar.animate().alpha(0f).setDuration(300)
-                .withEndAction { bottomBar.visibility = View.INVISIBLE }.start()
-        }
+        bottomBar.animate().alpha(0f).setDuration(300)
+            .withEndAction { bottomBar.visibility = View.INVISIBLE }.start()
     }
 
     private fun scheduleHideControls() {

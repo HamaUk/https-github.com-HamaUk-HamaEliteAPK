@@ -284,65 +284,6 @@
             app:tint="#BBBBBB" />
     </LinearLayout>
 
-    <!-- Live TV: compact rail on the right (fit, audio, play/pause). Hidden for VOD. -->
-    <LinearLayout
-        android:id="@+id/live_side_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|end"
-        android:layout_marginEnd="14dp"
-        android:background="@drawable/bg_live_side_rail"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:paddingStart="10dp"
-        android:paddingTop="12dp"
-        android:paddingEnd="10dp"
-        android:paddingBottom="12dp"
-        android:visibility="gone">
-
-        <ImageView
-            android:id="@+id/live_btn_resize"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/bg_tv_icon_focus"
-            android:contentDescription="گونجاندن لە شاشە"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:nextFocusDown="@+id/live_btn_audio"
-            android:padding="11dp"
-            android:src="@drawable/ic_fullscreen_white"
-            app:tint="#FFFFFF" />
-
-        <ImageView
-            android:id="@+id/live_btn_audio"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/bg_tv_icon_focus"
-            android:contentDescription="ڕێچکەی دەنگ"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:nextFocusDown="@+id/live_btn_play_pause"
-            android:nextFocusUp="@+id/live_btn_resize"
-            android:padding="11dp"
-            android:src="@drawable/ic_volume_high"
-            app:tint="#E0FFFFFF" />
-
-        <ImageView
-            android:id="@+id/live_btn_play_pause"
-            android:layout_width="54dp"
-            android:layout_height="54dp"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/bg_tv_icon_focus"
-            android:contentDescription="پەخش/وەستان"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:nextFocusUp="@+id/live_btn_audio"
-            android:padding="12dp"
-            android:src="@drawable/ic_pause_white"
-            app:tint="#FFFFFF" />
-    </LinearLayout>
-
 </FrameLayout>
 
 
