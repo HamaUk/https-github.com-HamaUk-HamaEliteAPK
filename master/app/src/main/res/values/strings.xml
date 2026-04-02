@@ -53,10 +53,6 @@
     <string name="settings_resize_fixed">Fixed Width</string>
     <string name="settings_autoplay">Auto-play on Start</string>
 
-    <string name="settings_language">App Language</string>
-    <string name="settings_language_kurdish">کوردی سۆرانی</string>
-    <string name="settings_language_english">English</string>
-
     <string name="settings_player_title">Player Settings</string>
     <string name="settings_playback_engine">Playback Engine</string>
     <string name="settings_playback_hint">Different profiles: Cinema/Arena are Media3 with different buffers. Web HLS = Chromium+hls.js (.m3u8 only). LibVLC = LGPL.</string>
@@ -109,7 +105,4 @@
     <string name="cache_cleared">All cache cleared</string>
     <string name="cache_error">Error clearing cache</string>
     <string name="data_refresh_scheduled">Data scheduled for refresh</string>
-
-    <string name="dialog_language_title">Select Language</string>
-    <string name="language_restart_msg">Language changed. The app will restart.</string>
 </resources>
