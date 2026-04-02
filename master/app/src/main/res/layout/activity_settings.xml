@@ -57,10 +57,6 @@
             android:layout_marginBottom="8dp"
             android:textColor="#FFFFFF"
             android:text="گشتی"
-            app:icon="@drawable/ic_settings"
-            app:iconTint="#FFFFFF"
-            app:iconPadding="8dp"
-            app:iconGravity="textStart"
             android:textAlignment="viewStart" />
 
         <com.google.android.material.button.MaterialButton
@@ -71,10 +67,6 @@
             android:layout_marginBottom="8dp"
             android:textColor="#FFFFFF"
             android:text="پەخشکەر"
-            app:icon="@drawable/ic_live"
-            app:iconTint="#FFFFFF"
-            app:iconPadding="8dp"
-            app:iconGravity="textStart"
             android:textAlignment="viewStart" />
 
         <com.google.android.material.button.MaterialButton
@@ -85,10 +77,6 @@
             android:layout_marginBottom="8dp"
             android:textColor="#FFFFFF"
             android:text="ناوەڕۆک"
-            app:icon="@drawable/ic_file"
-            app:iconTint="#FFFFFF"
-            app:iconPadding="8dp"
-            app:iconGravity="textStart"
             android:textAlignment="viewStart" />
 
         <com.google.android.material.button.MaterialButton
@@ -99,10 +87,6 @@
             android:layout_marginBottom="8dp"
             android:textColor="#FFFFFF"
             android:text="هەژمار"
-            app:icon="@drawable/ic_heart"
-            app:iconTint="#FFFFFF"
-            app:iconPadding="8dp"
-            app:iconGravity="textStart"
             android:textAlignment="viewStart" />
 
         <View
@@ -453,8 +437,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="12dp"
                     android:backgroundTint="@color/vu_purple"
-                    android:text="پلەی لیستی ئێستا پاشەکەوت بکە وەک..."
-                    app:icon="@drawable/ic_heart" />
+                    android:text="پلەی لیستی ئێستا پاشەکەوت بکە وەک..." />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_load_playlist"
@@ -463,8 +446,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="8dp"
                     android:backgroundTint="@color/vu_purple"
-                    android:text="گۆڕینی پلەی لیست"
-                    app:icon="@drawable/ic_load" />
+                    android:text="گۆڕینی پلەی لیست" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_delete_playlist"
@@ -473,8 +455,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="8dp"
                     android:backgroundTint="#E53935"
-                    android:text="سڕینەوەی پلەی لیستی پاشەکەوتکراو"
-                    app:icon="@drawable/ic_back" />
+                    android:text="سڕینەوەی پلەی لیستی پاشەکەوتکراو" />
 
                 <View
                     android:layout_width="match_parent"
@@ -498,8 +479,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="12dp"
                     android:backgroundTint="@color/vu_purple"
-                    android:text="پاککردنەوەی هەموو کاشی بەرنامە"
-                    app:icon="@drawable/ic_download" />
+                    android:text="پاککردنەوەی هەموو کاشی بەرنامە" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_refresh_data"
                     style="@style/Widget.MaterialComponents.Button"
@@ -507,8 +487,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="8dp"
                     android:backgroundTint="@color/vu_purple"
-                    android:text="نوێکردنەوەی داتای پلەی لیست"
-                    app:icon="@drawable/ic_load" />
+                    android:text="نوێکردنەوەی داتای پلەی لیست" />
             </LinearLayout>
         </ScrollView>
 
