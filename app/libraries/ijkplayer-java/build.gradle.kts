@@ -8,7 +8,6 @@ android {
 
     defaultConfig {
         minSdk = 21
-        targetSdk = 35
         consumerProguardFiles("proguard-rules.pro")
     }
     buildTypes {
@@ -22,6 +21,7 @@ android {
     }
     lint {
         abortOnError = false
+        targetSdk = 35
     }
 }
 

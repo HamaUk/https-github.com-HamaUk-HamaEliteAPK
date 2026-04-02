@@ -72,12 +72,13 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 
     // Optional second engine (settings → پەخشکەر). LGPL — https://www.videolan.org/legal.html
-    implementation("org.videolan.android:libvlc-all:3.5.4")
+    implementation("org.videolan.android:libvlc-all:3.6.2")
 
-    // IJKPlayer Java API + FFmpeg natives (tv.danmaku.android — mirror in settings.gradle.kts)
+    // IJKPlayer Java API + FFmpeg natives.
+    // Native AARs from Maven Central fork (CI-friendly; avoids flaky jcenter mirrors).
     implementation(project(":ijkplayer-java"))
-    implementation("tv.danmaku.android/ijkplayer:ijkplayer-armv7a:0.8.8")
-    implementation("tv.danmaku.android/ijkplayer:ijkplayer-arm64:0.8.8")
+    implementation("io.github.jdpxiaoming:ijkplayer-armv7a:0.0.26")
+    implementation("io.github.jdpxiaoming:ijkplayer-arm64:0.0.26")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
