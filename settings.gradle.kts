@@ -43,3 +43,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "IPTV"
 include(":app")
+project(":app").projectDir = file("master/app")
