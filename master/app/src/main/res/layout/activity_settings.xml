@@ -136,46 +136,6 @@
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
-                <!-- Language Selector -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    app:strokeColor="@color/white_opacity_10"
-                    app:strokeWidth="1dp"
-                    style="@style/VuCard">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/settings_language"
-                            android:textColor="#FFFFFF"
-                            android:textSize="16sp" />
-                        <RadioGroup
-                            android:id="@+id/rg_language"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp">
-                            <RadioButton
-                                android:id="@+id/rb_lang_kurdish"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="@string/settings_language_kurdish"
-                                android:textColor="#B0B0C0" />
-                            <RadioButton
-                                android:id="@+id/rb_lang_english"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="@string/settings_language_english"
-                                android:textColor="#B0B0C0" />
-                        </RadioGroup>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
                 <!-- Default Resize Mode -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"

@@ -28,8 +28,6 @@ class SharedPrefManager(context: Context) {
         const val SP_VIDEO_QUALITY_PRESET = "spVideoQualityPreset"
         /** See [com.bachors.iptv.utils.PlayerLauncher] for values (exo, exo_cinema, exo_arena, web_hls, vlc). */
         const val SP_PLAYER_ENGINE = "spPlayerEngine"
-        /** Language tag: "ckb" for Kurdish Sorani, "en" for English */
-        const val SP_LANGUAGE = "spLanguage"
     }
 
     private val sp: SharedPreferences = context.getSharedPreferences(SP_SS_APP, Context.MODE_PRIVATE)

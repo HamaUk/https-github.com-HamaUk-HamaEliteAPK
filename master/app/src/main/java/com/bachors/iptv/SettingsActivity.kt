@@ -7,8 +7,6 @@ import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.os.LocaleListCompat
 import androidx.media3.ui.AspectRatioFrameLayout
 import com.bachors.iptv.databinding.ActivitySettingsBinding
 import com.bachors.iptv.utils.PlayerLauncher
@@ -71,13 +69,6 @@ class SettingsActivity : AppCompatActivity() {
             else -> binding.rbPlayerExo.isChecked = true
         }
 
-        // Language selector
-        val savedLang = sharedPrefManager.getSpString(SharedPrefManager.SP_LANGUAGE).ifEmpty { "ckb" }
-        when (savedLang) {
-            "en" -> binding.rbLangEnglish.isChecked = true
-            else -> binding.rbLangKurdish.isChecked = true
-        }
-
         updateActivePlaylistLabel()
     }
 
@@ -126,19 +117,6 @@ class SettingsActivity : AppCompatActivity() {
                 else -> PlayerLauncher.ENGINE_EXO
             }
             sharedPrefManager.saveSPString(SharedPrefManager.SP_PLAYER_ENGINE, engine)
-        }
-
-        // Language radio group
-        binding.rgLanguage.setOnCheckedChangeListener { _, checkedId ->
-            val langTag = when (checkedId) {
-                R.id.rb_lang_english -> "en"
-                else -> "ckb"
-            }
-            val currentLang = sharedPrefManager.getSpString(SharedPrefManager.SP_LANGUAGE).ifEmpty { "ckb" }
-            if (langTag != currentLang) {
-                sharedPrefManager.saveSPString(SharedPrefManager.SP_LANGUAGE, langTag)
-                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(langTag))
-            }
         }
 
         binding.btnClearCache.setOnClickListener { clearAppCache() }
