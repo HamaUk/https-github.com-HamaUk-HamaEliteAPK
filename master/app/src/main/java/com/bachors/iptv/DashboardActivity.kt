@@ -41,6 +41,8 @@ class DashboardActivity : AppCompatActivity() {
             sharedPrefManager = SharedPrefManager(this)
             binding.tvDashboardVersion.text =
                 getString(R.string.dashboard_version_line, BuildConfig.VERSION_NAME)
+            binding.tvBrandPrimary.text = getString(R.string.app_name_part_hama)
+            binding.tvBrandSecondary.text = getString(R.string.app_name_part_uk)
             setupClock()
             setupDeviceCode()
             setupClickListeners()
