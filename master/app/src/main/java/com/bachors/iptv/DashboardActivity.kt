@@ -131,7 +131,7 @@ class DashboardActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        binding.rowReload.setOnClickListener { performGlobalReload() }
+        binding.cardReload.setOnClickListener { performGlobalReload() }
 
         binding.rowContinueWatching.setOnClickListener {
             startActivity(Intent(this, ContinueWatchingActivity::class.java))
@@ -175,13 +175,15 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun performGlobalReload() {
-        binding.rowReload.isEnabled = false
+        binding.cardReload.isEnabled = false
+        binding.cardReload.isClickable = false
         binding.reloadProgress.visibility = View.VISIBLE
 
         val service = GlobalSync.retrofit().create(IptvService::class.java)
         service.getSyncData(GlobalSync.SYNC_KEY_GLOBAL).enqueue(object : Callback<SyncData> {
             override fun onResponse(call: Call<SyncData>, response: Response<SyncData>) {
-                binding.rowReload.isEnabled = true
+                binding.cardReload.isEnabled = true
+                binding.cardReload.isClickable = true
                 binding.reloadProgress.visibility = View.GONE
                 val body = response.body()
                 if (response.isSuccessful && body != null) {
@@ -198,7 +200,8 @@ class DashboardActivity : AppCompatActivity() {
             }
 
             override fun onFailure(call: Call<SyncData>, t: Throwable) {
-                binding.rowReload.isEnabled = true
+                binding.cardReload.isEnabled = true
+                binding.cardReload.isClickable = true
                 binding.reloadProgress.visibility = View.GONE
                 Toast.makeText(
                     this@DashboardActivity,
