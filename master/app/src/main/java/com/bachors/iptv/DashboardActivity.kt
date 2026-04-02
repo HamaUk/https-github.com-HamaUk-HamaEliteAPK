@@ -76,7 +76,7 @@ class DashboardActivity : AppCompatActivity() {
         for (i in 0 until 4) {
             n = (n shl 8) or (digest[i].toInt() and 0xFF)
         }
-        val six = (n.toLong() and 0x7FFFFFFF_L) % 1_000_000L
+        val six = (n.toLong() and 0x7FFFFFFFL) % 1_000_000L
         return "%06d".format(Locale.US, six)
     }
 
