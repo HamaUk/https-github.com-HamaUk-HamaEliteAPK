@@ -74,12 +74,6 @@ dependencies {
     // Optional second engine (settings → پەخشکەر). LGPL — https://www.videolan.org/legal.html
     implementation("org.videolan.android:libvlc-all:3.6.2")
 
-    // IJKPlayer Java API + FFmpeg natives.
-    // Native AARs from Maven Central fork (CI-friendly; avoids flaky jcenter mirrors).
-    implementation(project(":ijkplayer-java"))
-    implementation("io.github.jdpxiaoming:ijkplayer-armv7a:0.0.26")
-    implementation("io.github.jdpxiaoming:ijkplayer-arm64:0.0.26")
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

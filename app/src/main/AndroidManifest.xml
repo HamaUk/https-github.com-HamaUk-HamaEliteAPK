@@ -79,13 +79,6 @@
             android:theme="@style/AppTheme.FullScreen" />
 
         <activity
-            android:name=".IjkPlayerActivity"
-            android:screenOrientation="landscape"
-            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
-            android:hardwareAccelerated="true"
-            android:theme="@style/AppTheme.FullScreen" />
-
-        <activity
             android:name=".WebHlsPlayerActivity"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"

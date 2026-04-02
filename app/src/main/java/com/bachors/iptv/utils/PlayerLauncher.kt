@@ -2,7 +2,6 @@ package com.bachors.iptv.utils
 
 import android.content.Context
 import android.content.Intent
-import com.bachors.iptv.IjkPlayerActivity
 import com.bachors.iptv.PlayerActivity
 import com.bachors.iptv.VlcPlayerActivity
 import com.bachors.iptv.WebHlsPlayerActivity
@@ -27,16 +26,12 @@ object PlayerLauncher {
     /** LibVLC (LGPL). */
     const val ENGINE_VLC = "vlc"
 
-    /** Bilibili IJK / FFmpeg (license depends on native build). */
-    const val ENGINE_IJK = "ijk"
-
     fun start(context: Context, intent: Intent) {
         val engine = SharedPrefManager(context).getSpString(SharedPrefManager.SP_PLAYER_ENGINE)
             .trim()
             .lowercase()
             .ifEmpty { ENGINE_EXO }
         val target = when (engine) {
-            ENGINE_IJK -> IjkPlayerActivity::class.java
             ENGINE_VLC -> VlcPlayerActivity::class.java
             ENGINE_WEB_HLS -> WebHlsPlayerActivity::class.java
             ENGINE_EXO, ENGINE_EXO_CINEMA, ENGINE_EXO_ARENA -> PlayerActivity::class.java

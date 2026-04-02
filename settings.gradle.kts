@@ -43,5 +43,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "IPTV"
 include(":app")
-include(":ijkplayer-java")
-project(":ijkplayer-java").projectDir = file("app/libraries/ijkplayer-java")

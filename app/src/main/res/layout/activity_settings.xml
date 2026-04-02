@@ -276,7 +276,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
-                            android:text="پڕۆفایلەکانی جیا: Cinema/Arena هەمان Media3ن بە بۆفەری جیا. Web HLS = Chromium+hls.js (تەنها .m3u8). LibVLC = LGPL. IJK = FFmpeg (مۆڵەت بەپێی build)."
+                            android:text="پڕۆفایلەکانی جیا: Cinema/Arena هەمان Media3ن بە بۆفەری جیا. Web HLS = Chromium+hls.js (تەنها .m3u8). LibVLC = LGPL."
                             android:textColor="#8890A0"
                             android:textSize="12sp" />
                         <RadioGroup
@@ -313,12 +313,6 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:text="LibVLC (VLC)"
-                                android:textColor="#B0B0C0" />
-                            <RadioButton
-                                android:id="@+id/rb_player_ijk"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="IJKPlayer (FFmpeg)"
                                 android:textColor="#B0B0C0" />
                         </RadioGroup>
                     </LinearLayout>
