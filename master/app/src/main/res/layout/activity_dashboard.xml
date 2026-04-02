@@ -54,404 +54,373 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/top_meta" />
 
-    <FrameLayout
-        android:id="@+id/center_stage"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+    <!-- Main content area - uses vertical bias 0.32 to push content higher -->
+    <LinearLayout
+        android:id="@+id/center_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:clipChildren="false"
         android:clipToPadding="false"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingStart="28dp"
+        android:paddingEnd="28dp"
         app:layout_constraintBottom_toTopOf="@id/footer_bar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/app_status_banner">
+        app:layout_constraintTop_toBottomOf="@id/app_status_banner"
+        app:layout_constraintVertical_bias="0.32">
 
+        <!-- Logo Row -->
         <LinearLayout
+            android:id="@+id/logo_box"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center_horizontal"
-            android:orientation="vertical"
-            android:paddingStart="28dp"
-            android:paddingTop="28dp"
-            android:paddingEnd="28dp"
-            android:paddingBottom="24dp">
+            android:gravity="center"
+            android:orientation="horizontal">
 
-                <LinearLayout
-                    android:id="@+id/logo_box"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal">
+            <TextView
+                android:id="@+id/tv_brand_primary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-black"
+                android:letterSpacing="-0.02"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="2"
+                android:shadowRadius="4"
+                android:text="@string/app_name_part_hama"
+                android:textColor="#E53935"
+                android:textSize="44sp"
+                android:textStyle="bold" />
 
-                    <TextView
-                        android:id="@+id/tv_brand_primary"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-black"
-                        android:letterSpacing="-0.02"
-                        android:shadowColor="#99000000"
-                        android:shadowDx="0"
-                        android:shadowDy="2"
-                        android:shadowRadius="4"
-                        android:text="@string/app_name_part_hama"
-                        android:textColor="#E53935"
-                        android:textSize="44sp"
-                        android:textStyle="bold" />
+            <TextView
+                android:id="@+id/tv_brand_secondary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:fontFamily="sans-serif-black"
+                android:shadowColor="#99000000"
+                android:shadowDx="0"
+                android:shadowDy="2"
+                android:shadowRadius="4"
+                android:text="@string/app_name_part_uk"
+                android:textColor="#FFFFFF"
+                android:textSize="32sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tv_brand_secondary"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:fontFamily="sans-serif-black"
-                        android:shadowColor="#99000000"
-                        android:shadowDx="0"
-                        android:shadowDy="2"
-                        android:shadowRadius="4"
-                        android:text="@string/app_name_part_uk"
-                        android:textColor="#FFFFFF"
-                        android:textSize="32sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
+        <!-- Accent Line -->
+        <View
+            android:id="@+id/accent_line"
+            android:layout_width="96dp"
+            android:layout_height="3dp"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/bg_dashboard_accent_line" />
 
-                <View
-                    android:id="@+id/accent_line"
-                    android:layout_width="96dp"
-                    android:layout_height="3dp"
-                    android:layout_marginTop="14dp"
-                    android:background="@drawable/bg_dashboard_accent_line" />
+        <!-- Menu Icons Row -->
+        <LinearLayout
+            android:id="@+id/menu_row"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:gravity="center"
+            android:orientation="horizontal">
 
-                <LinearLayout
-                    android:id="@+id/menu_row"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
+            <!-- LIVE TV -->
+            <LinearLayout
+                android:id="@+id/card_live"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
 
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/card_live"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardBackgroundColor="@android:color/transparent"
-                        app:cardCornerRadius="22dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="0dp">
+                <FrameLayout
+                    android:layout_width="90dp"
+                    android:layout_height="90dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_horizontal"
-                            android:orientation="vertical">
-
-                            <FrameLayout
-                                android:layout_width="90dp"
-                                android:layout_height="90dp">
-
-                                <View
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:duplicateParentState="true"
-                                    android:background="@drawable/bg_dashboard_card_active" />
-
-                                <ImageView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:padding="20dp"
-                                    android:src="@drawable/ic_live"
-                                    app:tint="#E53935" />
-                            </FrameLayout>
-
-                            <TextView
-                                android:id="@+id/tv_label_live"
-                                android:layout_width="90dp"
-                                android:layout_height="wrap_content"
-                                android:background="#E6000000"
-                                android:gravity="center"
-                                android:minHeight="24dp"
-                                android:paddingVertical="6dp"
-                                android:shadowColor="#FF000000"
-                                android:shadowDx="0"
-                                android:shadowDy="1"
-                                android:shadowRadius="2"
-                                android:text="پەخشی ڕاستەوخۆ"
-                                android:textColor="#FFFFFFFF"
-                                android:textSize="12sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/card_vod"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardBackgroundColor="@android:color/transparent"
-                        app:cardCornerRadius="22dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="0dp">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_horizontal"
-                            android:orientation="vertical">
-
-                            <FrameLayout
-                                android:layout_width="90dp"
-                                android:layout_height="90dp">
-
-                                <View
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:duplicateParentState="true"
-                                    android:background="@drawable/bg_dashboard_card" />
-
-                                <ImageView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:padding="20dp"
-                                    android:src="@drawable/ic_vod"
-                                    app:tint="#FFFFFF" />
-                            </FrameLayout>
-
-                            <TextView
-                                android:id="@+id/tv_label_vod"
-                                android:layout_width="90dp"
-                                android:layout_height="wrap_content"
-                                android:background="#E6000000"
-                                android:gravity="center"
-                                android:minHeight="24dp"
-                                android:paddingVertical="6dp"
-                                android:shadowColor="#FF000000"
-                                android:shadowDx="0"
-                                android:shadowDy="1"
-                                android:shadowRadius="2"
-                                android:text="فیلمەکان"
-                                android:textColor="#FFFFFFFF"
-                                android:textSize="12sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/card_series"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardBackgroundColor="@android:color/transparent"
-                        app:cardCornerRadius="22dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="0dp">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_horizontal"
-                            android:orientation="vertical">
-
-                            <FrameLayout
-                                android:layout_width="90dp"
-                                android:layout_height="90dp">
-
-                                <View
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:duplicateParentState="true"
-                                    android:background="@drawable/bg_dashboard_card" />
-
-                                <ImageView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:padding="20dp"
-                                    android:src="@drawable/ic_series"
-                                    app:tint="#FFFFFF" />
-                            </FrameLayout>
-
-                            <TextView
-                                android:id="@+id/tv_label_series"
-                                android:layout_width="90dp"
-                                android:layout_height="wrap_content"
-                                android:background="#E6000000"
-                                android:gravity="center"
-                                android:minHeight="24dp"
-                                android:paddingVertical="6dp"
-                                android:shadowColor="#FF000000"
-                                android:shadowDx="0"
-                                android:shadowDy="1"
-                                android:shadowRadius="2"
-                                android:text="زنجیرەکان"
-                                android:textColor="#FFFFFFFF"
-                                android:textSize="12sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/card_reload"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardBackgroundColor="@android:color/transparent"
-                        app:cardCornerRadius="22dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="0dp">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_horizontal"
-                            android:orientation="vertical">
-
-                            <FrameLayout
-                                android:layout_width="90dp"
-                                android:layout_height="90dp">
-
-                                <View
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:duplicateParentState="true"
-                                    android:background="@drawable/bg_dashboard_card" />
-
-                                <ImageView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:padding="20dp"
-                                    android:src="@drawable/ic_load"
-                                    app:tint="#FFFFFF" />
-
-                                <ProgressBar
-                                    android:id="@+id/reload_progress"
-                                    style="?android:attr/progressBarStyleSmall"
-                                    android:layout_width="28dp"
-                                    android:layout_height="28dp"
-                                    android:layout_gravity="center"
-                                    android:indeterminateTint="#E53935"
-                                    android:visibility="gone" />
-                            </FrameLayout>
-
-                            <TextView
-                                android:id="@+id/tv_label_reload"
-                                android:layout_width="90dp"
-                                android:layout_height="wrap_content"
-                                android:background="#E6000000"
-                                android:gravity="center"
-                                android:minHeight="24dp"
-                                android:paddingVertical="6dp"
-                                android:shadowColor="#FF000000"
-                                android:shadowDx="0"
-                                android:shadowDy="1"
-                                android:shadowRadius="2"
-                                android:text="نوێکردنەوە"
-                                android:textColor="#FFFFFFFF"
-                                android:textSize="12sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/card_settings"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardBackgroundColor="@android:color/transparent"
-                        app:cardCornerRadius="22dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="0dp">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_horizontal"
-                            android:orientation="vertical">
-
-                            <FrameLayout
-                                android:layout_width="90dp"
-                                android:layout_height="90dp">
-
-                                <View
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:duplicateParentState="true"
-                                    android:background="@drawable/bg_dashboard_card" />
-
-                                <ImageView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:padding="20dp"
-                                    android:src="@drawable/ic_settings"
-                                    app:tint="#FFFFFF" />
-                            </FrameLayout>
-
-                            <TextView
-                                android:id="@+id/tv_label_settings"
-                                android:layout_width="90dp"
-                                android:layout_height="wrap_content"
-                                android:background="#E6000000"
-                                android:gravity="center"
-                                android:minHeight="24dp"
-                                android:paddingVertical="6dp"
-                                android:shadowColor="#FF000000"
-                                android:shadowDx="0"
-                                android:shadowDy="1"
-                                android:shadowRadius="2"
-                                android:text="ڕێکخستنەکان"
-                                android:textColor="#FFFFFFFF"
-                                android:textSize="12sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/row_continue_watching"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
-                    android:background="@drawable/bg_dashboard_pill_focused"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:focusableInTouchMode="true"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="22dp"
-                    android:paddingTop="12dp"
-                    android:paddingEnd="22dp"
-                    android:paddingBottom="12dp"
-                    android:visibility="gone">
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_dashboard_card_active"
+                        android:duplicateParentState="true" />
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:contentDescription="@string/app_name"
-                        android:src="@drawable/ic_vod"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="20dp"
+                        android:src="@drawable/ic_live"
                         app:tint="#E53935" />
+                </FrameLayout>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:letterSpacing="0.04"
-                        android:text="بەردەوام بینین"
-                        android:textColor="#FFFFFF"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
+                <TextView
+                    android:id="@+id/tv_label_live"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:shadowColor="#CC000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="3"
+                    android:text="@string/dash_live"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
             </LinearLayout>
-    </FrameLayout>
 
+            <!-- VOD / Movies -->
+            <LinearLayout
+                android:id="@+id/card_vod"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:clickable="true"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="90dp"
+                    android:layout_height="90dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_dashboard_card"
+                        android:duplicateParentState="true" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="20dp"
+                        android:src="@drawable/ic_vod"
+                        app:tint="#FFFFFF" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tv_label_vod"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:shadowColor="#CC000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="3"
+                    android:text="@string/dash_vod"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Series -->
+            <LinearLayout
+                android:id="@+id/card_series"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:clickable="true"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="90dp"
+                    android:layout_height="90dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_dashboard_card"
+                        android:duplicateParentState="true" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="20dp"
+                        android:src="@drawable/ic_series"
+                        app:tint="#FFFFFF" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tv_label_series"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:shadowColor="#CC000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="3"
+                    android:text="@string/dash_series"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Reload -->
+            <LinearLayout
+                android:id="@+id/card_reload"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:clickable="true"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="90dp"
+                    android:layout_height="90dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_dashboard_card"
+                        android:duplicateParentState="true" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="20dp"
+                        android:src="@drawable/ic_load"
+                        app:tint="#FFFFFF" />
+
+                    <ProgressBar
+                        android:id="@+id/reload_progress"
+                        style="?android:attr/progressBarStyleSmall"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center"
+                        android:indeterminateTint="#E53935"
+                        android:visibility="gone" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tv_label_reload"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:shadowColor="#CC000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="3"
+                    android:text="@string/dash_reload"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Settings -->
+            <LinearLayout
+                android:id="@+id/card_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:clickable="true"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="90dp"
+                    android:layout_height="90dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_dashboard_card"
+                        android:duplicateParentState="true" />
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="20dp"
+                        android:src="@drawable/ic_settings"
+                        app:tint="#FFFFFF" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tv_label_settings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:shadowColor="#CC000000"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="3"
+                    android:text="@string/dash_settings"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Continue Watching Row -->
+        <LinearLayout
+            android:id="@+id/row_continue_watching"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/bg_dashboard_pill_focused"
+            android:clickable="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="22dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="22dp"
+            android:paddingBottom="12dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_vod"
+                app:tint="#E53935" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:letterSpacing="0.04"
+                android:text="@string/dash_continue_watching"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Footer -->
     <LinearLayout
         android:id="@+id/footer_bar"
         android:layout_width="wrap_content"
@@ -478,7 +447,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:letterSpacing="0.06"
-            android:text="دۆخ: چالاککراو"
+            android:text="@string/dash_status_active"
             android:textColor="#E53935"
             android:textSize="11sp"
             android:textStyle="bold" />

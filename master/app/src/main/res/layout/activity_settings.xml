@@ -30,7 +30,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="ڕێکخستنەکانی سیستەم"
+            android:text="@string/settings_title"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -56,7 +56,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:textColor="#FFFFFF"
-            android:text="گشتی"
+            android:text="@string/settings_general"
             android:textAlignment="viewStart" />
 
         <com.google.android.material.button.MaterialButton
@@ -66,7 +66,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:textColor="#FFFFFF"
-            android:text="پەخشکەر"
+            android:text="@string/settings_player"
             android:textAlignment="viewStart" />
 
         <com.google.android.material.button.MaterialButton
@@ -76,7 +76,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:textColor="#FFFFFF"
-            android:text="ناوەڕۆک"
+            android:text="@string/settings_content"
             android:textAlignment="viewStart" />
 
         <com.google.android.material.button.MaterialButton
@@ -86,7 +86,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:textColor="#FFFFFF"
-            android:text="هەژمار"
+            android:text="@string/settings_account"
             android:textAlignment="viewStart" />
 
         <View
@@ -99,7 +99,7 @@
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="چوونەدەرەوە"
+            android:text="@string/settings_logout"
             android:textColor="#FF5252" />
     </LinearLayout>
 
@@ -131,10 +131,50 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ڕێکخستنە گشتییەکان"
+                    android:text="@string/settings_general_title"
                     android:textColor="@color/vu_purple"
                     android:textSize="14sp"
                     android:textStyle="bold" />
+
+                <!-- Language Selector -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:strokeColor="@color/white_opacity_10"
+                    app:strokeWidth="1dp"
+                    style="@style/VuCard">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_language"
+                            android:textColor="#FFFFFF"
+                            android:textSize="16sp" />
+                        <RadioGroup
+                            android:id="@+id/rg_language"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp">
+                            <RadioButton
+                                android:id="@+id/rb_lang_kurdish"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/settings_language_kurdish"
+                                android:textColor="#B0B0C0" />
+                            <RadioButton
+                                android:id="@+id/rb_lang_english"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/settings_language_english"
+                                android:textColor="#B0B0C0" />
+                        </RadioGroup>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
                 <!-- Default Resize Mode -->
                 <com.google.android.material.card.MaterialCardView
@@ -152,7 +192,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="دۆخی گەورەکردنی شاشەی بنەڕەتی"
+                            android:text="@string/settings_resize_mode"
                             android:textColor="#FFFFFF"
                             android:textSize="16sp" />
                         <RadioGroup
@@ -164,25 +204,25 @@
                                 android:id="@+id/rb_fit"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="گونجاندن لە شاشە"
+                                android:text="@string/settings_resize_fit"
                                 android:textColor="#B0B0C0" />
                             <RadioButton
                                 android:id="@+id/rb_zoom"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="زووم (100%)"
+                                android:text="@string/settings_resize_zoom"
                                 android:textColor="#B0B0C0" />
                             <RadioButton
                                 android:id="@+id/rb_fill"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="پڕکردنەوەی تەواو"
+                                android:text="@string/settings_resize_fill"
                                 android:textColor="#B0B0C0" />
                             <RadioButton
                                 android:id="@+id/rb_fixed_width"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="پانی جێگیر"
+                                android:text="@string/settings_resize_fixed"
                                 android:textColor="#B0B0C0" />
                         </RadioGroup>
                     </LinearLayout>
@@ -206,7 +246,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="پەخشکردنی خۆکار لە دەستپێک"
+                            android:text="@string/settings_autoplay"
                             android:textColor="#FFFFFF"
                             android:textSize="16sp" />
                         <com.google.android.material.switchmaterial.SwitchMaterial
@@ -232,7 +272,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ڕێکخستنەکانی پەخشکەر"
+                    android:text="@string/settings_player_title"
                     android:textColor="@color/vu_purple"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -253,14 +293,14 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="بزوێنەری پەخش"
+                            android:text="@string/settings_playback_engine"
                             android:textColor="#FFFFFF"
                             android:textSize="16sp" />
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
-                            android:text="پڕۆفایلەکانی جیا: Cinema/Arena هەمان Media3ن بە بۆفەری جیا. Web HLS = Chromium+hls.js (تەنها .m3u8). LibVLC = LGPL."
+                            android:text="@string/settings_playback_hint"
                             android:textColor="#8890A0"
                             android:textSize="12sp" />
                         <RadioGroup
@@ -272,31 +312,31 @@
                                 android:id="@+id/rb_player_exo"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="ExoPlayer · Standard (هاوسەنگ)"
+                                android:text="@string/settings_engine_exo"
                                 android:textColor="#B0B0C0" />
                             <RadioButton
                                 android:id="@+id/rb_player_exo_cinema"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="ExoPlayer · Cinema (بۆفەری قووڵ، تۆڕی لاواز)"
+                                android:text="@string/settings_engine_cinema"
                                 android:textColor="#B0B0C0" />
                             <RadioButton
                                 android:id="@+id/rb_player_exo_arena"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="ExoPlayer · Arena (کەمترین دواخستن بۆ live)"
+                                android:text="@string/settings_engine_arena"
                                 android:textColor="#B0B0C0" />
                             <RadioButton
                                 android:id="@+id/rb_player_web_hls"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="Chromium · Web HLS (hls.js)"
+                                android:text="@string/settings_engine_web"
                                 android:textColor="#B0B0C0" />
                             <RadioButton
                                 android:id="@+id/rb_player_vlc"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="LibVLC (VLC)"
+                                android:text="@string/settings_engine_vlc"
                                 android:textColor="#B0B0C0" />
                         </RadioGroup>
                     </LinearLayout>
@@ -318,7 +358,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="قەبارەی بۆفەر"
+                            android:text="@string/settings_buffer_size"
                             android:textColor="#FFFFFF"
                             android:textSize="16sp" />
                         <RadioGroup
@@ -330,19 +370,19 @@
                                 android:id="@+id/rb_buffer_low"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="نزم (دەستپێکی خێراتر، دووبارە بۆفەرکردنی زیاتر)"
+                                android:text="@string/settings_buffer_low"
                                 android:textColor="#B0B0C0" />
                             <RadioButton
                                 android:id="@+id/rb_buffer_medium"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="ناوەند (هاوسەنگ)"
+                                android:text="@string/settings_buffer_medium"
                                 android:textColor="#B0B0C0" />
                             <RadioButton
                                 android:id="@+id/rb_buffer_high"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="بەرز (دەستپێکی هێواشتر، پەخشکردنی نەرمتر)"
+                                android:text="@string/settings_buffer_high"
                                 android:textColor="#B0B0C0" />
                         </RadioGroup>
                     </LinearLayout>
@@ -366,7 +406,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="خێراکردنی هاردوێر"
+                            android:text="@string/settings_hw_accel"
                             android:textColor="#FFFFFF"
                             android:textSize="16sp" />
                         <com.google.android.material.switchmaterial.SwitchMaterial
@@ -393,7 +433,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="بەڕێوەبردنی پلەی لیست"
+                    android:text="@string/settings_playlist_mgmt"
                     android:textColor="@color/vu_purple"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -416,14 +456,14 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="پلەی لیستی چالاک:"
+                            android:text="@string/settings_active_playlist"
                             android:textColor="#FFFFFF"
                             android:textSize="14sp" />
                         <TextView
                             android:id="@+id/tv_active_playlist"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="بنەڕەت"
+                            android:text="@string/settings_active_default"
                             android:textColor="#E53935"
                             android:textSize="14sp"
                             android:textStyle="bold" />
@@ -437,7 +477,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="12dp"
                     android:backgroundTint="@color/vu_purple"
-                    android:text="پلەی لیستی ئێستا پاشەکەوت بکە وەک..." />
+                    android:text="@string/settings_save_playlist" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_load_playlist"
@@ -446,7 +486,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="8dp"
                     android:backgroundTint="@color/vu_purple"
-                    android:text="گۆڕینی پلەی لیست" />
+                    android:text="@string/settings_switch_playlist" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_delete_playlist"
@@ -455,7 +495,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="8dp"
                     android:backgroundTint="#E53935"
-                    android:text="سڕینەوەی پلەی لیستی پاشەکەوتکراو" />
+                    android:text="@string/settings_delete_playlist" />
 
                 <View
                     android:layout_width="match_parent"
@@ -467,7 +507,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="داتا و کاش"
+                    android:text="@string/settings_data_cache"
                     android:textColor="@color/vu_purple"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -479,7 +519,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="12dp"
                     android:backgroundTint="@color/vu_purple"
-                    android:text="پاککردنەوەی هەموو کاشی بەرنامە" />
+                    android:text="@string/settings_clear_cache" />
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_refresh_data"
                     style="@style/Widget.MaterialComponents.Button"
@@ -487,7 +527,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="8dp"
                     android:backgroundTint="@color/vu_purple"
-                    android:text="نوێکردنەوەی داتای پلەی لیست" />
+                    android:text="@string/settings_refresh_data" />
             </LinearLayout>
         </ScrollView>
 
@@ -505,7 +545,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="زانیاری ئابوونە"
+                    android:text="@string/settings_subscription"
                     android:textColor="@color/vu_purple"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -532,14 +572,14 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="ناسنامە: —"
+                            android:text="@string/settings_id_label"
                             android:textColor="#FFFFFF" />
                         <TextView
                             android:id="@+id/tv_expiry"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="دۆخ: چالاک"
+                            android:text="@string/settings_status_premium"
                             android:textColor="#FFFFFF" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -547,6 +587,3 @@
         </ScrollView>
     </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-

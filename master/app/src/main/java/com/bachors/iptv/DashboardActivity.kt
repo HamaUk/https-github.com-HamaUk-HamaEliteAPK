@@ -51,7 +51,7 @@ class DashboardActivity : AppCompatActivity() {
             refreshContinueWatchingRow()
         } catch (t: Throwable) {
             t.printStackTrace()
-            Toast.makeText(this, "لە کێشەی دەستپێک ڕزگاربووین. تکایە دووبارە بچۆ ژوورەوە.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.dash_startup_error), Toast.LENGTH_LONG).show()
             val intent = Intent(this, MainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
@@ -225,7 +225,7 @@ class DashboardActivity : AppCompatActivity() {
                     Gson().fromJson(outer.getJSONArray(0).toString(), listType)
                 }
                 val totalChannels = data.sumOf { it.channel.toIntOrNull() ?: 0 }
-                binding.tvLabelLive.text = if (totalChannels > 0) "پەخشی ڕاستەوخۆ ($totalChannels)" else "پەخشی ڕاستەوخۆ"
+                binding.tvLabelLive.text = if (totalChannels > 0) getString(R.string.dash_live_count, totalChannels) else getString(R.string.dash_live)
             }
         } catch (_: Exception) {}
     }

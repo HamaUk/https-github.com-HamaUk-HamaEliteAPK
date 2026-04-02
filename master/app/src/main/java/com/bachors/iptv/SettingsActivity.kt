@@ -7,6 +7,8 @@ import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.media3.ui.AspectRatioFrameLayout
 import com.bachors.iptv.databinding.ActivitySettingsBinding
 import com.bachors.iptv.utils.PlayerLauncher
@@ -40,7 +42,7 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.tvPkg.text = getString(R.string.settings_package_line, packageName)
         binding.tvMac.text = getString(R.string.settings_version_line, ver)
-        binding.tvExpiry.text = "دۆخ: پڕیمیۆمی چالاک"
+        binding.tvExpiry.text = getString(R.string.settings_status_premium)
 
         val savedResize = sharedPrefManager.getResizeMode()
         when (savedResize) {
@@ -67,6 +69,13 @@ class SettingsActivity : AppCompatActivity() {
             PlayerLauncher.ENGINE_EXO_CINEMA -> binding.rbPlayerExoCinema.isChecked = true
             PlayerLauncher.ENGINE_EXO_ARENA -> binding.rbPlayerExoArena.isChecked = true
             else -> binding.rbPlayerExo.isChecked = true
+        }
+
+        // Language selector
+        val savedLang = sharedPrefManager.getSpString(SharedPrefManager.SP_LANGUAGE).ifEmpty { "ckb" }
+        when (savedLang) {
+            "en" -> binding.rbLangEnglish.isChecked = true
+            else -> binding.rbLangKurdish.isChecked = true
         }
 
         updateActivePlaylistLabel()
@@ -119,6 +128,19 @@ class SettingsActivity : AppCompatActivity() {
             sharedPrefManager.saveSPString(SharedPrefManager.SP_PLAYER_ENGINE, engine)
         }
 
+        // Language radio group
+        binding.rgLanguage.setOnCheckedChangeListener { _, checkedId ->
+            val langTag = when (checkedId) {
+                R.id.rb_lang_english -> "en"
+                else -> "ckb"
+            }
+            val currentLang = sharedPrefManager.getSpString(SharedPrefManager.SP_LANGUAGE).ifEmpty { "ckb" }
+            if (langTag != currentLang) {
+                sharedPrefManager.saveSPString(SharedPrefManager.SP_LANGUAGE, langTag)
+                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(langTag))
+            }
+        }
+
         binding.btnClearCache.setOnClickListener { clearAppCache() }
         binding.btnRefreshData.setOnClickListener { refreshPlaylistData() }
         binding.btnLogout.setOnClickListener { showLogoutConfirmation() }
@@ -148,23 +170,23 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun updateActivePlaylistLabel() {
         val name = sharedPrefManager.getActivePlaylistName()
-        binding.tvActivePlaylist.text = name.ifEmpty { "بنەڕەت" }
+        binding.tvActivePlaylist.text = name.ifEmpty { getString(R.string.settings_active_default) }
     }
 
     private fun showSavePlaylistDialog() {
         val input = EditText(this).apply {
-            hint = "ناوی پلەی لیست"
+            hint = getString(R.string.dialog_save_playlist_hint)
             setTextColor(resources.getColor(android.R.color.white, null))
             setHintTextColor(resources.getColor(android.R.color.darker_gray, null))
             setPadding(48, 32, 48, 32)
         }
         MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-            .setTitle("پاشەکەوتکردنی پلەی لیستی ئێستا")
+            .setTitle(getString(R.string.dialog_save_playlist_title))
             .setView(input)
-            .setPositiveButton("پاشەکەوت") { _, _ ->
+            .setPositiveButton(getString(R.string.dialog_save_btn)) { _, _ ->
                 val name = input.text.toString().trim()
                 if (name.isEmpty()) {
-                    Toast.makeText(this, "ناو نابێت بەتاڵ بێت", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.dialog_name_empty), Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
                 val playlists = getPlaylistsJson()
@@ -176,9 +198,9 @@ class SettingsActivity : AppCompatActivity() {
                 sharedPrefManager.saveSPString(SharedPrefManager.SP_SAVED_PLAYLISTS, playlists.toString())
                 sharedPrefManager.saveSPString(SharedPrefManager.SP_ACTIVE_PLAYLIST_NAME, name)
                 updateActivePlaylistLabel()
-                Toast.makeText(this, "پلەی لیستی '$name' پاشەکەوت کرا", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.dialog_playlist_saved, name), Toast.LENGTH_SHORT).show()
             }
-            .setNegativeButton("هەڵوەشاندنەوە", null)
+            .setNegativeButton(getString(R.string.dialog_cancel), null)
             .show()
     }
 
@@ -186,11 +208,11 @@ class SettingsActivity : AppCompatActivity() {
         val playlists = getPlaylistsJson()
         val names = playlists.keys().asSequence().toList()
         if (names.isEmpty()) {
-            Toast.makeText(this, "هیچ پلەی لیستێکی پاشەکەوتکراو نییە", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.dialog_no_saved), Toast.LENGTH_SHORT).show()
             return
         }
         MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-            .setTitle("گۆڕینی پلەی لیست")
+            .setTitle(getString(R.string.dialog_switch_title))
             .setItems(names.toTypedArray()) { _, which ->
                 val name = names[which]
                 try {
@@ -200,9 +222,9 @@ class SettingsActivity : AppCompatActivity() {
                     sharedPrefManager.saveSPString(SharedPrefManager.SP_M3U_DIRECT, data.optString("m3u", ""))
                     sharedPrefManager.saveSPString(SharedPrefManager.SP_ACTIVE_PLAYLIST_NAME, name)
                     updateActivePlaylistLabel()
-                    Toast.makeText(this, "گۆڕدرا بۆ '$name'", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.dialog_switched_to, name), Toast.LENGTH_SHORT).show()
                 } catch (_: Exception) {
-                    Toast.makeText(this, "بارکردنی پلەی لیست شکستی هێنا", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.dialog_load_failed), Toast.LENGTH_SHORT).show()
                 }
             }
             .show()
@@ -212,26 +234,26 @@ class SettingsActivity : AppCompatActivity() {
         val playlists = getPlaylistsJson()
         val names = playlists.keys().asSequence().toList()
         if (names.isEmpty()) {
-            Toast.makeText(this, "هیچ پلەی لیستێکی پاشەکەوتکراو نییە", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.dialog_no_saved), Toast.LENGTH_SHORT).show()
             return
         }
         MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-            .setTitle("سڕینەوەی پلەی لیست")
+            .setTitle(getString(R.string.dialog_delete_title))
             .setItems(names.toTypedArray()) { _, which ->
                 val name = names[which]
                 MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-                    .setTitle("سڕینەوەی '$name'؟")
-                    .setMessage("ئەم کارە ناگەڕێتەوە.")
-                    .setPositiveButton("بسڕەوە") { _, _ ->
+                    .setTitle(getString(R.string.dialog_delete_confirm, name))
+                    .setMessage(getString(R.string.dialog_delete_warn))
+                    .setPositiveButton(getString(R.string.dialog_delete_btn)) { _, _ ->
                         playlists.remove(name)
                         sharedPrefManager.saveSPString(SharedPrefManager.SP_SAVED_PLAYLISTS, playlists.toString())
                         if (sharedPrefManager.getActivePlaylistName() == name) {
                             sharedPrefManager.saveSPString(SharedPrefManager.SP_ACTIVE_PLAYLIST_NAME, "")
                             updateActivePlaylistLabel()
                         }
-                        Toast.makeText(this, "'$name' سڕایەوە", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.dialog_deleted, name), Toast.LENGTH_SHORT).show()
                     }
-                    .setNegativeButton("هەڵوەشاندنەوە", null)
+                    .setNegativeButton(getString(R.string.dialog_cancel), null)
                     .show()
             }
             .show()
@@ -242,26 +264,26 @@ class SettingsActivity : AppCompatActivity() {
         try {
             val dir: File = cacheDir
             dir.deleteRecursively()
-            Toast.makeText(this, "هەموو کاش پاککرایەوە", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.cache_cleared), Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            Toast.makeText(this, "هەڵە لە پاککردنەوەی کاش", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.cache_error), Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun refreshPlaylistData() {
         sharedPrefManager.saveSPString(SharedPrefManager.SP_CHANNELS, "[]")
-        Toast.makeText(this, "داتا بۆ نوێکردنەوە دیاریکرا", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.data_refresh_scheduled), Toast.LENGTH_SHORT).show()
         finish()
     }
 
     private fun showLogoutConfirmation() {
         MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-            .setTitle("چوونەدەرەوە")
-            .setMessage("دڵنیای دەتەوێت بچیتەدەرەوە و زانیاری هەژمارەکەت بسڕیتەوە؟")
-            .setPositiveButton("بچۆ دەرەوە") { _, _ ->
+            .setTitle(getString(R.string.dialog_logout_title))
+            .setMessage(getString(R.string.dialog_logout_msg))
+            .setPositiveButton(getString(R.string.dialog_logout_btn)) { _, _ ->
                 performLogout()
             }
-            .setNegativeButton("هەڵوەشاندنەوە", null)
+            .setNegativeButton(getString(R.string.dialog_cancel), null)
             .show()
     }
 
