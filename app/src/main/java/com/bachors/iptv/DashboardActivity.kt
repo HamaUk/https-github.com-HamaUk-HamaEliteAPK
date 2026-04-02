@@ -1,7 +1,9 @@
 package com.bachors.iptv
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.os.Handler
 import android.os.Looper
 import android.view.View
@@ -20,6 +22,7 @@ import com.google.gson.reflect.TypeToken
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -39,6 +42,7 @@ class DashboardActivity : AppCompatActivity() {
             binding.tvDashboardVersion.text =
                 getString(R.string.dashboard_version_line, BuildConfig.VERSION_NAME)
             setupClock()
+            setupDeviceCode()
             setupClickListeners()
             updateCategoryCounts()
             fetchAppStatus()
@@ -58,6 +62,36 @@ class DashboardActivity : AppCompatActivity() {
         updateCategoryCounts()
         refreshContinueWatchingRow()
         fetchAppStatus()
+    }
+
+    private fun setupDeviceCode() {
+        binding.tvDeviceCode.text = getString(R.string.dashboard_device_code, deviceCodeForDisplay())
+    }
+
+    /** Stable 6-digit numeric code (000000–999999) derived from Android ID or stored fallback seed. */
+    private fun deviceCodeForDisplay(): String {
+        val seed = stableDeviceSeed()
+        val digest = MessageDigest.getInstance("SHA-256").digest(seed.toByteArray(Charsets.UTF_8))
+        var n = 0
+        for (i in 0 until 4) {
+            n = (n shl 8) or (digest[i].toInt() and 0xFF)
+        }
+        val six = (n.toLong() and 0x7FFFFFFF_L) % 1_000_000L
+        return "%06d".format(Locale.US, six)
+    }
+
+    private fun stableDeviceSeed(): String {
+        val raw = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID).orEmpty().trim()
+        if (raw.isNotEmpty() && raw != "9774d56d682e549c") {
+            return raw
+        }
+        val prefs = getSharedPreferences("hk_prefs", Context.MODE_PRIVATE)
+        var id = prefs.getString("hk_device_id", null).orEmpty().trim()
+        if (id.isEmpty()) {
+            id = UUID.randomUUID().toString()
+            prefs.edit().putString("hk_device_id", id).apply()
+        }
+        return id
     }
 
     private fun setupClock() {
@@ -87,13 +121,6 @@ class DashboardActivity : AppCompatActivity() {
         binding.cardSeries.setOnClickListener {
             val intent = Intent(this, PlaylistActivity::class.java)
             intent.putExtra("type", "series")
-            startActivity(intent)
-        }
-
-        binding.cardEpg.setOnClickListener {
-            val intent = Intent(this, PlaylistActivity::class.java)
-            intent.putExtra("type", "live")
-            intent.putExtra("epg", true)
             startActivity(intent)
         }
 
@@ -192,18 +219,8 @@ class DashboardActivity : AppCompatActivity() {
                     val outer = org.json.JSONArray(rawJson)
                     Gson().fromJson(outer.getJSONArray(0).toString(), listType)
                 }
-                val totalGroups = data.count { it.title.isNotEmpty() }
                 val totalChannels = data.sumOf { it.channel.toIntOrNull() ?: 0 }
                 binding.tvLabelLive.text = if (totalChannels > 0) "پەخشی ڕاستەوخۆ ($totalChannels)" else "پەخشی ڕاستەوخۆ"
-                binding.tvLabelPlaylists.text = if (totalGroups > 0) "پلەی لیستەکان ($totalGroups)" else "پلەی لیستەکان"
-            }
-
-            val favJson = sp.getSpFavorites()
-            if (favJson.isNotEmpty() && favJson != "[]") {
-                val favCount = org.json.JSONArray(favJson).length()
-                if (favCount > 0) {
-                    binding.tvLabelPlaylists.text = "دڵخوازەکان ($favCount)"
-                }
             }
         } catch (_: Exception) {}
     }
