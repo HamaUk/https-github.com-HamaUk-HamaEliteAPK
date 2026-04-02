@@ -12,6 +12,7 @@
     <string name="sync_no_data">No playlist on server yet. Ask admin to upload from the web portal.</string>
     <string name="sync_error">Sync error: %1$s</string>
     <string name="auto_resume_failed">Could not open the app. Try Start again.</string>
+    <string name="dashboard_device_code">کۆد: %1$s</string>
     <string name="settings_version_line">Version: %1$s</string>
     <string name="dashboard_version_line">وەشان: %1$s</string>
 
