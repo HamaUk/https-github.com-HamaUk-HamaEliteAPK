@@ -72,8 +72,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 
-    // Optional second engine (settings → پەخشکەر). LGPL — https://www.videolan.org/legal.html
-    implementation("org.videolan.android:libvlc-all:3.6.2")
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

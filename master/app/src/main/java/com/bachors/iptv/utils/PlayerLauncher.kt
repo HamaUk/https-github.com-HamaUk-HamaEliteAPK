@@ -3,11 +3,10 @@ package com.bachors.iptv.utils
 import android.content.Context
 import android.content.Intent
 import com.bachors.iptv.PlayerActivity
-import com.bachors.iptv.VlcPlayerActivity
-import com.bachors.iptv.WebHlsPlayerActivity
 
 /**
  * Starts the playback activity chosen in settings ([SharedPrefManager.SP_PLAYER_ENGINE]).
+ * Only ExoPlayer profiles remain: Standard, Cinema, Arena.
  */
 object PlayerLauncher {
 
@@ -20,24 +19,8 @@ object PlayerLauncher {
     /** Same ExoPlayer core, minimal live latency (more rebuffers on bad links). */
     const val ENGINE_EXO_ARENA = "exo_arena"
 
-    /** Chromium WebView + hls.js — HLS (.m3u8) only; different pipeline from Exo. */
-    const val ENGINE_WEB_HLS = "web_hls"
-
-    /** LibVLC (LGPL). */
-    const val ENGINE_VLC = "vlc"
-
     fun start(context: Context, intent: Intent) {
-        val engine = SharedPrefManager(context).getSpString(SharedPrefManager.SP_PLAYER_ENGINE)
-            .trim()
-            .lowercase()
-            .ifEmpty { ENGINE_EXO }
-        val target = when (engine) {
-            ENGINE_VLC -> VlcPlayerActivity::class.java
-            ENGINE_WEB_HLS -> WebHlsPlayerActivity::class.java
-            ENGINE_EXO, ENGINE_EXO_CINEMA, ENGINE_EXO_ARENA -> PlayerActivity::class.java
-            else -> PlayerActivity::class.java
-        }
-        intent.setClass(context, target)
+        intent.setClass(context, PlayerActivity::class.java)
         context.startActivity(intent)
     }
 }

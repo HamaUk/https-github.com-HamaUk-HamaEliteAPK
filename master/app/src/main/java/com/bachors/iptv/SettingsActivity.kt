@@ -62,8 +62,6 @@ class SettingsActivity : AppCompatActivity() {
         binding.switchHwAccel.isChecked = sharedPrefManager.getHwAccel()
 
         when (sharedPrefManager.getSpString(SharedPrefManager.SP_PLAYER_ENGINE).lowercase()) {
-            PlayerLauncher.ENGINE_VLC -> binding.rbPlayerVlc.isChecked = true
-            PlayerLauncher.ENGINE_WEB_HLS -> binding.rbPlayerWebHls.isChecked = true
             PlayerLauncher.ENGINE_EXO_CINEMA -> binding.rbPlayerExoCinema.isChecked = true
             PlayerLauncher.ENGINE_EXO_ARENA -> binding.rbPlayerExoArena.isChecked = true
             else -> binding.rbPlayerExo.isChecked = true
@@ -110,8 +108,6 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.rgPlayerEngine.setOnCheckedChangeListener { _, checkedId ->
             val engine = when (checkedId) {
-                R.id.rb_player_vlc -> PlayerLauncher.ENGINE_VLC
-                R.id.rb_player_web_hls -> PlayerLauncher.ENGINE_WEB_HLS
                 R.id.rb_player_exo_cinema -> PlayerLauncher.ENGINE_EXO_CINEMA
                 R.id.rb_player_exo_arena -> PlayerLauncher.ENGINE_EXO_ARENA
                 else -> PlayerLauncher.ENGINE_EXO

@@ -286,18 +286,6 @@
                                 android:layout_height="wrap_content"
                                 android:text="@string/settings_engine_arena"
                                 android:textColor="#B0B0C0" />
-                            <RadioButton
-                                android:id="@+id/rb_player_web_hls"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="@string/settings_engine_web"
-                                android:textColor="#B0B0C0" />
-                            <RadioButton
-                                android:id="@+id/rb_player_vlc"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="@string/settings_engine_vlc"
-                                android:textColor="#B0B0C0" />
                         </RadioGroup>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>

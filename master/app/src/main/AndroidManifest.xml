@@ -73,20 +73,6 @@
             android:theme="@style/AppTheme.FullScreen" />
 
         <activity
-            android:name=".VlcPlayerActivity"
-            android:screenOrientation="landscape"
-            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
-            android:hardwareAccelerated="true"
-            android:theme="@style/AppTheme.FullScreen" />
-
-        <activity
-            android:name=".WebHlsPlayerActivity"
-            android:screenOrientation="landscape"
-            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize"
-            android:hardwareAccelerated="true"
-            android:theme="@style/AppTheme.FullScreen" />
-
-        <activity
             android:name=".SettingsActivity"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize"
