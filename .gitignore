@@ -1,15 +1,29 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+# Decompiled / extracted APK (huge; keep locally)
+koya_apktool/
+koya_extracted/
+
+# Built APKs & large binaries
+*.apk
+apktool.jar
+
+# Secrets / local URLs (never commit tokens)
+master_remote_url.txt
+remote_url*.txt
+
+# OS / IDE
 .DS_Store
-/build
-/captures
+Thumbs.db
+.cursor/
+
+# Node (if any subproject uses npm)
+node_modules/
+
+# Android
+**/.gradle/
+**/build/
+**/captures
+**/local.properties
+**/*.iml
+.idea/
 .externalNativeBuild
 .cxx
-local.properties

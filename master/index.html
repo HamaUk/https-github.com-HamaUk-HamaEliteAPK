@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAMA ELITE — Sync Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-gradient: radial-gradient(circle at top right, #0a101f, #050510);
+  --accent: #00d4ff;
+  --accent-glow: rgba(0, 212, 255, 0.4);
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --text-main: #ffffff;
+  --text-dim: #94a3b8;
+  --error: #ff4b2b;
+  --success: #00f2fe;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-gradient);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+/* Background Elements */
+.bg-glow {
+  position: fixed;
+  top: -10%;
+  right: -10%;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  z-index: -1;
+  filter: blur(80px);
+}
+
+.portal-container {
+  width: 95%;
+  max-width: 500px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.portal-card {
+  background: var(--glass);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid var(--glass-border);
+  border-radius: 32px;
+  padding: 40px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.header { text-align: center; margin-bottom: 40px; }
+.logo { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.05em; color: white; }
+.logo span { color: var(--accent); }
+.subtitle { font-size: 0.85rem; color: var(--text-dim); letter-spacing: 0.4em; text-transform: uppercase; margin-top: 5px; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 5px;
+  border-radius: 16px;
+  margin-bottom: 30px;
+}
+.tab {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s ease;
+  color: var(--text-dim);
+}
+.tab.active {
+  background: var(--accent);
+  color: #000;
+}
+
+/* Form */
+.form-group { margin-bottom: 24px; }
+label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.1em; }
+input {
+  width: 100%;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+}
+
+.row { display: flex; gap: 15px; }
+.row > div { flex: 1; }
+
+.sync-btn {
+  width: 100%;
+  padding: 18px;
+  border-radius: 16px;
+  background: var(--accent);
+  color: #000;
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 10px;
+}
+.sync-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3);
+  filter: brightness(1.1);
+}
+.sync-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.status-msg {
+  text-align: center;
+  margin-top: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-height: 1.5em;
+  transition: all 0.3s ease;
+}
+.status-msg.success { color: var(--success); text-shadow: 0 0 10px rgba(0, 242, 254, 0.3); }
+.status-msg.error { color: var(--error); }
+
+/* Admin Styles */
+.admin-link {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+.admin-link:hover { opacity: 1; color: var(--accent); }
+
+.admin-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  backdrop-filter: blur(20px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.admin-dashboard {
+  display: none;
+  width: 95%;
+  max-width: 1000px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 32px;
+  padding: 40px;
+  margin: 20px;
+  animation: fadeIn 0.5s ease;
+}
+.admin-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-top: -6px;
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  background: rgba(0,0,0,0.22);
+}
+.admin-note {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+.admin-chip {
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+  color: #00101a;
+  background: linear-gradient(90deg, #00d4ff, #5df7ff);
+  text-transform: uppercase;
+}
+
+.admin-table-wrapper {
+  overflow-x: auto;
+  margin-top: 30px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th {
+  padding: 20px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+td {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  font-size: 0.9rem;
+}
+
+.action-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-right: 5px;
+}
+.btn-edit { background: rgba(255,255,255,0.1); color: white; }
+.btn-delete { background: rgba(255, 75, 43, 0.1); color: var(--error); }
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 200;
+}
+.modal-content {
+  background: #111;
+  padding: 30px;
+  border-radius: 24px;
+  width: 90%;
+  max-width: 400px;
+  border: 1px solid var(--glass-border);
+}
+
+.badge { padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 900; }
+.badge.xtream { background: #913cff; color: white; }
+.badge.m3u { background: #00d4ff; color: white; }
+.badge.file { background: #ff9800; color: white; }
+
+.search-bar {
+  width: 100%;
+  padding: 12px 20px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: white;
+  margin-bottom: 20px;
+}
+
+/* Custom File Upload */
+.file-upload-wrapper {
+  position: relative;
+  width: 100%;
+}
+.file-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  background: rgba(255,255,255,0.03);
+  border: 2px dashed var(--glass-border);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.file-upload-label:hover {
+  background: rgba(0, 212, 255, 0.05);
+  border-color: var(--accent);
+}
+.file-upload-label span { font-size: 0.8rem; font-weight: 700; color: var(--accent); margin-bottom: 5px; }
+.file-upload-label small { font-size: 0.7rem; color: var(--text-dim); }
+.file-upload-input { display: none; }
+.file-selected-name {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--success);
+  text-align: center;
+}
+
+/* Admin Dashboard Pro Styles */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+.stat-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border);
+  padding: 20px;
+  border-radius: 20px;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+.stat-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+.stat-val { display: block; font-size: 1.8rem; font-weight: 900; color: var(--accent); }
+.stat-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-dim); font-weight: 700; letter-spacing: 0.1em; }
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+.toolbar-group { display: flex; gap: 10px; }
+.tool-btn {
+  padding: 10px 15px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.05);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.tool-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); }
+.tool-btn.accent { background: var(--accent); color: #000; border: none; }
+.tool-btn.danger { background: rgba(255, 75, 43, 0.1); color: var(--error); border-color: var(--error); }
+
+.copy-icon { cursor: pointer; opacity: 0.5; transition: opacity 0.3s; margin-left: 5px; }
+.copy-icon:hover { opacity: 1; color: var(--accent); }
+
+/* Channel manager */
+.channel-mgr-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; align-items: center; }
+.channel-mgr-table-wrap { overflow-x: auto; max-height: 48vh; border: 1px solid var(--glass-border); border-radius: 12px; background: rgba(0,0,0,0.2); }
+.channel-mgr-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+.channel-mgr-table th { position: sticky; top: 0; background: rgba(0,0,0,0.55); z-index: 1; padding: 10px 8px; text-align: left; }
+.channel-mgr-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: middle; }
+.channel-mgr-table tr:hover { background: rgba(255,255,255,0.04); }
+.channel-mgr-logo-cell { width: 56px; text-align: center; vertical-align: middle; }
+.channel-mgr-logo-thumb { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.35); display: inline-block; vertical-align: middle; }
+#cm-edit-logo { width: 100%; min-height: 4.5rem; max-height: 10rem; padding: 10px; font-family: ui-monospace, monospace; font-size: 0.65rem; word-break: break-all; resize: vertical; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; color: #fff; box-sizing: border-box; }
+.tag-hidden { color: #ff9800; font-weight: 700; }
+.tag-adult { color: #ff4b2b; font-weight: 700; }
+.channel-mgr-pager { display: flex; align-items: center; gap: 12px; margin-top: 12px; justify-content: center; }
+.channel-mgr-table tr.cm-dragging { opacity: 0.45; }
+.channel-mgr-table tr.cm-drag-over { outline: 2px dashed var(--accent); outline-offset: -2px; }
+.channel-mgr-validation { font-size: 0.72rem; padding: 10px 12px; border-radius: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); }
+.channel-mgr-validation .val-err { color: var(--error); font-weight: 700; }
+.channel-mgr-validation .val-warn { color: #ff9800; font-weight: 700; }
+.channel-mgr-validation .val-ok { color: #8bc34a; font-weight: 700; }
+.channel-mgr-bulk-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; padding: 10px; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); }
+.cm-move-cell .btn-small { padding: 2px 6px; min-width: 28px; }
+.cm-drag-handle { cursor: grab; display: inline-block; padding: 2px 4px; user-select: none; opacity: 0.85; font-size: 1rem; line-height: 1; vertical-align: middle; }
+.cm-drag-handle:active { cursor: grabbing; }
+.btn-small { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.06); color: #fff; cursor: pointer; font-size: 0.72rem; }
+.btn-small:hover { border-color: var(--accent); }
+.mgr-note { font-size: 0.72rem; color: var(--text-dim); margin-bottom: 10px; line-height: 1.5; }
+.pass-hidden { filter: blur(5px); transition: filter 0.3s; }
+.pass-hidden:hover { filter: none; }
+
+.checkbox-col { width: 40px; text-align: center; }
+input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: var(--accent); }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .portal-card { padding: 30px 20px; }
+  .logo { font-size: 2rem; }
+  .stats-grid { grid-template-columns: 1fr; gap: 10px; }
+  .admin-dashboard { padding: 20px; margin: 10px; border-radius: 20px; }
+  .admin-toolbar { flex-direction: column; align-items: stretch; }
+  .toolbar-group { justify-content: space-between; }
+  .tool-btn { flex: 1; text-align: center; font-size: 0.7rem; padding: 12px 5px; }
+  .admin-table-wrapper { margin-top: 20px; }
+  th, td { padding: 12px 10px; font-size: 0.8rem; }
+  .modal-content { width: 95%; padding: 20px; }
+  .stat-val { font-size: 1.5rem; }
+}
+
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="portal-container">
+  <div class="portal-card">
+    <div class="header">
+      <div class="logo" id="logoTap" onclick="window._logoTap=(window._logoTap||0)+1;clearTimeout(window._logoTimer);if(window._logoTap>=5){window._logoTap=0;document.getElementById('adminOverlay').style.display='flex';}window._logoTimer=setTimeout(function(){window._logoTap=0;},4000);" style="cursor:pointer;">HAMA <span>UK</span></div>
+      <div class="subtitle">ELITE SYNC PORTAL</div>
+    </div>
+
+    <input type="hidden" id="linkCode" value="global">
+    <input type="hidden" id="server">
+    <input type="hidden" id="user">
+    <input type="hidden" id="pass">
+    <input type="hidden" id="m3uUrl">
+    <input type="hidden" id="m3uFile">
+
+    <p style="text-align:center; color:var(--text-dim); font-size:0.9rem; line-height:1.8; margin-top:10px;">
+      Download <strong style="color:var(--accent)">HAMA UK ELITE</strong> on your TV or phone,<br>
+      then tap <strong style="color:white">Start</strong> to load your playlist automatically.
+    </p>
+
+  </div>
+</div>
+
+<!-- Admin Login Overlay -->
+<div id="adminOverlay" class="admin-overlay">
+  <div class="portal-card" style="max-width:350px;">
+    <div class="header" style="margin-bottom:20px;">
+      <div class="logo" style="font-size:1.5rem">ADMIN <span>LOGIN</span></div>
+    </div>
+    <div class="form-group">
+      <label>Admin Email</label>
+      <input type="email" id="adminUser" placeholder="Email" style="text-align:center;" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>Admin Password</label>
+      <input type="password" id="adminPass" placeholder="Password" style="text-align:center;" autocomplete="off">
+    </div>
+    <button class="sync-btn" onclick="(typeof window.checkAdminLogin==='function'?window.checkAdminLogin():alert('Admin is loading... please wait 2 seconds and try again.'))">LOGIN</button>
+    <button class="admin-link" onclick="window.hideAdminLogin()" style="width:100%; border:none; background:none;">CANCEL</button>
+  </div>
+</div>
+
+<!-- Admin Dashboard -->
+<div id="adminDashboard" class="admin-dashboard">
+  <div class="header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div class="logo" style="font-size:1.5rem">ADMIN <span>DASHBOARD</span></div>
+    <div style="display:flex; gap:10px; align-items:center">
+      <label style="margin:0; font-size:0.7rem; color:var(--text-dim)">AUTO-REFRESH <input type="checkbox" id="autoRefresh" style="margin-left:5px"></label>
+      <button class="sync-btn" style="width:auto; padding:10px 20px; font-size:0.8rem" onclick="window.hideAdminDashboard()">EXIT ADMIN</button>
+    </div>
+  </div>
+  <div class="admin-hero">
+    <div>
+      <div style="font-weight:800; margin-bottom:4px;">GLOBAL PLAYLIST CONTROL</div>
+      <div class="admin-note">All TVs and phones read from <b>sync/global</b>. Upload M3U / M3U8 or set Xtream once, and every app receives the same account data.</div>
+    </div>
+    <span class="admin-chip">GLOBAL MODE</span>
+  </div>
+  
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-val" id="stat-total">0</span>
+      <span class="stat-label">Total Profiles</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-val" id="stat-xtream">0</span>
+      <span class="stat-label">Xtream Profiles</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-val" id="stat-m3u">0</span>
+      <span class="stat-label">M3U/M3U8 Profiles</span>
+    </div>
+  </div>
+
+  <div class="admin-toolbar">
+    <input type="text" id="adminSearch" class="search-bar" style="margin-bottom:0; flex:1" placeholder="SEARCH PROFILES (GLOBAL, XTREAM, URL, FILE)..." onkeyup="filterUsers()">
+    <div class="toolbar-group">
+      <button class="tool-btn accent" onclick="window.openAddManual()">+ ADD / UPDATE PROFILE</button>
+      <button class="tool-btn danger" onclick="window.bulkDelete()">BULK DELETE</button>
+      <button class="tool-btn" onclick="window.exportData()">EXPORT CSV</button>
+    </div>
+  </div>
+
+  <div class="admin-table-wrapper">
+    <table id="userTable">
+      <thead>
+        <tr>
+          <th class="checkbox-col"><input type="checkbox" onclick="window.selectAll(this)"></th>
+          <th>SYNC KEY</th>
+          <th>METHOD</th>
+          <th>INFO</th>
+          <th>LAST UPDATE</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody id="userList">
+        <!-- Loaded via JS -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal">
+  <div class="modal-content">
+    <h3 style="margin-bottom:20px;">EDIT PROFILE</h3>
+    <div id="editFields"></div>
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button class="sync-btn" style="flex:1" onclick="window.saveEdit()">SAVE</button>
+      <button class="sync-btn" style="flex:1; background:rgba(255,255,255,0.1); color:white;" onclick="window.closeModal()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Manual Modal -->
+<div id="addModal" class="modal">
+  <div class="modal-content">
+    <h3 style="margin-bottom:20px;">ADD / UPDATE SYNC PROFILE</h3>
+    <div class="form-group"><label>Sync Key</label><input type="text" id="add-code" value="global" placeholder="global"></div>
+    <div class="tabs" style="margin-bottom:15px">
+      <div class="tab active" id="add-tab-xtream" onclick="window.setAddMethod('xtream')">XTREAM</div>
+      <div class="tab" id="add-tab-m3u" onclick="window.setAddMethod('m3u')">URL</div>
+      <div class="tab" id="add-tab-file" onclick="window.setAddMethod('file')">FILE</div>
+    </div>
+    <div id="add-fields">
+      <div class="form-group"><label>Server</label><input type="text" id="add-server"></div>
+      <div class="row">
+        <div class="form-group"><label>User</label><input type="text" id="add-user"></div>
+        <div class="form-group"><label>Pass</label><input type="text" id="add-pass"></div>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button class="sync-btn" style="flex:1" onclick="window.saveAddManual()">ADD USER</button>
+      <button class="sync-btn" style="flex:1; background:rgba(255,255,255,0.1); color:white;" onclick="window.closeAddModal()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- Channel manager (managed playlist) -->
+<div id="channelManagerModal" class="modal" style="align-items: flex-start; padding: 24px 12px; overflow-y: auto;">
+  <div class="modal-content" style="max-width: 1080px; width: 100%; max-height: none;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+      <div>
+        <h3 style="margin-bottom:8px;">MANAGE CHANNELS</h3>
+        <div class="mgr-note" id="channelMgrSyncKeyLabel">sync key: —</div>
+        <div class="mgr-note">Import from your M3U (profile URL, embedded file on this key, paste, or local file), or use <b>ADD ONE CHANNEL</b> for a single name + stream URL + optional local icon. Use <b>DELETE</b> on a row to remove a channel. Remote URL fetch may fail in-browser due to CORS — then use Paste or a profile with embedded <b>content</b>. Saves to <b>managedPlaylist</b> on this sync key. After editing logos/names, click <b>SAVE MANAGED PLAYLIST TO FIREBASE</b>, then users must <b>sync the app again</b> (same sync key) so icons appear in the app. The <b>Logo</b> column below shows a thumbnail when the URL or embedded image loads.</div>
+      </div>
+      <button type="button" class="btn-small" onclick="window.closeChannelManager()">CLOSE</button>
+    </div>
+    <div class="channel-mgr-toolbar">
+      <button type="button" class="tool-btn accent" onclick="window.channelMgrImportFromProfile()">IMPORT FROM PROFILE</button>
+      <button type="button" class="tool-btn" onclick="window.channelMgrPickFile()">LOAD .M3U FILE</button>
+      <input type="file" id="channelMgrFile" accept=".m3u,.m3u8,.txt,application/vnd.apple.mpegurl,text/plain" style="display:none" onchange="window.channelMgrOnFile(this)">
+      <button type="button" class="tool-btn" onclick="document.getElementById('channelMgrPaste').style.display=document.getElementById('channelMgrPaste').style.display==='none'?'block':'none'">PASTE M3U</button>
+      <button type="button" class="tool-btn accent" onclick="window.channelMgrToggleAddSingle()">+ ADD ONE CHANNEL</button>
+    </div>
+    <div id="channelMgrPaste" style="display:none; margin-bottom:12px;">
+      <label class="admin-note">Paste M3U text</label>
+      <textarea id="channelMgrPasteTa" style="width:100%; min-height:120px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:12px; color:white; padding:12px; font-family:monospace; font-size:0.72rem;"></textarea>
+      <button type="button" class="tool-btn accent" style="margin-top:8px" onclick="window.channelMgrParsePasted()">PARSE PASTED</button>
+    </div>
+    <div id="channelMgrAddSinglePanel" style="display:none; margin-bottom:16px; padding:14px; border:1px solid var(--glass-border); border-radius:12px; background:rgba(0,0,0,0.2);">
+      <div class="mgr-note" style="margin-bottom:10px;">Add a single stream without replacing the whole list. URL can be <b>.m3u8</b>, <b>.ts</b>, <b>.m3u</b> playlist link, or other stream URL. Logo is optional (local image or leave empty).</div>
+      <div class="row" style="display:flex; flex-wrap:wrap; gap:12px;">
+        <div class="form-group" style="flex:1; min-width:160px;">
+          <label>Channel name</label>
+          <input type="text" id="channelMgrAddName" placeholder="e.g. Kurdistan TV" autocomplete="off">
+        </div>
+        <div class="form-group" style="flex:1; min-width:160px;">
+          <label>Group</label>
+          <input type="text" id="channelMgrAddGroup" value="General" placeholder="General" autocomplete="off">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:8px;">
+        <label>Stream URL</label>
+        <input type="text" id="channelMgrAddUrl" placeholder="https://…/stream.m3u8 or .ts or .m3u" spellcheck="false" autocomplete="off" style="width:100%;">
+      </div>
+      <div class="row" style="display:flex; flex-wrap:wrap; gap:12px; margin-top:8px; align-items:flex-end;">
+        <div class="form-group" style="flex:1; min-width:140px;">
+          <label>Type</label>
+          <select id="channelMgrAddType" style="width:100%; padding:10px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:10px; color:white;">
+            <option value="auto">Auto (from URL)</option>
+            <option value="live">live</option>
+            <option value="vod">vod</option>
+            <option value="series">series</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:2; min-width:200px;">
+          <label>Logo (optional)</label>
+          <div class="file-upload-wrapper">
+            <label for="channelMgrAddLogoFile" class="file-upload-label" style="padding:12px 16px;">
+              <span>CHOOSE ICON FILE</span>
+              <small>PNG / JPG — auto-resized like EDIT</small>
+            </label>
+            <input type="file" id="channelMgrAddLogoFile" class="file-upload-input" accept="image/*">
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+        <button type="button" class="sync-btn" style="width:auto; padding:10px 20px;" onclick="window.channelMgrAddSingleChannel()">ADD TO LIST</button>
+        <button type="button" class="sync-btn" style="width:auto; padding:10px 20px; background:rgba(255,255,255,0.1); color:white;" onclick="window.channelMgrClearAddSingleForm()">CLEAR FORM</button>
+      </div>
+    </div>
+    <input type="text" id="channelMgrFilter" class="search-bar" placeholder="FILTER BY NAME, GROUP, URL..." onkeyup="window.channelMgrRender()" style="margin-bottom:12px;">
+    <div id="channelMgrValidation" class="channel-mgr-validation" style="display:none;"></div>
+    <div class="channel-mgr-bulk-bar">
+      <span class="admin-note" style="margin:0;">Bulk (checked rows):</span>
+      <button type="button" class="btn-small" onclick="window.channelMgrSelectPage()">SELECT PAGE</button>
+      <button type="button" class="btn-small" onclick="window.channelMgrClearSelection()">CLEAR</button>
+      <button type="button" class="btn-small" onclick="window.channelMgrBulkHide()">HIDE</button>
+      <button type="button" class="btn-small" style="color:var(--error);border-color:var(--error);" onclick="window.channelMgrBulkDelete()">DELETE</button>
+      <button type="button" class="btn-small" onclick="window.channelMgrBulkMoveGroup()">MOVE GROUP…</button>
+      <button type="button" class="btn-small" style="background:var(--accent);color:#000;border-color:var(--accent);font-weight:700;" onclick="window.channelMgrBulkExportM3u()">EXPORT M3U SNIPPET</button>
+    </div>
+    <div class="channel-mgr-table-wrap">
+      <table class="channel-mgr-table">
+        <thead>
+          <tr>
+            <th class="checkbox-col"><input type="checkbox" id="channelMgrCbAllPage" title="Select visible page"></th>
+            <th style="width:72px;">⇅</th>
+            <th>#</th>
+            <th>Logo</th>
+            <th>Name</th>
+            <th>Group</th>
+            <th>Type</th>
+            <th>Flags</th>
+            <th>URL</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="channelMgrTbody"></tbody>
+      </table>
+    </div>
+    <div class="channel-mgr-pager">
+      <button type="button" class="btn-small" onclick="window.channelMgrPrevPage()">PREV</button>
+      <span id="channelMgrPageInfo" style="font-size:0.8rem; color:var(--text-dim)">—</span>
+      <button type="button" class="btn-small" onclick="window.channelMgrNextPage()">NEXT</button>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;">
+      <button type="button" class="sync-btn" style="width:auto; padding:12px 24px;" onclick="window.channelMgrSaveToFirebase()">SAVE MANAGED PLAYLIST TO FIREBASE</button>
+      <span id="channelMgrStatus" class="admin-note" style="align-self:center;"></span>
+    </div>
+  </div>
+</div>
+
+<div id="channelMgrEditModal" class="modal" style="align-items:flex-start;padding:20px 12px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div class="modal-content" style="max-width:480px;margin:24px auto;flex-shrink:0;">
+    <h3 style="margin-bottom:16px;">CHANNEL SETTINGS</h3>
+    <div id="channelMgrEditFields"></div>
+    <div style="display:flex; gap:10px; margin-top:18px;">
+      <button type="button" class="sync-btn" style="flex:1" onclick="window.channelMgrSaveEditRow()">APPLY</button>
+      <button type="button" class="sync-btn" style="flex:1; background:rgba(255,255,255,0.1); color:white;" onclick="window.closeChannelMgrEdit()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Fallback so inline onclick never throws before module initializes.
+  window.checkAdminLogin = window.checkAdminLogin || function () {
+    alert('Admin is loading... please wait 2 seconds and try again.');
+  };
+</script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getDatabase, ref, set, get, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCUery4JLA3iASd_baCLvJX4fus2-y3fsc",
+    authDomain: "hama-elite-sync.firebaseapp.com",
+    databaseURL: "https://hama-elite-sync-default-rtdb.firebaseio.com",
+    projectId: "hama-elite-sync",
+    storageBucket: "hama-elite-sync.firebasestorage.app",
+    messagingSenderId: "306546806510",
+    appId: "1:306546806510:web:38dffe0bc504ca26f92dff"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
+
+  const _ae = [109,107,111,121,101,52,54,49,64,103,109,97,105,108,46,99,111,109];
+  const _ap = [72,97,109,97,107,111,121,101,57,57];
+  const _d = a => a.map(c => String.fromCharCode(c)).join('');
+  let currentMethod = 'xtream';
+  let addMethod = 'xtream';
+  let editingCode = null;
+  let refreshTimer = null;
+
+  window.setMethod = (method) => {
+    currentMethod = method;
+    document.getElementById('tab-xtream').className = 'tab ' + (method === 'xtream' ? 'active' : '');
+    document.getElementById('tab-m3u').className = 'tab ' + (method === 'm3u' ? 'active' : '');
+    document.getElementById('tab-file').className = 'tab ' + (method === 'file' ? 'active' : '');
+    document.getElementById('fields-xtream').style.display = (method === 'xtream' ? 'block' : 'none');
+    document.getElementById('fields-m3u').style.display = (method === 'm3u' ? 'block' : 'none');
+    document.getElementById('fields-file').style.display = (method === 'file' ? 'block' : 'none');
+  };
+
+  window.setAddMethod = (method) => {
+    addMethod = method;
+    document.getElementById('add-tab-xtream').className = 'tab ' + (method === 'xtream' ? 'active' : '');
+    document.getElementById('add-tab-m3u').className = 'tab ' + (method === 'm3u' ? 'active' : '');
+    document.getElementById('add-tab-file').className = 'tab ' + (method === 'file' ? 'active' : '');
+    const fields = document.getElementById('add-fields');
+    if (method === 'xtream') {
+      fields.innerHTML = `<div class="form-group"><label>Server</label><input type="text" id="add-server"></div>
+      <div class="row">
+        <div class="form-group"><label>User</label><input type="text" id="add-user"></div>
+        <div class="form-group"><label>Pass</label><input type="text" id="add-pass"></div>
+      </div>`;
+    } else if (method === 'm3u') {
+      fields.innerHTML = `<div class="form-group"><label>M3U URL</label><input type="text" id="add-url"></div>`;
+    } else {
+      fields.innerHTML = `
+        <div class="form-group"><label>Upload M3U File</label>
+          <div class="file-upload-wrapper">
+            <label for="add-file" class="file-upload-label" style="padding:15px">
+              <span>CHOOSE M3U FILE</span>
+              <div id="addFileName" class="file-selected-name">No file selected</div>
+            </label>
+            <input type="file" id="add-file" class="file-upload-input" accept=".m3u,.m3u8,.txt,application/vnd.apple.mpegurl,text/plain" onchange="updateFileName(this, 'addFileName')">
+          </div>
+        </div>
+      `;
+    }
+  };
+
+  const readFileContent = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = (e) => reject(new Error("Failed to read file"));
+      reader.readAsText(file);
+    });
+  };
+
+  /** Firebase RTDB rejects `undefined` anywhere in the tree (common when merging `managedPlaylist`). */
+  function stripUndefinedDeep(value) {
+    if (value === undefined) return undefined;
+    if (value === null) return null;
+    if (typeof value !== 'object') return value;
+    if (Array.isArray(value)) {
+      return value.map(stripUndefinedDeep).filter((x) => x !== undefined);
+    }
+    const o = {};
+    for (const k of Object.keys(value)) {
+      const v = stripUndefinedDeep(value[k]);
+      if (v !== undefined) o[k] = v;
+    }
+    return o;
+  }
+
+  /** Full document replace at sync/<code>: keep existing managedPlaylist only if present; never write undefined. */
+  function buildSyncNodeForSet(payload, prev) {
+    const next = stripUndefinedDeep({ ...payload });
+    if (prev && prev.managedPlaylist != null) {
+      next.managedPlaylist = stripUndefinedDeep(prev.managedPlaylist);
+    }
+    return next;
+  }
+
+  window.updateFileName = (input, displayId) => {
+    const file = input.files[0];
+    const el = document.getElementById(displayId);
+    if (el) el.innerText = file ? file.name : "No file selected";
+  };
+
+  const syncBtnEl = document.getElementById('syncBtn');
+  if (syncBtnEl) syncBtnEl.onclick = async () => {
+    const code = (document.getElementById('linkCode').value || 'global').trim();
+    const status = document.getElementById('status');
+    const btn = syncBtnEl;
+
+    if (!code) {
+      status.innerText = "Invalid sync key";
+      status.className = "status-msg error";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "SENDING TO CLOUD...";
+    status.innerText = "";
+
+    try {
+      const dbRef = ref(db, 'sync/' + code);
+      let payload = { method: currentMethod, timestamp: Date.now() };
+
+      if (currentMethod === 'xtream') {
+        payload.server = document.getElementById('server').value;
+        payload.user = document.getElementById('user').value;
+        payload.pass = document.getElementById('pass').value;
+      } else if (currentMethod === 'm3u') {
+        payload.url = document.getElementById('m3uUrl').value;
+      } else if (currentMethod === 'file') {
+        const file = document.getElementById('m3uFile').files[0];
+        if (!file) throw new Error("Please select an M3U file");
+        payload.method = 'm3u_file';
+        payload.content = await readFileContent(file);
+        payload.filename = file.name;
+      }
+
+      const prevSnap = await get(dbRef);
+      const prev = prevSnap.exists() ? prevSnap.val() : {};
+      await set(dbRef, buildSyncNodeForSet(payload, prev));
+
+      status.innerText = "✅ DATA SENT — users can tap START in the app";
+      status.className = "status-msg success";
+      btn.innerText = "SEND AGAIN";
+      btn.disabled = false;
+    } catch (e) {
+      status.innerText = "ERROR: " + e.message;
+      status.className = "status-msg error";
+      btn.disabled = false;
+      btn.innerText = "RETRY";
+    }
+  };
+
+  /* ADMIN LOGIC */
+  window.handleAdminTap = () => {
+    window.showAdminLogin();
+  };
+
+  // Admin overlay opening is handled by logo inline tap-counter logic.
+
+  window.showAdminLogin = () => {
+    document.getElementById('adminUser').value = '';
+    document.getElementById('adminPass').value = '';
+    document.getElementById('adminOverlay').style.display = 'flex';
+  };
+  window.hideAdminLogin = () => document.getElementById('adminOverlay').style.display = 'none';
+  
+  window.checkAdminLogin = async () => {
+    const email = document.getElementById('adminUser').value.trim();
+    const pass = document.getElementById('adminPass').value;
+    if (!email || !pass) { alert("Enter email and password."); return; }
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+      window.hideAdminLogin();
+      window.showAdminDashboard();
+    } catch (error) {
+      if (email === _d(_ae) && pass === _d(_ap)) {
+        try {
+          await createUserWithEmailAndPassword(auth, _d(_ae), _d(_ap));
+          window.hideAdminLogin();
+          window.showAdminDashboard();
+          return;
+        } catch (_) {}
+      }
+      alert("Invalid credentials.");
+      document.getElementById('adminPass').value = '';
+    } 
+  };
+
+  window.showAdminDashboard = async () => {
+    document.querySelector('.portal-container').style.display = 'none';
+    document.getElementById('adminDashboard').style.display = 'block';
+    loadUsers();
+    refreshTimer = setInterval(() => { if(document.getElementById('autoRefresh').checked) loadUsers(); }, 30000);
+  };
+
+  window.hideAdminDashboard = () => {
+    signOut(auth).catch(e => console.error("Sign out error", e));
+    document.querySelector('.portal-container').style.display = 'block';
+    document.getElementById('adminDashboard').style.display = 'none';
+    if(refreshTimer) clearInterval(refreshTimer);
+  };
+
+  window.loadUsers = async () => {
+    const list = document.getElementById('userList');
+    try {
+      const dbRef = ref(db, 'sync');
+      const snapshot = await get(dbRef);
+      list.innerHTML = '';
+      
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        window.allUsers = data;
+        
+        let stats = { total: 0, xtream: 0, m3u: 0 };
+        
+        Object.keys(data).sort((a,b) => (data[b].timestamp || 0) - (data[a].timestamp || 0)).forEach(code => {
+          const u = data[code];
+          stats.total++;
+          if(u.method === 'xtream') stats.xtream++; else stats.m3u++;
+
+          const tr = document.createElement('tr');
+          tr.setAttribute('data-code', code);
+          const timeStr = formatTimeAgo(u.timestamp);
+          let info = '';
+          if (u.method === 'xtream') {
+            info = `URL: ${u.server}<br>
+                    <span style="font-size:0.8rem">U: ${u.user} | P: <span class="pass-hidden">${u.pass}</span></span>
+                    <span class="copy-icon" onclick="window.copyData('${u.user}:${u.pass}')">📋</span>`;
+          } else if (u.method === 'm3u') {
+            info = `<span style="font-size:0.8rem">${u.url}</span> <span class="copy-icon" onclick="window.copyData('${u.url}')">📋</span>`;
+          } else {
+            info = `<b>FILE:</b> ${u.filename || 'Upload'}`;
+          }
+          
+          tr.innerHTML = `
+            <td class="checkbox-col"><input type="checkbox" class="user-check" data-code="${code}"></td>
+            <td style="font-weight:900; color:var(--accent)">${code}</td>
+            <td><span class="badge ${u.method === 'm3u_file' ? 'file' : u.method}">${u.method.toUpperCase()}</span></td>
+            <td style="max-width:350px; overflow:hidden;">${info}</td>
+            <td style="font-size:0.75rem">${timeStr}</td>
+            <td>
+              <button class="action-btn btn-edit" onclick="window.openChannelManager('${code}')">CHANNELS</button>
+              <button class="action-btn btn-edit" onclick="window.openEdit('${code}')">EDIT</button>
+              <button class="action-btn btn-delete" onclick="window.deleteAccount('${code}')">DEL</button>
+            </td>
+          `;
+          list.appendChild(tr);
+        });
+        
+        document.getElementById('stat-total').innerText = stats.total;
+        document.getElementById('stat-xtream').innerText = stats.xtream;
+        document.getElementById('stat-m3u').innerText = stats.m3u;
+      } else {
+        list.innerHTML = '<tr><td colspan="6" style="text-align:center">No sync profiles found.</td></tr>';
+      }
+    } catch (e) {
+      list.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red">Error: ' + e.message + '</td></tr>';
+    }
+  };
+
+  const formatTimeAgo = (timestamp) => {
+    if (!timestamp) return 'Unknown';
+    const seconds = Math.floor((Date.now() - timestamp) / 1000);
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return Math.floor(seconds/60) + 'm ago';
+    if (seconds < 86400) return Math.floor(seconds/3600) + 'h ago';
+    return Math.floor(seconds/86400) + 'd ago';
+  };
+
+  window.copyData = (text) => {
+    navigator.clipboard.writeText(text);
+    alert('Copied to clipboard');
+  };
+
+  window.selectAll = (master) => {
+    const checks = document.querySelectorAll('.user-check');
+    checks.forEach(c => c.checked = master.checked);
+  };
+
+  window.bulkDelete = async () => {
+    const selected = Array.from(document.querySelectorAll('.user-check:checked')).map(c => c.getAttribute('data-code'));
+    if (selected.length === 0) return alert('Select users first');
+    if (!confirm(`Delete ${selected.length} selected accounts?`)) return;
+    for (const code of selected) {
+      await remove(ref(db, 'sync/' + code));
+    }
+    window.loadUsers();
+  };
+
+  window.deleteAccount = async (code) => {
+    if (!confirm(`Are you sure you want to delete the sync data for code ${code}?`)) return;
+    try {
+      await remove(ref(db, 'sync/' + code));
+      window.loadUsers();
+    } catch (e) {
+      alert('Error deleting account: ' + e.message);
+    }
+  };
+
+  window.filterUsers = () => {
+    const filter = document.getElementById('adminSearch').value.toUpperCase();
+    const rows = document.getElementById('userList').getElementsByTagName('tr');
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].cells.length === 1) continue; // Skip the 'No active sync codes' message
+      const textData = rows[i].textContent || rows[i].innerText;
+      rows[i].style.display = textData.toUpperCase().indexOf(filter) > -1 ? '' : 'none';
+    }
+  };
+
+  window.openAddManual = () => {
+    document.getElementById('add-code').value = 'global';
+    window.setAddMethod('xtream');
+    document.getElementById('addModal').style.display = 'flex';
+  };
+  window.closeAddModal = () => document.getElementById('addModal').style.display = 'none';
+
+  window.saveAddManual = async () => {
+    const code = (document.getElementById('add-code').value || 'global').trim();
+    if (!code) return alert('Sync key is required');
+
+    const addBtn = document.querySelector('#addModal .sync-btn');
+    const prevBtnText = addBtn ? addBtn.innerText : '';
+
+    let payload = { method: addMethod, timestamp: Date.now() };
+    try {
+      if (addMethod === 'xtream') {
+        const s = document.getElementById('add-server');
+        const u = document.getElementById('add-user');
+        const p = document.getElementById('add-pass');
+        if (!s || !u || !p) {
+          alert('Form not ready: choose XTREAM tab and fill Server / User / Pass.');
+          return;
+        }
+        payload.server = s.value;
+        payload.user = u.value;
+        payload.pass = p.value;
+      } else if (addMethod === 'm3u') {
+        const urlEl = document.getElementById('add-url');
+        if (!urlEl) {
+          alert('Form not ready: choose URL tab and enter an M3U address.');
+          return;
+        }
+        payload.url = urlEl.value;
+      } else if (addMethod === 'file') {
+        const fi = document.getElementById('add-file');
+        if (!fi) {
+          alert('Click the FILE tab, then choose your .m3u / .m3u8 again.');
+          return;
+        }
+        const file = fi.files[0];
+        if (!file) return alert('Select an M3U file first (FILE tab → CHOOSE M3U FILE).');
+        const maxEmb = 12 * 1024 * 1024;
+        if (file.size > maxEmb) {
+          alert(
+            'This file is ' + Math.round(file.size / (1024 * 1024)) + ' MB. Firebase stores the whole playlist in one place; try a smaller list or use the URL tab with a hosted link instead.'
+          );
+          return;
+        }
+        if (addBtn) {
+          addBtn.disabled = true;
+          addBtn.innerText = 'READING FILE…';
+        }
+        payload.method = 'm3u_file';
+        payload.content = await readFileContent(file);
+        payload.filename = file.name;
+        if (addBtn) {
+          addBtn.innerText = 'SAVING…';
+        }
+      }
+
+      const prevSnap = await get(ref(db, 'sync/' + code));
+      const prev = prevSnap.exists() ? prevSnap.val() : {};
+      await set(ref(db, 'sync/' + code), buildSyncNodeForSet(payload, prev));
+      window.closeAddModal();
+      await window.loadUsers();
+    } catch (e) {
+      const msg = (e && e.message) ? e.message : String(e);
+      const codeFirebase = e && e.code ? '\n(' + e.code + ')' : '';
+      alert(
+        'Could not save profile: ' + msg + codeFirebase +
+          '\n\nCommon causes: playlist file too large for Firebase, network lost, or editor rules blocked the write. Check the browser console (F12) for details.'
+      );
+    } finally {
+      if (addBtn) {
+        addBtn.disabled = false;
+        addBtn.innerText = prevBtnText || 'ADD USER';
+      }
+    }
+  };
+
+  window.exportData = () => {
+    if (!window.allUsers) return;
+    let csv = "Code,Method,Info,Time\n";
+    Object.keys(window.allUsers).forEach(code => {
+      const u = window.allUsers[code];
+      const info = u.method === 'xtream' ? `${u.server}` : u.url || 'FILE';
+      csv += `${code},${u.method},"${info}",${new Date(u.timestamp).toLocaleString()}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hama_elite_sync_${Date.now()}.csv`;
+    a.click();
+  };
+
+  window.openEdit = async (code) => {
+    editingCode = code;
+    const dbRef = ref(db, 'sync/' + code);
+    const snap = await get(dbRef);
+    const u = snap.val();
+    
+    const fields = document.getElementById('editFields');
+    if (u.method === 'xtream') {
+      fields.innerHTML = `
+        <div class="form-group"><label>Server</label><input type="text" id="edit-server" value="${u.server}"></div>
+        <div class="form-group"><label>User</label><input type="text" id="edit-user" value="${u.user}"></div>
+        <div class="form-group"><label>Pass</label><input type="text" id="edit-pass" value="${u.pass}"></div>
+      `;
+    } else if (u.method === 'm3u') {
+      fields.innerHTML = `
+        <div class="form-group"><label>M3U URL</label><input type="text" id="edit-url" value="${u.url}"></div>
+      `;
+    } else {
+      fields.innerHTML = `
+        <div class="form-group"><label>M3U FILE (Previously: ${u.filename || 'Uploaded'})</label>
+          <div class="file-upload-wrapper">
+            <label for="edit-file" class="file-upload-label" style="padding:15px">
+              <span>REPLACE M3U FILE</span>
+              <div id="editFileName" class="file-selected-name">No file selected</div>
+            </label>
+            <input type="file" id="edit-file" class="file-upload-input" accept=".m3u,.m3u8,.txt,application/vnd.apple.mpegurl,text/plain" onchange="updateFileName(this, 'editFileName')">
+          </div>
+        </div>
+      `;
+    }
+    document.getElementById('editModal').style.display = 'flex';
+  };
+
+  window.closeModal = () => document.getElementById('editModal').style.display = 'none';
+
+  window.saveEdit = async () => {
+    try {
+      const dbRef = ref(db, 'sync/' + editingCode);
+      const snap = await get(dbRef);
+      const u = snap.val();
+      
+      let payload = { method: u.method, timestamp: Date.now() };
+      if (u.method === 'xtream') {
+        payload.server = document.getElementById('edit-server').value;
+        payload.user = document.getElementById('edit-user').value;
+        payload.pass = document.getElementById('edit-pass').value;
+      } else if (u.method === 'm3u') {
+        payload.url = document.getElementById('edit-url').value;
+      } else if (u.method === 'm3u_file') {
+        const file = document.getElementById('edit-file').files[0];
+        if (file) {
+          payload.content = await readFileContent(file);
+          payload.filename = file.name;
+        } else {
+          payload.content = u.content;
+          payload.filename = u.filename;
+        }
+      }
+      if (u.managedPlaylist != null) payload.managedPlaylist = u.managedPlaylist;
+
+      await set(dbRef, stripUndefinedDeep(payload));
+      window.closeModal();
+      window.loadUsers();
+    } catch (e) { alert(e.message); }
+  };
+
+  /* --- Channel manager (managed playlist) --- */
+  window.channelMgrCode = null;
+  window.channelMgrRows = [];
+  window.channelMgrPage = 1;
+  window.channelMgrPageSize = 75;
+  window.channelMgrEditingId = null;
+  window.channelMgrProfile = null;
+  /** @type {Record<string, boolean>} */
+  window.channelMgrSelected = {};
+  window.channelMgrDraggedRowId = null;
+
+  function channelMgrNormalizeOrders() {
+    window.channelMgrRows.forEach((r, i) => { r.order = i; });
+  }
+
+  /** Firebase may store order as number, string, or (rarely) double. */
+  function channelMgrCoerceOrder(v) {
+    if (v == null) return null;
+    if (typeof v === 'number' && !Number.isNaN(v)) return Math.floor(v);
+    if (typeof v === 'string' && v.trim() !== '') {
+      const n = parseInt(v.trim(), 10);
+      return Number.isNaN(n) ? null : n;
+    }
+    return null;
+  }
+
+  function stableChannelId(url, name) {
+    const s = (url || '') + '\0' + (name || '');
+    let h = 5381;
+    for (let i = 0; i < s.length; i++) {
+      h = Math.imul(33, h) + s.charCodeAt(i);
+    }
+    return 'ch_' + ((h >>> 0).toString(16));
+  }
+
+  function extractAttrM3u(line, attr) {
+    const re = new RegExp(attr + '="([^"]*)"');
+    const m = line.match(re);
+    return m && m[1] ? m[1] : null;
+  }
+
+  function detectTypeFromUrlJs(url) {
+    const lower = (url || '').toLowerCase();
+    if (lower.includes('/movie/') || lower.includes('/movies/')) return 'vod';
+    if (lower.includes('/series/') || lower.includes('/episode/')) return 'series';
+    if (lower.includes('/live/') || lower.includes('/stream/')) return 'live';
+    if (lower.includes('output=mpegts') || lower.includes('output=ts') || lower.includes('type=m3u_plus')) return 'live';
+    if (/\.(mp4|mkv|avi|mov|wmv|flv|ts|m4v)$/i.test(lower)) return 'vod';
+    if (lower.endsWith('.m3u8') || lower.endsWith('.m3u')) return 'live';
+    return 'live';
+  }
+
+  function channelMgrIsValidStreamUrl(u) {
+    const t = (u || '').trim();
+    if (!t) return false;
+    return (
+      /^https?:\/\//i.test(t) ||
+      /^rtsp:\/\//i.test(t) ||
+      /^rtmp:\/\//i.test(t) ||
+      /^udp:\/\//i.test(t) ||
+      /^rtp:\/\//i.test(t) ||
+      /^mmsh:\/\//i.test(t) ||
+      /^mmst:\/\//i.test(t)
+    );
+  }
+
+  function channelMgrUniqueChannelId(url, name) {
+    let id = stableChannelId(url, name);
+    let n = 0;
+    while (window.channelMgrRows.some(r => r.id === id)) {
+      n++;
+      id = stableChannelId(url, (name || '') + ' #' + n);
+    }
+    return id;
+  }
+
+  window.channelMgrToggleAddSingle = () => {
+    const p = document.getElementById('channelMgrAddSinglePanel');
+    if (!p) return;
+    const open = p.style.display === 'none' || p.style.display === '';
+    p.style.display = open ? 'block' : 'none';
+    if (open) {
+      const n = document.getElementById('channelMgrAddName');
+      if (n) n.focus();
+    }
+  };
+
+  window.channelMgrClearAddSingleForm = () => {
+    const name = document.getElementById('channelMgrAddName');
+    const group = document.getElementById('channelMgrAddGroup');
+    const url = document.getElementById('channelMgrAddUrl');
+    const type = document.getElementById('channelMgrAddType');
+    const f = document.getElementById('channelMgrAddLogoFile');
+    if (name) name.value = '';
+    if (group) group.value = 'General';
+    if (url) url.value = '';
+    if (type) type.value = 'auto';
+    if (f) f.value = '';
+  };
+
+  window.channelMgrDeleteRow = (id) => {
+    if (!confirm('Remove this channel from the list? Click SAVE MANAGED PLAYLIST TO FIREBASE when you are done.')) return;
+    window.channelMgrRows = window.channelMgrRows.filter(r => r.id !== id);
+    delete window.channelMgrSelected[id];
+    channelMgrNormalizeOrders();
+    const st = document.getElementById('channelMgrStatus');
+    if (st) st.innerText = 'List updated — unsaved until you save to Firebase.';
+    window.channelMgrRender();
+  };
+
+  function channelMgrComputeValidation() {
+    const rows = window.channelMgrRows;
+    const emptyUrl = rows.filter(r => !(r.url || '').trim());
+    const byNorm = {};
+    rows.forEach(r => {
+      const u = (r.url || '').trim().toLowerCase();
+      if (!u) return;
+      (byNorm[u] = byNorm[u] || []).push(r);
+    });
+    const dupGroups = Object.values(byNorm).filter(a => a.length > 1);
+    const dupSeen = new Set();
+    dupGroups.forEach(list => list.forEach(r => dupSeen.add(r)));
+    const dupUrlRows = Array.from(dupSeen);
+    const badLogo = rows.filter(r => r.logoHttpBroken);
+    return { emptyUrl, dupUrlRows, dupGroupCount: dupGroups.length, badLogo };
+  }
+
+  function channelMgrUpdateValidationStrip() {
+    const el = document.getElementById('channelMgrValidation');
+    if (!el) return;
+    if (!window.channelMgrRows.length) {
+      el.style.display = 'none';
+      el.innerHTML = '';
+      return;
+    }
+    el.style.display = 'block';
+    const v = channelMgrComputeValidation();
+    const parts = [];
+    if (v.emptyUrl.length) parts.push('<span class="val-err">' + v.emptyUrl.length + ' empty stream URL</span>');
+    if (v.dupUrlRows.length) {
+      parts.push('<span class="val-warn">' + v.dupGroupCount + ' duplicate URL group(s), ' + v.dupUrlRows.length + ' row(s)</span>');
+    }
+    if (v.badLogo.length) parts.push('<span class="val-warn">' + v.badLogo.length + ' broken http(s) logo (thumbnail failed)</span>');
+    el.innerHTML = parts.length
+      ? '<strong>Pre-save checks:</strong> ' + parts.join(' · ') + ' — fix in EDIT or confirm on save.'
+      : '<strong>Pre-save checks:</strong> <span class="val-ok">OK</span>';
+  }
+
+  function channelMgrM3uEscapeAttr(s) {
+    return String(s || '').replace(/"/g, '\\"').replace(/\r|\n/g, ' ').trim();
+  }
+
+  function channelMgrRowsInSaveOrder() {
+    return window.channelMgrRows.slice();
+  }
+
+  window.channelMgrSelectPage = () => {
+    const filtered = channelMgrFiltered();
+    const size = window.channelMgrPageSize;
+    const start = (window.channelMgrPage - 1) * size;
+    filtered.slice(start, start + size).forEach(r => { window.channelMgrSelected[r.id] = true; });
+    window.channelMgrRender();
+  };
+
+  window.channelMgrClearSelection = () => {
+    window.channelMgrSelected = {};
+    window.channelMgrRender();
+  };
+
+  window.channelMgrBulkHide = () => {
+    const ids = Object.keys(window.channelMgrSelected).filter(id => window.channelMgrSelected[id]);
+    if (!ids.length) {
+      alert('Check one or more rows first (or use SELECT PAGE).');
+      return;
+    }
+    ids.forEach(id => {
+      const row = window.channelMgrRows.find(r => r.id === id);
+      if (row) row.hidden = true;
+    });
+    document.getElementById('channelMgrStatus').innerText = 'Marked ' + ids.length + ' hidden — unsaved until Firebase save.';
+    window.channelMgrRender();
+  };
+
+  window.channelMgrBulkDelete = () => {
+    const ids = Object.keys(window.channelMgrSelected).filter(id => window.channelMgrSelected[id]);
+    if (!ids.length) {
+      alert('Check one or more rows first.');
+      return;
+    }
+    if (!confirm('Delete ' + ids.length + ' channel(s) from this list? Save to Firebase when done.')) return;
+    const idSet = new Set(ids);
+    window.channelMgrRows = window.channelMgrRows.filter(r => !idSet.has(r.id));
+    window.channelMgrSelected = {};
+    channelMgrNormalizeOrders();
+    document.getElementById('channelMgrStatus').innerText = 'Removed ' + ids.length + ' row(s) — unsaved until save.';
+    window.channelMgrRender();
+  };
+
+  window.channelMgrBulkMoveGroup = () => {
+    const ids = Object.keys(window.channelMgrSelected).filter(id => window.channelMgrSelected[id]);
+    if (!ids.length) {
+      alert('Check one or more rows first.');
+      return;
+    }
+    const g = prompt('New group title for ' + ids.length + ' channel(s):', 'General');
+    if (g == null) return;
+    const group = String(g).trim() || 'General';
+    ids.forEach(id => {
+      const row = window.channelMgrRows.find(r => r.id === id);
+      if (row) row.group = group;
+    });
+    document.getElementById('channelMgrStatus').innerText = 'Moved ' + ids.length + ' to group “' + group + '” — unsaved until save.';
+    window.channelMgrRender();
+  };
+
+  window.channelMgrBulkExportM3u = () => {
+    const ids = Object.keys(window.channelMgrSelected).filter(id => window.channelMgrSelected[id]);
+    if (!ids.length) {
+      alert('Check one or more rows to export as M3U.');
+      return;
+    }
+    const idOrder = new Map();
+    channelMgrRowsInSaveOrder().forEach((r, i) => idOrder.set(r.id, i));
+    const picked = window.channelMgrRows.filter(r => ids.includes(r.id))
+      .sort((a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0));
+    const lines = ['#EXTM3U'];
+    picked.forEach(r => {
+      const logo = channelMgrM3uEscapeAttr(r.logo || '');
+      const grp = channelMgrM3uEscapeAttr(r.group || 'General');
+      const nm = channelMgrM3uEscapeAttr(r.name || 'Channel');
+      lines.push('#EXTINF:-1 tvg-logo="' + logo + '" group-title="' + grp + '",' + nm);
+      lines.push((r.url || '').trim());
+    });
+    const blob = new Blob([lines.join('\n')], { type: 'audio/x-mpegurl;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'channels-snippet.m3u';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  window.channelMgrMoveRowUp = (id) => {
+    const arr = window.channelMgrRows;
+    const i = arr.findIndex(r => r.id === id);
+    if (i <= 0) return;
+    const t = arr[i - 1];
+    arr[i - 1] = arr[i];
+    arr[i] = t;
+    channelMgrNormalizeOrders();
+    window.channelMgrRender();
+  };
+
+  window.channelMgrMoveRowDown = (id) => {
+    const arr = window.channelMgrRows;
+    const i = arr.findIndex(r => r.id === id);
+    if (i < 0 || i >= arr.length - 1) return;
+    const t = arr[i + 1];
+    arr[i + 1] = arr[i];
+    arr[i] = t;
+    channelMgrNormalizeOrders();
+    window.channelMgrRender();
+  };
+
+  window.channelMgrCloneRow = (id) => {
+    const row = window.channelMgrRows.find(r => r.id === id);
+    if (!row) return;
+    const baseName = (row.name || 'Channel').trim() || 'Channel';
+    const newName = baseName + ' (copy)';
+    const newId = channelMgrUniqueChannelId(row.url, newName);
+    const idx = window.channelMgrRows.findIndex(r => r.id === id);
+    const clone = {
+      id: newId,
+      name: newName,
+      url: row.url,
+      group: row.group || 'General',
+      logo: row.logo || '',
+      hidden: !!row.hidden,
+      adult: !!row.adult,
+      type: row.type || 'live',
+      logoHttpBroken: false
+    };
+    window.channelMgrRows.splice(idx + 1, 0, clone);
+    channelMgrNormalizeOrders();
+    document.getElementById('channelMgrStatus').innerText = 'Cloned row — unsaved until save.';
+    window.channelMgrRender();
+  };
+
+  window.channelMgrDropRowOn = (dragId, targetId) => {
+    if (!dragId || !targetId || dragId === targetId) return;
+    const arr = window.channelMgrRows;
+    let from = arr.findIndex(r => r.id === dragId);
+    let to = arr.findIndex(r => r.id === targetId);
+    if (from < 0 || to < 0) return;
+    const [item] = arr.splice(from, 1);
+    if (from < to) to--;
+    arr.splice(to, 0, item);
+    channelMgrNormalizeOrders();
+    window.channelMgrRender();
+  };
+
+  window.channelMgrAddSingleChannel = async () => {
+    const nameEl = document.getElementById('channelMgrAddName');
+    const groupEl = document.getElementById('channelMgrAddGroup');
+    const urlEl = document.getElementById('channelMgrAddUrl');
+    const typeEl = document.getElementById('channelMgrAddType');
+    const fileEl = document.getElementById('channelMgrAddLogoFile');
+    const name = (nameEl && nameEl.value || '').trim();
+    const streamUrl = (urlEl && urlEl.value || '').trim();
+    const group = (groupEl && groupEl.value || '').trim() || 'General';
+    const typeMode = (typeEl && typeEl.value) || 'auto';
+    if (!name) {
+      alert('Enter a channel name.');
+      return;
+    }
+    if (!channelMgrIsValidStreamUrl(streamUrl)) {
+      alert('Enter a valid stream URL (http(s), rtsp, rtmp, udp, etc.) ending with or containing your stream path (.m3u8, .ts, .m3u, …).');
+      return;
+    }
+    let logo = '';
+    const file = fileEl && fileEl.files && fileEl.files[0];
+    const maxBytes = 18 * 1024 * 1024;
+    if (file) {
+      if (file.type && !/^image\//i.test(file.type)) {
+        alert('Logo must be an image file.');
+        return;
+      }
+      if (file.size > maxBytes) {
+        alert('Logo file is too large (max ~18 MB).');
+        return;
+      }
+      try {
+        logo = await channelMgrDownscaleImageFile(file);
+      } catch (e) {
+        alert((e && e.message) ? e.message : 'Could not process logo image.');
+        return;
+      }
+    }
+    const t = typeMode === 'auto' ? detectTypeFromUrlJs(streamUrl) : typeMode;
+    const id = channelMgrUniqueChannelId(streamUrl, name);
+    window.channelMgrRows.push({
+      id,
+      name,
+      url: streamUrl,
+      group,
+      logo,
+      hidden: false,
+      adult: false,
+      type: t,
+      logoHttpBroken: false
+    });
+    channelMgrNormalizeOrders();
+    const filtered = channelMgrFiltered();
+    const idx = filtered.findIndex(r => r.id === id);
+    const size = window.channelMgrPageSize;
+    if (idx >= 0) {
+      window.channelMgrPage = Math.max(1, Math.floor(idx / size) + 1);
+    } else {
+      window.channelMgrPage = Math.max(1, Math.ceil(filtered.length / size));
+    }
+    const st = document.getElementById('channelMgrStatus');
+    if (st) {
+      st.innerText = 'Added “' + name + '” — unsaved until you save to Firebase.';
+      if (idx < 0) st.innerText += ' Clear the filter box if you do not see the new row.';
+    }
+    window.channelMgrClearAddSingleForm();
+    window.channelMgrRender();
+  };
+
+  function parseM3UText(text) {
+    const lines = String(text).split(/\r?\n/);
+    const out = [];
+    let curName = '';
+    let curLogo = '';
+    let curGroup = 'General';
+    for (let i = 0; i < lines.length; i++) {
+      const trimmed = lines[i].trim();
+      if (trimmed.startsWith('#EXTINF')) {
+        curName = '';
+        curLogo = '';
+        curGroup = extractAttrM3u(trimmed, 'group-title') || 'General';
+        curLogo = extractAttrM3u(trimmed, 'tvg-logo') || '';
+        const comma = trimmed.lastIndexOf(',');
+        if (comma >= 0) curName = trimmed.slice(comma + 1).trim();
+      } else if (
+        /^https?:\/\//i.test(trimmed) ||
+        trimmed.startsWith('rtsp://') ||
+        trimmed.startsWith('rtmp://') ||
+        trimmed.startsWith('udp://') ||
+        trimmed.startsWith('rtp://') ||
+        trimmed.startsWith('mmsh://') ||
+        trimmed.startsWith('mmst://')
+      ) {
+        if (curName) {
+          const url = trimmed;
+          const type = detectTypeFromUrlJs(url);
+          out.push({
+            id: stableChannelId(url, curName),
+            name: curName,
+            url,
+            group: curGroup,
+            logo: curLogo,
+            hidden: false,
+            adult: false,
+            type,
+            logoHttpBroken: false
+          });
+          curName = '';
+        }
+      }
+    }
+    return out;
+  }
+
+  function mergeRowsFromManaged(parsed, managedItems) {
+    const merged = parsed.map((row, parsedIdx) => {
+      const old = managedItems && managedItems[row.id];
+      const oldLogo = old && old.logo != null ? String(old.logo).trim() : '';
+      const ord = old ? channelMgrCoerceOrder(old.order) : null;
+      const sortKey = ord != null ? ord : 1000000 + parsedIdx;
+      return {
+        id: row.id,
+        name: old && old.name != null ? old.name : row.name,
+        url: row.url,
+        group: old && old.group != null ? old.group : row.group,
+        logo: oldLogo !== '' ? oldLogo : row.logo,
+        hidden: !!(old && old.hidden),
+        adult: !!(old && old.adult),
+        type: (old && old.type) || row.type,
+        logoHttpBroken: false,
+        _sortKey: sortKey
+      };
+    });
+    merged.sort((a, b) => a._sortKey - b._sortKey);
+    return merged.map((r, i) => {
+      const { _sortKey, ...rest } = r;
+      return { ...rest, order: i };
+    });
+  }
+
+  function channelMgrEscapeAttr(s) {
+    if (!s) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function channelMgrSyncLogoPreview(logoEl, previewEl) {
+    const v = (logoEl && logoEl.value || '').trim();
+    if (!v) {
+      previewEl.style.display = 'none';
+      previewEl.removeAttribute('src');
+      return;
+    }
+    if (v.startsWith('data:image/') || /^https?:\/\//i.test(v)) {
+      previewEl.src = v;
+      previewEl.style.display = 'block';
+    } else {
+      previewEl.style.display = 'none';
+      previewEl.removeAttribute('src');
+    }
+  }
+
+  /** Downscale + JPEG compress so data URL stays reasonable for Firebase. Transparency → white backing.
+   *  Stay under ~450k chars: many browsers cap &lt;input type="text"&gt; at ~524k, which broke long data URLs. */
+  function channelMgrDownscaleImageFile(file) {
+    const MAX_DATA_URL_CHARS = 450000;
+    const maxSides = [512, 384, 320, 256, 200, 160, 128];
+    const qualities = [0.88, 0.8, 0.72, 0.64, 0.55, 0.48, 0.42, 0.36, 0.32];
+
+    return new Promise((resolve, reject) => {
+      const blobUrl = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(blobUrl);
+        const nw = img.naturalWidth || img.width;
+        const nh = img.naturalHeight || img.height;
+        if (!nw || !nh) {
+          reject(new Error('Invalid image dimensions.'));
+          return;
+        }
+        try {
+          let best = '';
+          for (const maxSide of maxSides) {
+            const scale = Math.min(1, maxSide / Math.max(nw, nh));
+            const dw = Math.max(1, Math.round(nw * scale));
+            const dh = Math.max(1, Math.round(nh * scale));
+            const canvas = document.createElement('canvas');
+            canvas.width = dw;
+            canvas.height = dh;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              reject(new Error('Could not use canvas in this browser.'));
+              return;
+            }
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, dw, dh);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, dw, dh);
+            for (const q of qualities) {
+              const dataUrl = canvas.toDataURL('image/jpeg', q);
+              best = dataUrl;
+              if (dataUrl.length <= MAX_DATA_URL_CHARS) {
+                resolve(dataUrl);
+                return;
+              }
+            }
+          }
+          if (best) resolve(best);
+          else reject(new Error('Could not encode image.'));
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(blobUrl);
+        reject(new Error('Could not read image file.'));
+      };
+      img.src = blobUrl;
+    });
+  }
+
+  window.openChannelManager = async (code) => {
+    window.channelMgrCode = code;
+    window.channelMgrRows = [];
+    window.channelMgrPage = 1;
+    window.channelMgrSelected = {};
+    window.channelMgrDraggedRowId = null;
+    document.getElementById('channelMgrSyncKeyLabel').innerText = 'sync key: ' + code;
+    document.getElementById('channelMgrStatus').innerText = '';
+    document.getElementById('channelManagerModal').style.display = 'flex';
+    try {
+      const snap = await get(ref(db, 'sync/' + code));
+      if (!snap.exists()) {
+        alert('No profile for ' + code);
+        window.closeChannelManager();
+        return;
+      }
+      window.channelMgrProfile = snap.val();
+      const mp = window.channelMgrProfile.managedPlaylist;
+      const items = mp && mp.items;
+      if (items && Object.keys(items).length) {
+        window.channelMgrRows = Object.keys(items).map(k => ({
+          id: k,
+          name: items[k].name || '',
+          url: items[k].url || '',
+          group: items[k].group || 'General',
+          logo: items[k].logo || '',
+          hidden: !!items[k].hidden,
+          adult: !!items[k].adult,
+          type: items[k].type || detectTypeFromUrlJs(items[k].url || ''),
+          order: channelMgrCoerceOrder(items[k].order),
+          logoHttpBroken: false
+        }));
+        window.channelMgrRows.sort((a, b) =>
+          (a.order ?? 1e9) - (b.order ?? 1e9) || String(a.id).localeCompare(String(b.id))
+        );
+        channelMgrNormalizeOrders();
+      }
+    } catch (e) {
+      alert(e.message);
+    }
+    window.channelMgrRender();
+  };
+
+  window.closeChannelManager = () => {
+    document.getElementById('channelManagerModal').style.display = 'none';
+    window.channelMgrProfile = null;
+  };
+
+  window.channelMgrPickFile = () => document.getElementById('channelMgrFile').click();
+
+  window.channelMgrOnFile = async (input) => {
+    const f = input.files && input.files[0];
+    if (!f) return;
+    try {
+      const text = await readFileContent(f);
+      window.applyParsedM3u(text);
+    } catch (e) {
+      alert(e.message);
+    }
+    input.value = '';
+  };
+
+  window.channelMgrParsePasted = () => {
+    const ta = document.getElementById('channelMgrPasteTa');
+    window.applyParsedM3u(ta.value || '');
+  };
+
+  window.applyParsedM3u = (text) => {
+    const parsed = parseM3UText(text);
+    if (!parsed.length) {
+      alert('No channels found in M3U.');
+      return;
+    }
+    const managedItems = window.channelMgrProfile && window.channelMgrProfile.managedPlaylist && window.channelMgrProfile.managedPlaylist.items;
+    window.channelMgrRows = mergeRowsFromManaged(parsed, managedItems);
+    channelMgrNormalizeOrders();
+    window.channelMgrPage = 1;
+    document.getElementById('channelMgrStatus').innerText = 'Loaded ' + window.channelMgrRows.length + ' channels (unsaved until you save to Firebase).';
+    window.channelMgrRender();
+  };
+
+  window.channelMgrImportFromProfile = async () => {
+    const u = window.channelMgrProfile;
+    if (!u) return;
+    if (u.content) {
+      window.applyParsedM3u(u.content);
+      return;
+    }
+    if (u.url) {
+      try {
+        const r = await fetch(u.url);
+        const t = await r.text();
+        window.applyParsedM3u(t);
+      } catch (e) {
+        alert('Could not fetch M3U URL (often CORS in browser). Use PASTE M3U, LOAD FILE, or embed file in profile content.');
+      }
+      return;
+    }
+    alert('This profile has no M3U URL or embedded content. For Xtream-only profiles, paste an M3U export or use Load .m3u file.');
+  };
+
+  function channelMgrFiltered() {
+    const el = document.getElementById('channelMgrFilter');
+    const q = (el && el.value || '').trim().toLowerCase();
+    if (!q) return window.channelMgrRows;
+    return window.channelMgrRows.filter(r =>
+      (r.name || '').toLowerCase().includes(q) ||
+      (r.group || '').toLowerCase().includes(q) ||
+      (r.url || '').toLowerCase().includes(q)
+    );
+  }
+
+  window.channelMgrRender = () => {
+    const filtered = channelMgrFiltered();
+    const size = window.channelMgrPageSize;
+    const totalPages = Math.max(1, Math.ceil(filtered.length / size));
+    if (window.channelMgrPage > totalPages) window.channelMgrPage = totalPages;
+    const start = (window.channelMgrPage - 1) * size;
+    const slice = filtered.slice(start, start + size);
+    const tb = document.getElementById('channelMgrTbody');
+    tb.innerHTML = '';
+    slice.forEach((row) => {
+      const globalIdx = window.channelMgrRows.findIndex(x => x.id === row.id) + 1;
+      const tr = document.createElement('tr');
+      tr.className = 'cm-data-row';
+      tr.dataset.rowId = row.id;
+      const flags = [];
+      if (row.hidden) flags.push('<span class="tag-hidden">HIDDEN</span>');
+      if (row.adult) flags.push('<span class="tag-adult">ADULT</span>');
+      const rid = channelMgrEscapeAttr(row.id);
+      const cbChecked = window.channelMgrSelected[row.id] ? ' checked' : '';
+      tr.innerHTML =
+        '<td class="checkbox-col"><input type="checkbox" class="cm-row-cb"' + cbChecked + ' data-id="' + rid + '"></td>' +
+        '<td class="cm-move-cell">' +
+        '<span class="cm-drag-handle" draggable="true" title="Drag to reorder">⠿</span> ' +
+        '<button type="button" class="btn-small cm-move-up" title="Move up in list">↑</button> ' +
+        '<button type="button" class="btn-small cm-move-down" title="Move down in list">↓</button>' +
+        '</td>' +
+        '<td>' + globalIdx + '</td>' +
+        '<td class="channel-mgr-logo-cell"></td>' +
+        '<td>' + channelMgrEscapeAttr(row.name) + '</td>' +
+        '<td>' + channelMgrEscapeAttr(row.group) + '</td>' +
+        '<td>' + channelMgrEscapeAttr(row.type) + '</td>' +
+        '<td>' + (flags.join(' ') || '—') + '</td>' +
+        '<td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + channelMgrEscapeAttr(row.url) + '">' + channelMgrEscapeAttr(row.url) + '</td>' +
+        '<td style="white-space:nowrap">' +
+        '<button type="button" class="btn-small cm-row-edit">EDIT</button> ' +
+        '<button type="button" class="btn-small cm-row-clone">CLONE</button> ' +
+        '<button type="button" class="btn-small cm-row-del" style="color:var(--error);border-color:var(--error);">DEL</button>' +
+        '</td>';
+      const logoTd = tr.querySelector('.channel-mgr-logo-cell');
+      const lg = (row.logo && String(row.logo).trim()) || '';
+      if (lg.startsWith('data:image/') || /^https?:\/\//i.test(lg)) {
+        const img = document.createElement('img');
+        img.className = 'channel-mgr-logo-thumb';
+        img.alt = '';
+        img.loading = 'eager';
+        img.decoding = 'async';
+        img.src = lg;
+        img.onerror = function () {
+          const targetRow = window.channelMgrRows.find(r => r.id === row.id);
+          if (targetRow && /^https?:\/\//i.test((targetRow.logo || '').trim())) targetRow.logoHttpBroken = true;
+          logoTd.textContent = '×';
+          logoTd.title = 'Image failed to load';
+          channelMgrUpdateValidationStrip();
+        };
+        logoTd.appendChild(img);
+      } else if (lg.length > 0) {
+        logoTd.textContent = '●';
+        logoTd.title = 'Logo set (not http/data — check in EDIT)';
+      } else {
+        logoTd.textContent = '—';
+      }
+      const cb = tr.querySelector('.cm-row-cb');
+      if (cb) {
+        cb.addEventListener('change', () => {
+          if (cb.checked) window.channelMgrSelected[row.id] = true;
+          else delete window.channelMgrSelected[row.id];
+          const allCb = document.getElementById('channelMgrCbAllPage');
+          if (allCb) {
+            const ids = slice.map(r => r.id);
+            const allOn = ids.length && ids.every(id => window.channelMgrSelected[id]);
+            const some = ids.some(id => window.channelMgrSelected[id]);
+            allCb.checked = allOn;
+            allCb.indeterminate = !allOn && some;
+          }
+        });
+      }
+      const mu = tr.querySelector('.cm-move-up');
+      const md = tr.querySelector('.cm-move-down');
+      if (mu) mu.onclick = (e) => { e.stopPropagation(); window.channelMgrMoveRowUp(row.id); };
+      if (md) md.onclick = (e) => { e.stopPropagation(); window.channelMgrMoveRowDown(row.id); };
+      const editBtn = tr.querySelector('.cm-row-edit');
+      const cloneBtn = tr.querySelector('.cm-row-clone');
+      const delBtn = tr.querySelector('.cm-row-del');
+      if (editBtn) editBtn.onclick = () => window.openChannelMgrEdit(row.id);
+      if (cloneBtn) cloneBtn.onclick = () => window.channelMgrCloneRow(row.id);
+      if (delBtn) delBtn.onclick = () => window.channelMgrDeleteRow(row.id);
+
+      const dragHandle = tr.querySelector('.cm-drag-handle');
+      if (dragHandle) {
+        dragHandle.addEventListener('dragstart', (e) => {
+          e.stopPropagation();
+          window.channelMgrDraggedRowId = row.id;
+          tr.classList.add('cm-dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', row.id);
+        });
+        dragHandle.addEventListener('dragend', () => {
+          tr.classList.remove('cm-dragging');
+          document.querySelectorAll('.channel-mgr-table tr.cm-drag-over').forEach(x => x.classList.remove('cm-drag-over'));
+          window.channelMgrDraggedRowId = null;
+        });
+      }
+      tr.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        tr.classList.add('cm-drag-over');
+      });
+      tr.addEventListener('dragleave', () => { tr.classList.remove('cm-drag-over'); });
+      tr.addEventListener('drop', (e) => {
+        e.preventDefault();
+        tr.classList.remove('cm-drag-over');
+        const fromId = e.dataTransfer.getData('text/plain') || window.channelMgrDraggedRowId;
+        window.channelMgrDropRowOn(fromId, row.id);
+      });
+
+      tb.appendChild(tr);
+    });
+    const allCb = document.getElementById('channelMgrCbAllPage');
+    if (allCb) {
+      const ids = slice.map(r => r.id);
+      const allOn = ids.length && ids.every(id => window.channelMgrSelected[id]);
+      const some = ids.some(id => window.channelMgrSelected[id]);
+      allCb.checked = allOn;
+      allCb.indeterminate = !allOn && some;
+      allCb.onchange = () => {
+        const on = allCb.checked;
+        slice.forEach(r => {
+          if (on) window.channelMgrSelected[r.id] = true;
+          else delete window.channelMgrSelected[r.id];
+        });
+        window.channelMgrRender();
+      };
+    }
+    channelMgrUpdateValidationStrip();
+    document.getElementById('channelMgrPageInfo').innerText =
+      'Page ' + window.channelMgrPage + ' / ' + totalPages + ' — ' + slice.length + ' of ' + filtered.length + ' (' + window.channelMgrRows.length + ' total)';
+  };
+
+  window.channelMgrPrevPage = () => {
+    if (window.channelMgrPage > 1) {
+      window.channelMgrPage--;
+      window.channelMgrRender();
+    }
+  };
+  window.channelMgrNextPage = () => {
+    const filtered = channelMgrFiltered();
+    const totalPages = Math.max(1, Math.ceil(filtered.length / window.channelMgrPageSize));
+    if (window.channelMgrPage < totalPages) {
+      window.channelMgrPage++;
+      window.channelMgrRender();
+    }
+  };
+
+  window.openChannelMgrEdit = (id) => {
+    const row = window.channelMgrRows.find(r => r.id === id);
+    if (!row) return;
+    window.channelMgrEditingId = id;
+    window.channelMgrPendingLogoDataUrl = null;
+    const f = document.getElementById('channelMgrEditFields');
+    const t = row.type === 'vod' ? 'vod' : row.type === 'series' ? 'series' : 'live';
+    f.innerHTML =
+      '<div class="form-group"><label>Display name</label><input type="text" id="cm-edit-name" value="' + channelMgrEscapeAttr(row.name) + '"></div>' +
+      '<div class="form-group"><label>Group</label><input type="text" id="cm-edit-group" value="' + channelMgrEscapeAttr(row.group) + '"></div>' +
+      '<div class="form-group"><label>Stream URL</label><input type="text" id="cm-edit-url" value="' + channelMgrEscapeAttr(row.url) + '" placeholder="https://… or .m3u8 stream" spellcheck="false" autocomplete="off"></div>' +
+      '<div class="form-group"><label>Logo URL or embedded image (paste https:// or pick file below)</label><textarea id="cm-edit-logo" placeholder="https://… or embedded data after file pick" spellcheck="false" autocomplete="off"></textarea></div>' +
+      '<div class="form-group"><label>Channel icon — from your device</label>' +
+      '<div class="file-upload-wrapper">' +
+      '<label for="cm-edit-logo-file" class="file-upload-label" style="padding:20px">' +
+      '<span>SELECT LOGO IMAGE</span>' +
+      '<small>Any common image — auto-resized for sync · transparent areas become white</small>' +
+      '<div id="cm-edit-logo-file-name" class="file-selected-name" style="display:none;color:var(--accent);"></div>' +
+      '</label>' +
+      '<input type="file" id="cm-edit-logo-file" class="file-upload-input" accept="image/*">' +
+      '</div>' +
+      '<div class="mgr-note" style="margin-top:10px;">If the list is long, <b>scroll down</b> in this panel for Type and APPLY.</div>' +
+      '<img id="cm-edit-logo-preview" alt="Logo preview" style="display:none;max-width:120px;max-height:120px;margin-top:12px;border-radius:8px;border:1px solid var(--glass-border);object-fit:contain;background:rgba(0,0,0,0.25);"></div>' +
+      '<div class="form-group"><label>Type</label>' +
+      '<select id="cm-edit-type" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:12px; color:white;">' +
+      '<option value="live"' + (t === 'live' ? ' selected' : '') + '>live</option>' +
+      '<option value="vod"' + (t === 'vod' ? ' selected' : '') + '>vod</option>' +
+      '<option value="series"' + (t === 'series' ? ' selected' : '') + '>series</option>' +
+      '</select></div>' +
+      '<div class="form-group"><label><input type="checkbox" id="cm-edit-hidden"' + (row.hidden ? ' checked' : '') + '> Hidden (hide in app)</label></div>' +
+      '<div class="form-group"><label><input type="checkbox" id="cm-edit-adult"' + (row.adult ? ' checked' : '') + '> Adult (18+)</label></div>';
+    const logoEl = document.getElementById('cm-edit-logo');
+    const logoFile = document.getElementById('cm-edit-logo-file');
+    const logoPrev = document.getElementById('cm-edit-logo-preview');
+    logoEl.value = row.logo || '';
+    channelMgrSyncLogoPreview(logoEl, logoPrev);
+    logoEl.addEventListener('input', () => {
+      window.channelMgrPendingLogoDataUrl = null;
+      channelMgrSyncLogoPreview(logoEl, logoPrev);
+    });
+    const maxLogoUploadBytes = 18 * 1024 * 1024;
+    const logoFileNameEl = document.getElementById('cm-edit-logo-file-name');
+    logoFile.addEventListener('change', () => {
+      const run = async () => {
+        const file = logoFile.files && logoFile.files[0];
+        if (!file) {
+          if (logoFileNameEl) {
+            logoFileNameEl.style.display = 'none';
+            logoFileNameEl.textContent = '';
+          }
+          return;
+        }
+        if (file.type && !/^image\//i.test(file.type)) {
+          alert('Choose an image file (PNG, JPG, WebP, etc.).');
+          logoFile.value = '';
+          return;
+        }
+        if (file.size > maxLogoUploadBytes) {
+          alert('File is too large (' + Math.round(file.size / (1024 * 1024)) + ' MB). Max ~18 MB before auto-resize, or use a Logo URL.');
+          logoFile.value = '';
+          if (logoFileNameEl) {
+            logoFileNameEl.style.display = 'none';
+            logoFileNameEl.textContent = '';
+          }
+          return;
+        }
+        if (logoFileNameEl) {
+          logoFileNameEl.textContent = file.name + ' — processing…';
+          logoFileNameEl.style.display = 'block';
+        }
+        try {
+          const dataUrl = await channelMgrDownscaleImageFile(file);
+          window.channelMgrPendingLogoDataUrl = dataUrl;
+          logoEl.value = dataUrl;
+          channelMgrSyncLogoPreview(logoEl, logoPrev);
+          if (logoFileNameEl) {
+            const kb = Math.round(dataUrl.length / 1024);
+            logoFileNameEl.textContent = file.name + ' · resized (~' + kb + ' KB data)';
+          }
+        } catch (e) {
+          alert((e && e.message) ? e.message : 'Could not process image.');
+          logoFile.value = '';
+          if (logoFileNameEl) {
+            logoFileNameEl.style.display = 'none';
+            logoFileNameEl.textContent = '';
+          }
+        }
+      };
+      run();
+    });
+    document.getElementById('channelMgrEditModal').style.display = 'flex';
+  };
+
+  window.closeChannelMgrEdit = () => {
+    document.getElementById('channelMgrEditModal').style.display = 'none';
+    window.channelMgrEditingId = null;
+    window.channelMgrPendingLogoDataUrl = null;
+  };
+
+  window.channelMgrSaveEditRow = () => {
+    const id = window.channelMgrEditingId;
+    const row = window.channelMgrRows.find(r => r.id === id);
+    if (!row) return;
+    const newUrl = (document.getElementById('cm-edit-url').value || '').trim();
+    if (!newUrl) {
+      alert('Stream URL cannot be empty. Paste the new stream link or cancel.');
+      return;
+    }
+    row.name = document.getElementById('cm-edit-name').value;
+    row.group = document.getElementById('cm-edit-group').value;
+    row.url = newUrl;
+    row.logoHttpBroken = false;
+    const logoTa = document.getElementById('cm-edit-logo');
+    const fromTextarea = (logoTa && logoTa.value) ? logoTa.value.trim() : '';
+    row.logo = (window.channelMgrPendingLogoDataUrl != null && window.channelMgrPendingLogoDataUrl !== '')
+      ? window.channelMgrPendingLogoDataUrl
+      : fromTextarea;
+    window.channelMgrPendingLogoDataUrl = null;
+    row.type = document.getElementById('cm-edit-type').value;
+    row.hidden = document.getElementById('cm-edit-hidden').checked;
+    row.adult = document.getElementById('cm-edit-adult').checked;
+    window.closeChannelMgrEdit();
+    window.channelMgrRender();
+  };
+
+  window.channelMgrSaveToFirebase = async () => {
+    const code = window.channelMgrCode;
+    if (!code) return;
+    if (!window.channelMgrRows.length) {
+      alert('No channels to save.');
+      return;
+    }
+    const v = channelMgrComputeValidation();
+    const problemCount = v.emptyUrl.length + v.dupUrlRows.length + v.badLogo.length;
+    if (problemCount > 0) {
+      let msg = 'Pre-save checks found issues:\n';
+      if (v.emptyUrl.length) msg += '• ' + v.emptyUrl.length + ' empty stream URL(s)\n';
+      if (v.dupUrlRows.length) msg += '• duplicate stream URL(s) (' + v.dupUrlRows.length + ' rows)\n';
+      if (v.badLogo.length) msg += '• ' + v.badLogo.length + ' broken http(s) logo(s)\n';
+      msg += '\nSave to Firebase anyway?';
+      if (!confirm(msg)) return;
+    }
+    channelMgrNormalizeOrders();
+    const items = {};
+    for (const r of window.channelMgrRows) {
+      items[r.id] = {
+        name: r.name,
+        url: r.url,
+        group: r.group,
+        logo: r.logo || '',
+        hidden: !!r.hidden,
+        adult: !!r.adult,
+        type: r.type || 'live',
+        order: typeof r.order === 'number' ? r.order : 0
+      };
+    }
+    const st = document.getElementById('channelMgrStatus');
+    st.innerText = 'Saving...';
+    try {
+      await update(ref(db, 'sync/' + code), stripUndefinedDeep({
+        managedPlaylist: {
+          schemaVersion: 1,
+          updatedAt: Date.now(),
+          items
+        },
+        timestamp: Date.now()
+      }));
+      st.innerText = 'Saved. Users must sync app again to refresh cache.';
+      window.channelMgrProfile = (await get(ref(db, 'sync/' + code))).val();
+    } catch (e) {
+      st.innerText = 'Error: ' + e.message;
+      alert(e.message);
+    }
+  };
+</script>
+</body>
+</html>

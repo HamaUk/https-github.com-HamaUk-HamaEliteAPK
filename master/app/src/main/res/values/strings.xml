@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HAMA UK PLAYER</string>
+    <string name="app_name_part_hama">HAMA</string>
+    <string name="app_name_part_uk">UK</string>
+    <string name="app_v">by bachors.js.org</string>
+
+    <string name="main_subtitle">PREMIUM ACTIVATION</string>
+    <string name="btn_start">Start</string>
+    <string name="sync_success">Sync successful!</string>
+    <string name="sync_invalid">Sync data is invalid</string>
+    <string name="sync_no_data">No playlist on server yet. Ask admin to upload from the web portal.</string>
+    <string name="sync_error">Sync error: %1$s</string>
+    <string name="auto_resume_failed">Could not open the app. Try Start again.</string>
+    <string name="dashboard_device_code">کۆد: %1$s</string>
+    <string name="settings_version_line">Version: %1$s</string>
+
+    <string name="search">Search…</string>
+    <string name="playlist">Playlist</string>
+
+    <string name="iptvorg">IPTV-ORG</string>
+    <string name="m3u">M3U FILE</string>
+    <string name="favorite">FAVORITES</string>
+    <string name="hint_search_categories">Search categories…</string>
+    <string name="no_information">No Information</string>
+
+</resources>
