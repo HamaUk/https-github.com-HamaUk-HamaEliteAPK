@@ -558,6 +558,9 @@ class PlaylistActivity : AppCompatActivity() {
 
         if (groupNames.isNotEmpty()) {
             showGroup(groupNames.first())
+            binding.rvCategories.post {
+                binding.rvCategories.layoutManager?.findViewByPosition(0)?.requestFocus()
+            }
         } else if (currentType == "vod" || currentType == "series") {
             currentGroupChannels.clear()
             channelAdapter.clear()
@@ -684,6 +687,9 @@ class PlaylistActivity : AppCompatActivity() {
                 val first = orderedList.first()
                 binding.tvHeaderTitle.text = first.title.uppercase()
                 loadXtreamChannels(first.link)
+                binding.rvCategories.post {
+                    binding.rvCategories.layoutManager?.findViewByPosition(0)?.requestFocus()
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()

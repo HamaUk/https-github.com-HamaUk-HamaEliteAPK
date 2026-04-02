@@ -74,6 +74,10 @@ class ChannelsActivity : AppCompatActivity() {
         allData.clear()
         allData.addAll(data)
         adapter.addAll(allData)
+        val rv = findViewById<RecyclerView>(R.id.rv)
+        rv.post {
+            rv.layoutManager?.findViewByPosition(0)?.requestFocus()
+        }
     }
 
     private fun filter(text: String) {
