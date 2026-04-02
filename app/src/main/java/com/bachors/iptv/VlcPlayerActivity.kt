@@ -72,7 +72,7 @@ class VlcPlayerActivity : AppCompatActivity(), SurfaceHolder.Callback {
             add("--aout=opensles")
             if (intentUserAgent.isNotEmpty()) add(":http-user-agent=$intentUserAgent")
             if (intentReferrer.isNotEmpty()) add(":http-referrer=$intentReferrer")
-            if (!SharedPrefManager(this).getHwAccel()) {
+            if (!SharedPrefManager(this@VlcPlayerActivity).getHwAccel()) {
                 add("--avcodec-hw=none")
             }
         }

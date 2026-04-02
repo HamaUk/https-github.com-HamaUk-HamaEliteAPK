@@ -70,11 +70,11 @@ class IjkPlayerActivity : AppCompatActivity(), SurfaceHolder.Callback {
         currentName = intent.getStringExtra("name") ?: "کەناڵ"
         loadChannelList(url)
 
-        surfaceView = findViewById(R.id/ijk_surface)
-        loading = findViewById(R.id/ijk_loading)
-        tvTitle = findViewById(R.id/ijk_title)
+        surfaceView = findViewById(R.id.ijk_surface)
+        loading = findViewById(R.id.ijk_loading)
+        tvTitle = findViewById(R.id.ijk_title)
         tvTitle.text = currentName.uppercase()
-        findViewById<ImageView>(R.id/ijk_btn_back).setOnClickListener { finish() }
+        findViewById<ImageView>(R.id.ijk_btn_back).setOnClickListener { finish() }
 
         surfaceView.holder.addCallback(this)
     }
