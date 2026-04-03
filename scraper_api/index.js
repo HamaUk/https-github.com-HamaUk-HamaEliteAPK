@@ -78,7 +78,11 @@ app.get('/api/matches', async (req, res) => {
     }
 });
 
-const PORT = 3000;
+app.get('/', (req, res) => {
+    res.send('✅ The Sports API is officially running! The match data is located at /api/matches');
+});
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Sports API is running at http://localhost:${PORT}/api/matches`);
+    console.log(`Sports API is running on port ${PORT}`);
 });
