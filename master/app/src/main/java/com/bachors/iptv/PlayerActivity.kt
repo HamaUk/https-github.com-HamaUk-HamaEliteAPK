@@ -547,7 +547,11 @@ class PlayerActivity : AppCompatActivity() {
      */
     private fun buildMediaCodecSelector(): MediaCodecSelector {
         if (SharedPrefManager(this).getHwAccel()) {
-            return MediaCodecSelector.DEFAULT
+            // AMLOGIC FIX: Do not allow Amlogic's buggy '.secure' hardware processors to hijack clear TV streams
+            return MediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
+                val decoders = MediaCodecSelector.DEFAULT.getDecoderInfos(mimeType, requiresSecureDecoder, requiresTunnelingDecoder)
+                decoders.filter { requiresSecureDecoder || !it.name.lowercase().endsWith(".secure") }
+            }
         }
         return MediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
             try {
@@ -978,7 +982,13 @@ class PlayerActivity : AppCompatActivity() {
             exoPlayer?.volume = 1.0f
             SharedPrefManager(this).saveSPString(SharedPrefManager.SP_CURRENT_URL, playbackUrl)
             val src = buildMediaSource(playbackUrl, client, buildRequestHeaders())
-            exoPlayer?.run { stop(); setMediaSource(src); prepare(); playWhenReady = true }
+            
+            // AMLOGIC FIX: Flush hardware decoder memory by completely destroying player instances when switching channels
+            exoPlayer?.release()
+            exoPlayer = null
+            initPlayer()
+            
+            exoPlayer?.run { setMediaSource(src); prepare(); playWhenReady = true }
             tvChannel.text = name.uppercase()
             tvEpg.text     = "زانیاری نییە"
             cancelBufferingWatchdog()
@@ -1084,10 +1094,16 @@ class PlayerActivity : AppCompatActivity() {
             if (!ua.isNullOrEmpty()) setUserAgent(ua)
             if (headers.isNotEmpty()) setDefaultRequestProperties(headers)
         }
+        
+        // AMLOGIC FIX: Allow broken Non-IDR keyframes common in live IPTV to prevent immediate decoder failure/green screens
+        val tsFlags = androidx.media3.extractor.ts.DefaultTsPayloadReaderFactory.FLAG_ALLOW_NON_IDR_KEYFRAMES
+        
         return if (shouldUseHls(playbackUrl)) {
-            HlsMediaSource.Factory(dataFactory).createMediaSource(item)
+            val hlsExtractor = androidx.media3.exoplayer.hls.DefaultHlsExtractorFactory(tsFlags, true)
+            HlsMediaSource.Factory(dataFactory).setExtractorFactory(hlsExtractor).createMediaSource(item)
         } else {
-            ProgressiveMediaSource.Factory(DefaultDataSource.Factory(this, dataFactory))
+            val extFactory = androidx.media3.extractor.DefaultExtractorsFactory().setTsExtractorFlags(tsFlags)
+            ProgressiveMediaSource.Factory(DefaultDataSource.Factory(this, dataFactory), extFactory)
                 .createMediaSource(item)
         }
     }
