@@ -104,6 +104,25 @@
                 <data android:mimeType="audio/x-mpegurl" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".sports.SportsActivity"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:theme="@style/AppTheme.FullScreen" />
+
+        <activity
+            android:name=".quran.QuranActivity"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:theme="@style/AppTheme.FullScreen" />
+
+        <activity
+            android:name=".quran.SurahActivity"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:theme="@style/AppTheme.FullScreen" />
+
     </application>
 
 </manifest>
