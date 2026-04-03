@@ -70,31 +70,11 @@ class DashboardActivity : AppCompatActivity() {
         binding.tvDeviceCode.text = getString(R.string.dashboard_device_code, deviceCodeForDisplay())
     }
 
-    /** Stable 6-digit numeric code (000000–999999) derived from Android ID or stored fallback seed. */
     private fun deviceCodeForDisplay(): String {
-        val seed = stableDeviceSeed()
-        val digest = MessageDigest.getInstance("SHA-256").digest(seed.toByteArray(Charsets.UTF_8))
-        var n = 0
-        for (i in 0 until 4) {
-            n = (n shl 8) or (digest[i].toInt() and 0xFF)
-        }
-        val six = (n.toLong() and 0x7FFFFFFFL) % 1_000_000L
-        return "%06d".format(Locale.US, six)
+        return ActivationHelper.getDeviceCode(this)
     }
 
-    private fun stableDeviceSeed(): String {
-        val raw = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID).orEmpty().trim()
-        if (raw.isNotEmpty() && raw != "9774d56d682e549c") {
-            return raw
-        }
-        val prefs = getSharedPreferences("hk_prefs", Context.MODE_PRIVATE)
-        var id = prefs.getString("hk_device_id", null).orEmpty().trim()
-        if (id.isEmpty()) {
-            id = UUID.randomUUID().toString()
-            prefs.edit().putString("hk_device_id", id).apply()
-        }
-        return id
-    }
+
 
     private fun setupClock() {
         val runnable = object : Runnable {
@@ -188,7 +168,7 @@ class DashboardActivity : AppCompatActivity() {
         binding.reloadProgress.visibility = View.VISIBLE
 
         val service = GlobalSync.retrofit().create(IptvService::class.java)
-        service.getSyncData(GlobalSync.SYNC_KEY_GLOBAL).enqueue(object : Callback<SyncData> {
+        service.getSyncData(ActivationHelper.getDeviceCode(this)).enqueue(object : Callback<SyncData> {
             override fun onResponse(call: Call<SyncData>, response: Response<SyncData>) {
                 binding.cardReload.isEnabled = true
                 binding.cardReload.isClickable = true

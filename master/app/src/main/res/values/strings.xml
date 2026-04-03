@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">OpTiC GhOsT</string>
-    <string name="app_name_part_hama">OpTiC</string>
-    <string name="app_name_part_uk">GhOsT</string>
-    <string name="app_v">IPTV</string>
+    <string name="app_name">Yousif Store</string>
+    <string name="app_name_part_hama">Yousif</string>
+    <string name="app_name_part_uk">Store</string>
+    <string name="app_v">بەڕێوەبەری یوسف</string>
 
     <string name="main_subtitle">چالاککردنی پریمیۆم</string>
     <string name="btn_start">دەستپێکردن</string>
@@ -12,7 +12,15 @@
     <string name="sync_no_data">هێشتا لیست لە سێرڤەر نییە. بەرپرس لە وێب بار بکات.</string>
     <string name="sync_error">هەڵەی هاوبەشکردن: %1$s</string>
     <string name="auto_resume_failed">نەتوانرا بەرنامەکە بکرێتەوە. دووبارە «دەستپێکردن» دابگرە.</string>
-    <string name="dashboard_device_code">کۆد: %1$s</string>
+    <string name="dashboard_device_code">ناسنامەی ئامێر: %1$s</string>
+    <string name="activation_required">چالاککردن پێویستە</string>
+    <string name="activation_code_label">کۆدی ناسنامەی تۆ:</string>
+    <string name="activation_instructions">بۆ چالاککردنی ئەم بەرنامەیە، ئەم کۆدەی خوارەوە بنێرە بۆ تێلیگرام:</string>
+    <string name="activation_telegram">https://t.me/Opt1c_gh0st</string>
+    <string name="activation_status_not_active">هێشتا چالاک نەکراوە</string>
+    <string name="activation_status_expired">ماوەی بەکارهێنان بەسەرچووە</string>
+    <string name="activation_btn_retry">دووبارە پشکنین بکەوە</string>
+    <string name="activation_expiry_date">کۆتایی دێت لە: %1$s</string>
     <string name="settings_version_line">وەشان: %1$s</string>
     <string name="dashboard_version_line">وەشان: %1$s</string>
     <string name="settings_package_line">پاکێج: %1$s</string>
@@ -33,7 +41,7 @@
     <string name="dash_reload">نوێکردنەوە</string>
     <string name="dash_settings">ڕێکخستنەکان</string>
     <string name="dash_continue_watching">بەردەوام بینین</string>
-    <string name="dash_status_active">دۆخ: چالاککراو</string>
+    <string name="dash_status_active">دۆخ: چالاکە</string>
     <string name="dash_startup_error">لە کێشەی دەستپێک ڕزگاربووین. تکایە دووبارە بچۆ ژوورەوە.</string>
     <string name="dash_live_count">پەخشی ڕاستەوخۆ (%1$d)</string>
 

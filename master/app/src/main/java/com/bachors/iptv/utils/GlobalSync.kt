@@ -14,6 +14,11 @@ object GlobalSync {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
+    fun worldTimeRetrofit(): Retrofit = Retrofit.Builder()
+        .baseUrl("http://worldtimeapi.org/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
     fun applySyncedConfig(ctx: Context, prefs: SharedPrefManager, data: SyncData): Boolean {
         val method = data.method?.trim()?.lowercase() ?: ""
         val ok = when {

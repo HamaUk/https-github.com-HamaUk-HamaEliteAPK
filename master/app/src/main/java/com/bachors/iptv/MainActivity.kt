@@ -1,16 +1,14 @@
 package com.bachors.iptv
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.bachors.iptv.databinding.ActivityMainBinding
-import com.bachors.iptv.utils.GlobalSync
-import com.bachors.iptv.utils.IptvService
-import com.bachors.iptv.utils.SharedPrefManager
-import com.bachors.iptv.utils.SyncData
+import com.bachors.iptv.utils.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -19,6 +17,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var sharedPrefManager: SharedPrefManager
+    private var deviceCode: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,20 +26,17 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.hide()
 
         sharedPrefManager = SharedPrefManager(this)
-
-        val alreadyLoggedIn = sharedPrefManager.getSpM3uDirect().isNotEmpty() ||
-            sharedPrefManager.getSpPlaylist().let { it.isNotEmpty() && it != "[]" }
-        if (alreadyLoggedIn) {
-            runCatching {
-                startActivity(Intent(this, DashboardActivity::class.java))
-                finish()
-                return
-            }.onFailure {
-                Toast.makeText(this, R.string.auto_resume_failed, Toast.LENGTH_SHORT).show()
-            }
+        deviceCode = ActivationHelper.getDeviceCode(this)
+        
+        binding.txtDeviceCode.text = deviceCode
+        
+        // Setup Button
+        binding.btnRetry.setOnClickListener {
+            performAutoSync()
         }
 
-        binding.btnStart.setOnClickListener { performSync() }
+        // Start Auto-Sync immediately on launch
+        performAutoSync()
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -49,48 +45,103 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun performSync() {
-        binding.btnStart.isEnabled = false
+    private fun performAutoSync() {
+        binding.btnRetry.visibility = View.GONE
         binding.progressSync.visibility = View.VISIBLE
+        binding.txtStatus.text = "Checking activation..."
+        binding.txtStatus.setTextColor(Color.WHITE)
 
         val service = GlobalSync.retrofit().create(IptvService::class.java)
-        service.getSyncData(GlobalSync.SYNC_KEY_GLOBAL).enqueue(object : Callback<SyncData> {
+        service.getSyncData(deviceCode).enqueue(object : Callback<SyncData> {
             override fun onResponse(call: Call<SyncData>, response: Response<SyncData>) {
-                binding.btnStart.isEnabled = true
-                binding.progressSync.visibility = View.GONE
                 val body = response.body()
                 if (response.isSuccessful && body != null) {
-                    val synced = GlobalSync.applySyncedConfig(this@MainActivity, sharedPrefManager, body)
-                    if (synced) {
-                        Toast.makeText(this@MainActivity, R.string.sync_success, Toast.LENGTH_SHORT).show()
-                        navigateToDashboard()
-                    } else {
-                        Toast.makeText(this@MainActivity, R.string.sync_invalid, Toast.LENGTH_LONG).show()
-                    }
+                    checkExpiryAndProceed(body)
                 } else {
-                    Toast.makeText(this@MainActivity, R.string.sync_no_data, Toast.LENGTH_SHORT).show()
+                    showActivationRequired()
                 }
             }
 
             override fun onFailure(call: Call<SyncData>, t: Throwable) {
-                binding.btnStart.isEnabled = true
-                binding.progressSync.visibility = View.GONE
-                Toast.makeText(
-                    this@MainActivity,
-                    getString(R.string.sync_error, t.message ?: ""),
-                    Toast.LENGTH_SHORT
-                ).show()
+                showError("Network Error: ${t.message}")
             }
         })
     }
 
-    private fun navigateToDashboard() {
-        startActivity(Intent(this, DashboardActivity::class.java))
-        finish()
+    private fun checkExpiryAndProceed(data: SyncData) {
+        val expiry = data.expiryDate ?: 0L
+        
+        if (expiry == 0L) {
+            // Unlimited
+            completeSync(data)
+            return
+        }
+
+        // Check real time from WorldTimeAPI
+        val timeService = GlobalSync.worldTimeRetrofit().create(WorldTimeService::class.java)
+        timeService.getUtcTime().enqueue(object : Callback<WorldTimeResponse> {
+            override fun onResponse(call: Call<WorldTimeResponse>, response: Response<WorldTimeResponse>) {
+                val networkTimeSeconds = response.body()?.unixTime
+                if (response.isSuccessful && networkTimeSeconds != null) {
+                    val networkTimeMillis = networkTimeSeconds * 1000
+                    if (networkTimeMillis > expiry) {
+                        showExpired(expiry)
+                    } else {
+                        completeSync(data)
+                    }
+                } else {
+                    // Fallback to system time if API fails, but warn or just proceed?
+                    // Better to proceed but show a warning if system time is way off.
+                    val systemTime = System.currentTimeMillis()
+                    if (systemTime > expiry) {
+                        showExpired(expiry)
+                    } else {
+                        completeSync(data)
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<WorldTimeResponse>, t: Throwable) {
+                // Network time failed, use system time as fallback
+                val systemTime = System.currentTimeMillis()
+                if (systemTime > expiry) {
+                    showExpired(expiry)
+                } else {
+                    completeSync(data)
+                }
+            }
+        })
     }
 
-    companion object {
-        /** Shared Firebase RTDB key — same as portal `index.html` (sync/global). */
-        const val GLOBAL_SYNC_KEY = GlobalSync.SYNC_KEY_GLOBAL
+    private fun completeSync(data: SyncData) {
+        val synced = GlobalSync.applySyncedConfig(this, sharedPrefManager, data)
+        if (synced) {
+            startActivity(Intent(this, DashboardActivity::class.java))
+            finish()
+        } else {
+            showError("Invalid account configuration")
+        }
+    }
+
+    private fun showActivationRequired() {
+        binding.progressSync.visibility = View.GONE
+        binding.btnRetry.visibility = View.VISIBLE
+        binding.txtStatus.text = getString(R.string.activation_status_not_active)
+        binding.txtStatus.setTextColor(Color.parseColor("#FF4B2B"))
+    }
+
+    private fun showExpired(expiry: Long) {
+        binding.progressSync.visibility = View.GONE
+        binding.btnRetry.visibility = View.VISIBLE
+        val dateStr = ActivationHelper.formatExpiryDate(expiry)
+        binding.txtStatus.text = "${getString(R.string.activation_status_expired)}\n($dateStr)"
+        binding.txtStatus.setTextColor(Color.parseColor("#FF4B2B"))
+    }
+
+    private fun showError(msg: String) {
+        binding.progressSync.visibility = View.GONE
+        binding.btnRetry.visibility = View.VISIBLE
+        binding.txtStatus.text = msg
+        binding.txtStatus.setTextColor(Color.YELLOW)
     }
 }

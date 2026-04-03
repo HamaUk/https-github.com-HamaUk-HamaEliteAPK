@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HAMA ELITE — Sync Portal</title>
+<title>Yousif Store — Activation Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -29,6 +29,10 @@ body {
   justify-content: center;
   align-items: center;
   overflow-x: hidden;
+}
+body.admin-open {
+  align-items: flex-start;
+  padding: 20px 0 48px;
 }
 
 /* Background Elements */
@@ -175,13 +179,106 @@ input:focus {
 .admin-dashboard {
   display: none;
   width: 95%;
-  max-width: 1000px;
+  max-width: 1100px;
   background: var(--glass);
   border: 1px solid var(--glass-border);
   border-radius: 32px;
   padding: 40px;
-  margin: 20px;
+  margin: 20px auto;
   animation: fadeIn 0.5s ease;
+}
+.admin-page { display: none; }
+.admin-page.active { display: block; animation: fadeIn 0.35s ease; }
+.admin-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-top: 28px;
+}
+@media (max-width: 640px) {
+  .admin-nav-grid { grid-template-columns: 1fr; }
+}
+.admin-nav-card {
+  text-align: left;
+  padding: 24px 22px;
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.admin-nav-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.admin-nav-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 212, 255, 0.45);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.45);
+}
+.admin-nav-card:hover::before { opacity: 1; }
+.admin-nav-card-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  color: #fff;
+}
+.admin-nav-card-desc {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+.admin-nav-card-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(0, 212, 255, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(0, 212, 255, 0.35);
+}
+.admin-back-btn {
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 10px;
+}
+.admin-back-btn:hover {
+  color: #fff;
+  border-color: var(--accent);
+}
+.admin-hub-welcome {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.65;
+  margin-top: 12px;
+  max-width: 52rem;
+}
+.add-page-panel {
+  max-width: 440px;
+  margin-top: 16px;
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.2);
 }
 .admin-hero {
   display: flex;
@@ -397,7 +494,8 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
   .portal-card { padding: 30px 20px; }
   .logo { font-size: 2rem; }
   .stats-grid { grid-template-columns: 1fr; gap: 10px; }
-  .admin-dashboard { padding: 20px; margin: 10px; border-radius: 20px; }
+  .admin-dashboard { padding: 20px; margin: 10px; border-radius: 20px; max-width: 100%; }
+  .admin-nav-card { padding: 20px 18px; }
   .admin-toolbar { flex-direction: column; align-items: stretch; }
   .toolbar-group { justify-content: space-between; }
   .tool-btn { flex: 1; text-align: center; font-size: 0.7rem; padding: 12px 5px; }
@@ -414,20 +512,13 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
 <div class="portal-container">
   <div class="portal-card">
     <div class="header">
-      <div class="logo" id="logoTap" onclick="window._logoTap=(window._logoTap||0)+1;clearTimeout(window._logoTimer);if(window._logoTap>=5){window._logoTap=0;document.getElementById('adminOverlay').style.display='flex';}window._logoTimer=setTimeout(function(){window._logoTap=0;},4000);" style="cursor:pointer;">HAMA <span>UK</span></div>
-      <div class="subtitle">ELITE SYNC PORTAL</div>
+      <div class="logo" id="logoTap" onclick="window._logoTap=(window._logoTap||0)+1;clearTimeout(window._logoTimer);if(window._logoTap>=5){window._logoTap=0;document.getElementById('adminOverlay').style.display='flex';}window._logoTimer=setTimeout(function(){window._logoTap=0;},4000);" style="cursor:pointer;">Yousif <span>Store</span></div>
+      <div class="subtitle">PREMIUM ACTIVATION PORTAL</div>
     </div>
 
-    <input type="hidden" id="linkCode" value="global">
-    <input type="hidden" id="server">
-    <input type="hidden" id="user">
-    <input type="hidden" id="pass">
-    <input type="hidden" id="m3uUrl">
-    <input type="hidden" id="m3uFile">
-
     <p style="text-align:center; color:var(--text-dim); font-size:0.9rem; line-height:1.8; margin-top:10px;">
-      Download <strong style="color:var(--accent)">HAMA UK ELITE</strong> on your TV or phone,<br>
-      then tap <strong style="color:white">Start</strong> to load your playlist automatically.
+      Download <strong style="color:var(--accent)">YOUSIF STORE</strong> on your TV or phone,<br>
+      then send your 8-Digit Device ID to activate your account.
     </p>
 
   </div>
@@ -454,61 +545,176 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
 
 <!-- Admin Dashboard -->
 <div id="adminDashboard" class="admin-dashboard">
-  <div class="header" style="display:flex; justify-content:space-between; align-items:center;">
-    <div class="logo" style="font-size:1.5rem">ADMIN <span>DASHBOARD</span></div>
+  <div class="header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+    <div class="logo" style="font-size:1.5rem">YOUSIF <span>STORE</span> <span style="font-size:0.55em; color:var(--text-dim); font-weight:700;">ADMIN</span></div>
     <div style="display:flex; gap:10px; align-items:center">
       <label style="margin:0; font-size:0.7rem; color:var(--text-dim)">AUTO-REFRESH <input type="checkbox" id="autoRefresh" style="margin-left:5px"></label>
       <button class="sync-btn" style="width:auto; padding:10px 20px; font-size:0.8rem" onclick="window.hideAdminDashboard()">EXIT ADMIN</button>
     </div>
   </div>
-  <div class="admin-hero">
-    <div>
-      <div style="font-weight:800; margin-bottom:4px;">GLOBAL PLAYLIST CONTROL</div>
-      <div class="admin-note">All TVs and phones read from <b>sync/global</b>. Upload M3U / M3U8 or set Xtream once, and every app receives the same account data.</div>
-    </div>
-    <span class="admin-chip">GLOBAL MODE</span>
-  </div>
-  
-  <div class="stats-grid">
-    <div class="stat-card">
-      <span class="stat-val" id="stat-total">0</span>
-      <span class="stat-label">Total Profiles</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-val" id="stat-xtream">0</span>
-      <span class="stat-label">Xtream Profiles</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-val" id="stat-m3u">0</span>
-      <span class="stat-label">M3U/M3U8 Profiles</span>
+
+  <div id="adminPageHome" class="admin-page active">
+    <p class="admin-hub-welcome">Each device uses its own <strong style="color:var(--accent)">8-digit ID</strong> under <code style="color:var(--accent)">sync/&lt;id&gt;</code> in Firebase—the same ID the Yousif Store app shows on the activation screen. Pick a section below to manage subscribers, subscriptions, or managed channel lists.</p>
+    <div class="admin-nav-grid">
+      <div class="admin-nav-card" role="button" tabindex="0" onclick="window.navigateAdmin('users')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.navigateAdmin('users');}">
+        <div class="admin-nav-card-title">All users</div>
+        <div class="admin-nav-card-desc">Search every profile, bulk delete, export CSV, edit credentials, open channel manager per device.</div>
+        <span class="admin-nav-card-badge" id="hub-badge-total">0 profiles</span>
+      </div>
+      <div class="admin-nav-card" role="button" tabindex="0" onclick="window.navigateAdmin('add')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.navigateAdmin('add');}">
+        <div class="admin-nav-card-title">Add / update user</div>
+        <div class="admin-nav-card-desc">Enter the customer’s 8-digit device ID, subscription length, and Xtream, M3U URL, or file.</div>
+        <span class="admin-nav-card-badge">Activate</span>
+      </div>
+      <div class="admin-nav-card" role="button" tabindex="0" onclick="window.navigateAdmin('expired')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.navigateAdmin('expired');}">
+        <div class="admin-nav-card-title">Expired users</div>
+        <div class="admin-nav-card-desc">Profiles past <code>expiryDate</code> (app locks after network time check). Renew or remove.</div>
+        <span class="admin-nav-card-badge" id="hub-badge-expired">0 expired</span>
+      </div>
+      <div class="admin-nav-card" role="button" tabindex="0" onclick="window.navigateAdmin('channels')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.navigateAdmin('channels');}">
+        <div class="admin-nav-card-title">Channel lists</div>
+        <div class="admin-nav-card-desc">See which device IDs have a managed playlist and open the full channel editor.</div>
+        <span class="admin-nav-card-badge">Managed M3U</span>
+      </div>
     </div>
   </div>
 
-  <div class="admin-toolbar">
-    <input type="text" id="adminSearch" class="search-bar" style="margin-bottom:0; flex:1" placeholder="SEARCH PROFILES (GLOBAL, XTREAM, URL, FILE)..." onkeyup="filterUsers()">
-    <div class="toolbar-group">
-      <button class="tool-btn accent" onclick="window.openAddManual()">+ ADD / UPDATE PROFILE</button>
-      <button class="tool-btn danger" onclick="window.bulkDelete()">BULK DELETE</button>
-      <button class="tool-btn" onclick="window.exportData()">EXPORT CSV</button>
+  <div id="adminPageUsers" class="admin-page">
+    <div style="margin-bottom:18px; display:flex; align-items:center; flex-wrap:wrap; gap:10px;">
+      <button type="button" class="admin-back-btn" onclick="window.navigateAdmin('home')">← Home</button>
+      <span class="admin-note" style="margin:0;">All Firebase <b>sync/*</b> keys</span>
+    </div>
+    <div class="admin-hero">
+      <div>
+        <div style="font-weight:800; margin-bottom:4px;">SUBSCRIBER PROFILES</div>
+        <div class="admin-note">Rows are keyed by the app’s <b>8-digit device ID</b>. The app reads <b>sync/&lt;id&gt;</b> and enforces <b>expiryDate</b> using network time when possible.</div>
+      </div>
+      <span class="admin-chip">RTDB</span>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-val" id="stat-total">0</span>
+        <span class="stat-label">Total Profiles</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val" id="stat-xtream">0</span>
+        <span class="stat-label">Xtream Profiles</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val" id="stat-m3u">0</span>
+        <span class="stat-label">M3U/M3U8 Profiles</span>
+      </div>
+    </div>
+    <div class="admin-toolbar">
+      <input type="text" id="adminSearch" class="search-bar" style="margin-bottom:0; flex:1" placeholder="Search device ID, method, URL, server…" onkeyup="window.filterUsers()">
+      <div class="toolbar-group">
+        <button type="button" class="tool-btn accent" onclick="window.openAddManual()">+ ADD / UPDATE</button>
+        <button type="button" class="tool-btn danger" onclick="window.bulkDelete()">BULK DELETE</button>
+        <button type="button" class="tool-btn" onclick="window.exportData()">EXPORT CSV</button>
+      </div>
+    </div>
+    <div class="admin-table-wrapper">
+      <table id="userTable">
+        <thead>
+          <tr>
+            <th class="checkbox-col"><input type="checkbox" onclick="window.selectAll(this)"></th>
+            <th>DEVICE ID</th>
+            <th>METHOD</th>
+            <th>INFO</th>
+            <th>EXPIRES</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="userList"></tbody>
+      </table>
     </div>
   </div>
 
-  <div class="admin-table-wrapper">
-    <table id="userTable">
-      <thead>
-        <tr>
-          <th class="checkbox-col"><input type="checkbox" onclick="window.selectAll(this)"></th>
-          <th>SYNC KEY</th>
-          <th>METHOD</th>
-          <th>INFO</th>
-          <th>LAST UPDATE</th>
-          <th>ACTIONS</th>
-        </tr>
-      </thead>
-      <tbody id="userList">
-        <!-- Loaded via JS -->
-      </tbody>
-    </table>
+  <div id="adminPageAdd" class="admin-page">
+    <div style="margin-bottom:18px;">
+      <button type="button" class="admin-back-btn" onclick="window.navigateAdmin('home')">← Home</button>
+    </div>
+    <h3 style="margin-bottom:8px; font-size:1.1rem;">Add / update subscriber</h3>
+    <p class="admin-note" style="margin-bottom:16px;">Use the exact <b>8-digit</b> code from the user’s app (spaces are OK—they are removed on save).</p>
+    <div class="add-page-panel">
+      <div class="form-group"><label>8-digit device ID</label><input type="text" id="add-code" inputmode="numeric" autocomplete="off" placeholder="e.g. 12345678 or 1234 5678"></div>
+      <div class="form-group">
+        <label>Subscription duration</label>
+        <select id="add-duration" style="width:100%; padding:14px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:12px; color:white;">
+          <option value="1">1 Month</option>
+          <option value="3">3 Months</option>
+          <option value="6">6 Months</option>
+          <option value="12">1 Year</option>
+          <option value="24">2 Years</option>
+          <option value="0" selected>Unlimited</option>
+        </select>
+      </div>
+      <div class="tabs" style="margin-bottom:15px">
+        <div class="tab active" id="add-tab-xtream" onclick="window.setAddMethod('xtream')">XTREAM</div>
+        <div class="tab" id="add-tab-m3u" onclick="window.setAddMethod('m3u')">URL</div>
+        <div class="tab" id="add-tab-file" onclick="window.setAddMethod('file')">FILE</div>
+      </div>
+      <div id="add-fields">
+        <div class="form-group"><label>Server</label><input type="text" id="add-server"></div>
+        <div class="row">
+          <div class="form-group"><label>User</label><input type="text" id="add-user"></div>
+          <div class="form-group"><label>Pass</label><input type="text" id="add-pass"></div>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button type="button" class="sync-btn" style="flex:1" onclick="window.saveAddManual()">SAVE PROFILE</button>
+        <button type="button" class="sync-btn" style="flex:1; background:rgba(255,255,255,0.1); color:white;" onclick="window.navigateAdmin('home')">CANCEL</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminPageExpired" class="admin-page">
+    <div style="margin-bottom:18px; display:flex; align-items:center; flex-wrap:wrap; gap:10px;">
+      <button type="button" class="admin-back-btn" onclick="window.navigateAdmin('home')">← Home</button>
+      <span class="admin-note" style="margin:0;">Subscription end date is before now (limited plans only)</span>
+    </div>
+    <div class="admin-toolbar">
+      <input type="text" id="adminSearchExpired" class="search-bar" style="margin-bottom:0; flex:1" placeholder="Search expired profiles…" onkeyup="window.filterUsersExpired()">
+      <div class="toolbar-group">
+        <button type="button" class="tool-btn danger" onclick="window.bulkDelete()">BULK DELETE</button>
+      </div>
+    </div>
+    <div class="admin-table-wrapper">
+      <table id="userTableExpired">
+        <thead>
+          <tr>
+            <th class="checkbox-col"><input type="checkbox" onclick="window.selectAll(this)"></th>
+            <th>DEVICE ID</th>
+            <th>METHOD</th>
+            <th>INFO</th>
+            <th>EXPIRES</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="userListExpired"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="adminPageChannels" class="admin-page">
+    <div style="margin-bottom:18px;">
+      <button type="button" class="admin-back-btn" onclick="window.navigateAdmin('home')">← Home</button>
+    </div>
+    <p class="admin-note" style="margin-bottom:16px;">Managed playlists live on each device’s sync node. <b>Manage</b> opens the existing channel editor modal.</p>
+    <input type="text" id="channelOverviewSearch" class="search-bar" placeholder="Filter by device ID…" onkeyup="window.renderChannelOverview()">
+    <div class="admin-table-wrapper" style="margin-top:0;">
+      <table>
+        <thead>
+          <tr>
+            <th>DEVICE ID</th>
+            <th>METHOD</th>
+            <th>MANAGED CHANNELS</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="channelOverviewBody"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -524,38 +730,14 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
   </div>
 </div>
 
-<!-- Add Manual Modal -->
-<div id="addModal" class="modal">
-  <div class="modal-content">
-    <h3 style="margin-bottom:20px;">ADD / UPDATE SYNC PROFILE</h3>
-    <div class="form-group"><label>Sync Key</label><input type="text" id="add-code" value="global" placeholder="global"></div>
-    <div class="tabs" style="margin-bottom:15px">
-      <div class="tab active" id="add-tab-xtream" onclick="window.setAddMethod('xtream')">XTREAM</div>
-      <div class="tab" id="add-tab-m3u" onclick="window.setAddMethod('m3u')">URL</div>
-      <div class="tab" id="add-tab-file" onclick="window.setAddMethod('file')">FILE</div>
-    </div>
-    <div id="add-fields">
-      <div class="form-group"><label>Server</label><input type="text" id="add-server"></div>
-      <div class="row">
-        <div class="form-group"><label>User</label><input type="text" id="add-user"></div>
-        <div class="form-group"><label>Pass</label><input type="text" id="add-pass"></div>
-      </div>
-    </div>
-    <div style="display:flex; gap:10px; margin-top:20px;">
-      <button class="sync-btn" style="flex:1" onclick="window.saveAddManual()">ADD USER</button>
-      <button class="sync-btn" style="flex:1; background:rgba(255,255,255,0.1); color:white;" onclick="window.closeAddModal()">CANCEL</button>
-    </div>
-  </div>
-</div>
-
 <!-- Channel manager (managed playlist) -->
 <div id="channelManagerModal" class="modal" style="align-items: flex-start; padding: 24px 12px; overflow-y: auto;">
   <div class="modal-content" style="max-width: 1080px; width: 100%; max-height: none;">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
       <div>
         <h3 style="margin-bottom:8px;">MANAGE CHANNELS</h3>
-        <div class="mgr-note" id="channelMgrSyncKeyLabel">sync key: —</div>
-        <div class="mgr-note">Import from your M3U (profile URL, embedded file on this key, paste, or local file), or use <b>ADD ONE CHANNEL</b> for a single name + stream URL + optional local icon. Use <b>DELETE</b> on a row to remove a channel. Remote URL fetch may fail in-browser due to CORS — then use Paste or a profile with embedded <b>content</b>. Saves to <b>managedPlaylist</b> on this sync key. After editing logos/names, click <b>SAVE MANAGED PLAYLIST TO FIREBASE</b>, then users must <b>sync the app again</b> (same sync key) so icons appear in the app. The <b>Logo</b> column below shows a thumbnail when the URL or embedded image loads.</div>
+        <div class="mgr-note" id="channelMgrSyncKeyLabel">Device ID: —</div>
+        <div class="mgr-note">Import from your M3U (profile URL, embedded file on this device ID, paste, or local file), or use <b>ADD ONE CHANNEL</b> for a single name + stream URL + optional local icon. Use <b>DELETE</b> on a row to remove a channel. Remote URL fetch may fail in-browser due to CORS — then use Paste or a profile with embedded <b>content</b>. Saves to <b>managedPlaylist</b> under this device’s sync node. After editing logos/names, click <b>SAVE MANAGED PLAYLIST TO FIREBASE</b>, then users must <b>open the app again</b> (same 8-digit ID) so icons appear. The <b>Logo</b> column below shows a thumbnail when the URL or embedded image loads.</div>
       </div>
       <button type="button" class="btn-small" onclick="window.closeChannelManager()">CLOSE</button>
     </div>
@@ -699,14 +881,73 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
   let editingCode = null;
   let refreshTimer = null;
 
+  function normalizeDeviceId(s) {
+    return String(s || '').replace(/\s+/g, '');
+  }
+  function isValidDeviceId8(s) {
+    return /^\d{8}$/.test(normalizeDeviceId(s));
+  }
+
+  const ADMIN_PAGE_IDS = {
+    home: 'adminPageHome',
+    users: 'adminPageUsers',
+    add: 'adminPageAdd',
+    expired: 'adminPageExpired',
+    channels: 'adminPageChannels'
+  };
+
+  function parseAdminHash() {
+    const raw = (location.hash || '#admin').replace(/^#/, '').trim();
+    if (!raw.startsWith('admin')) return 'home';
+    const sub = raw.slice('admin'.length).replace(/^\//, '');
+    if (!sub) return 'home';
+    if (['users', 'add', 'expired', 'channels'].includes(sub)) return sub;
+    return 'home';
+  }
+
+  function resetAddForm() {
+    const codeEl = document.getElementById('add-code');
+    const durEl = document.getElementById('add-duration');
+    if (codeEl) codeEl.value = '';
+    if (durEl) durEl.value = '0';
+    window.setAddMethod('xtream');
+  }
+
+  window.navigateAdmin = (section, skipHash) => {
+    const allowed = ['home', 'users', 'add', 'expired', 'channels'];
+    if (!allowed.includes(section)) section = 'home';
+    Object.entries(ADMIN_PAGE_IDS).forEach(([key, id]) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('active', key === section);
+    });
+    if (section === 'add') resetAddForm();
+    if (section === 'channels') window.renderChannelOverview();
+    if (!skipHash) {
+      const h = section === 'home' ? '#admin' : '#admin/' + section;
+      if (location.hash !== h) history.replaceState(null, '', h);
+    }
+  };
+
+  window.addEventListener('hashchange', () => {
+    const dash = document.getElementById('adminDashboard');
+    if (dash && dash.style.display === 'block') {
+      window.navigateAdmin(parseAdminHash(), true);
+    }
+  });
+
   window.setMethod = (method) => {
     currentMethod = method;
+    const tx = document.getElementById('tab-xtream');
+    if (!tx) return;
     document.getElementById('tab-xtream').className = 'tab ' + (method === 'xtream' ? 'active' : '');
     document.getElementById('tab-m3u').className = 'tab ' + (method === 'm3u' ? 'active' : '');
     document.getElementById('tab-file').className = 'tab ' + (method === 'file' ? 'active' : '');
-    document.getElementById('fields-xtream').style.display = (method === 'xtream' ? 'block' : 'none');
-    document.getElementById('fields-m3u').style.display = (method === 'm3u' ? 'block' : 'none');
-    document.getElementById('fields-file').style.display = (method === 'file' ? 'block' : 'none');
+    const fx = document.getElementById('fields-xtream');
+    if (fx) fx.style.display = (method === 'xtream' ? 'block' : 'none');
+    const fm = document.getElementById('fields-m3u');
+    if (fm) fm.style.display = (method === 'm3u' ? 'block' : 'none');
+    const ff = document.getElementById('fields-file');
+    if (ff) ff.style.display = (method === 'file' ? 'block' : 'none');
   };
 
   window.setAddMethod = (method) => {
@@ -865,74 +1106,136 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
   };
 
   window.showAdminDashboard = async () => {
+    document.body.classList.add('admin-open');
     document.querySelector('.portal-container').style.display = 'none';
     document.getElementById('adminDashboard').style.display = 'block';
-    loadUsers();
-    refreshTimer = setInterval(() => { if(document.getElementById('autoRefresh').checked) loadUsers(); }, 30000);
+    window.navigateAdmin(parseAdminHash(), true);
+    await loadUsers();
+    refreshTimer = setInterval(() => { if (document.getElementById('autoRefresh').checked) loadUsers(); }, 30000);
   };
 
   window.hideAdminDashboard = () => {
     signOut(auth).catch(e => console.error("Sign out error", e));
+    document.body.classList.remove('admin-open');
     document.querySelector('.portal-container').style.display = 'block';
     document.getElementById('adminDashboard').style.display = 'none';
-    if(refreshTimer) clearInterval(refreshTimer);
+    if (refreshTimer) clearInterval(refreshTimer);
+    if (location.hash.startsWith('#admin')) history.replaceState(null, '', location.pathname + location.search);
+  };
+
+  function createUserRow(code, u) {
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-code', code);
+    const expiryStr = formatExpiry(u.expiryDate);
+    let info = '';
+    if (u.method === 'xtream') {
+      const clip = JSON.stringify((u.user || '') + ':' + (u.pass || ''));
+      info = `URL: ${u.server}<br>
+              <span style="font-size:0.8rem">U: ${u.user} | P: <span class="pass-hidden">${u.pass}</span></span>
+              <span class="copy-icon" onclick='window.copyData(${clip})'>📋</span>`;
+    } else if (u.method === 'm3u') {
+      const clip = JSON.stringify(u.url || '');
+      info = `<span style="font-size:0.8rem">${u.url}</span> <span class="copy-icon" onclick='window.copyData(${clip})'>📋</span>`;
+    } else if (u.method === 'm3u_file') {
+      info = `<b>FILE:</b> ${u.filename || 'Upload'}`;
+    }
+    tr.innerHTML = `
+      <td class="checkbox-col"><input type="checkbox" class="user-check" data-code="${code}"></td>
+      <td style="font-weight:900; color:var(--accent)">${code}</td>
+      <td><span class="badge ${u.method === 'm3u_file' ? 'file' : u.method}">${(u.method || '').toUpperCase()}</span></td>
+      <td style="max-width:350px; overflow:hidden;">${info}</td>
+      <td style="font-size:0.75rem">${expiryStr}</td>
+      <td>
+        <button type="button" class="action-btn btn-edit" onclick="window.openChannelManager('${code}')">CHANNELS</button>
+        <button type="button" class="action-btn btn-edit" onclick="window.openEdit('${code}')">EDIT</button>
+        <button type="button" class="action-btn btn-delete" onclick="window.deleteAccount('${code}')">DEL</button>
+      </td>
+    `;
+    return tr;
+  }
+
+  window.renderChannelOverview = () => {
+    const tb = document.getElementById('channelOverviewBody');
+    if (!tb) return;
+    if (!window.allUsers) {
+      tb.innerHTML = '<tr><td colspan="4" style="text-align:center">Loading…</td></tr>';
+      return;
+    }
+    const q = (document.getElementById('channelOverviewSearch') && document.getElementById('channelOverviewSearch').value || '').trim().toUpperCase();
+    tb.innerHTML = '';
+    const data = window.allUsers;
+    const sorted = Object.keys(data).sort((a, b) => (data[b].timestamp || 0) - (data[a].timestamp || 0));
+    sorted.forEach((code) => {
+      if (q && String(code).toUpperCase().indexOf(q) < 0) return;
+      const u = data[code];
+      const items = u.managedPlaylist && u.managedPlaylist.items;
+      const n = items && typeof items === 'object' ? Object.keys(items).length : 0;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight:900; color:var(--accent)">${code}</td>
+        <td><span class="badge ${u.method === 'm3u_file' ? 'file' : u.method}">${(u.method || '').toUpperCase()}</span></td>
+        <td>${n}</td>
+        <td><button type="button" class="action-btn btn-edit" onclick="window.openChannelManager('${code}')">MANAGE</button></td>
+      `;
+      tb.appendChild(tr);
+    });
+    if (!tb.children.length) {
+      tb.innerHTML = '<tr><td colspan="4" style="text-align:center">No profiles match.</td></tr>';
+    }
   };
 
   window.loadUsers = async () => {
     const list = document.getElementById('userList');
+    const listExp = document.getElementById('userListExpired');
+    const emptyMsg = '<tr><td colspan="6" style="text-align:center">No sync profiles found.</td></tr>';
+    const errColspan = (msg) => '<tr><td colspan="6" style="text-align:center; color:red">' + msg + '</td></tr>';
     try {
-      const dbRef = ref(db, 'sync');
-      const snapshot = await get(dbRef);
+      const snapshot = await get(ref(db, 'sync'));
       list.innerHTML = '';
-      
+      listExp.innerHTML = '';
+
       if (snapshot.exists()) {
         const data = snapshot.val();
         window.allUsers = data;
-        
         let stats = { total: 0, xtream: 0, m3u: 0 };
-        
-        Object.keys(data).sort((a,b) => (data[b].timestamp || 0) - (data[a].timestamp || 0)).forEach(code => {
+        let expiredCount = 0;
+        const sorted = Object.keys(data).sort((a, b) => (data[b].timestamp || 0) - (data[a].timestamp || 0));
+        sorted.forEach((code) => {
           const u = data[code];
           stats.total++;
-          if(u.method === 'xtream') stats.xtream++; else stats.m3u++;
-
-          const tr = document.createElement('tr');
-          tr.setAttribute('data-code', code);
-          const timeStr = formatTimeAgo(u.timestamp);
-          let info = '';
-          if (u.method === 'xtream') {
-            info = `URL: ${u.server}<br>
-                    <span style="font-size:0.8rem">U: ${u.user} | P: <span class="pass-hidden">${u.pass}</span></span>
-                    <span class="copy-icon" onclick="window.copyData('${u.user}:${u.pass}')">📋</span>`;
-          } else if (u.method === 'm3u') {
-            info = `<span style="font-size:0.8rem">${u.url}</span> <span class="copy-icon" onclick="window.copyData('${u.url}')">📋</span>`;
-          } else {
-            info = `<b>FILE:</b> ${u.filename || 'Upload'}`;
-          }
-          
-          tr.innerHTML = `
-            <td class="checkbox-col"><input type="checkbox" class="user-check" data-code="${code}"></td>
-            <td style="font-weight:900; color:var(--accent)">${code}</td>
-            <td><span class="badge ${u.method === 'm3u_file' ? 'file' : u.method}">${u.method.toUpperCase()}</span></td>
-            <td style="max-width:350px; overflow:hidden;">${info}</td>
-            <td style="font-size:0.75rem">${timeStr}</td>
-            <td>
-              <button class="action-btn btn-edit" onclick="window.openChannelManager('${code}')">CHANNELS</button>
-              <button class="action-btn btn-edit" onclick="window.openEdit('${code}')">EDIT</button>
-              <button class="action-btn btn-delete" onclick="window.deleteAccount('${code}')">DEL</button>
-            </td>
-          `;
-          list.appendChild(tr);
+          if (u.method === 'xtream') stats.xtream++;
+          else stats.m3u++;
+          const exp = u.expiryDate;
+          const isExpired = exp > 0 && exp < Date.now();
+          if (isExpired) expiredCount++;
+          list.appendChild(createUserRow(code, u));
+          if (isExpired) listExp.appendChild(createUserRow(code, u));
         });
-        
         document.getElementById('stat-total').innerText = stats.total;
         document.getElementById('stat-xtream').innerText = stats.xtream;
         document.getElementById('stat-m3u').innerText = stats.m3u;
+        const hubT = document.getElementById('hub-badge-total');
+        const hubE = document.getElementById('hub-badge-expired');
+        if (hubT) hubT.textContent = stats.total + ' profile' + (stats.total === 1 ? '' : 's');
+        if (hubE) hubE.textContent = expiredCount + ' expired';
+        if (!listExp.children.length) listExp.innerHTML = '<tr><td colspan="6" style="text-align:center">No expired subscriptions.</td></tr>';
+        window.renderChannelOverview();
       } else {
-        list.innerHTML = '<tr><td colspan="6" style="text-align:center">No sync profiles found.</td></tr>';
+        window.allUsers = {};
+        list.innerHTML = emptyMsg;
+        listExp.innerHTML = '<tr><td colspan="6" style="text-align:center">No expired subscriptions.</td></tr>';
+        document.getElementById('stat-total').innerText = '0';
+        document.getElementById('stat-xtream').innerText = '0';
+        document.getElementById('stat-m3u').innerText = '0';
+        const hubT = document.getElementById('hub-badge-total');
+        const hubE = document.getElementById('hub-badge-expired');
+        if (hubT) hubT.textContent = '0 profiles';
+        if (hubE) hubE.textContent = '0 expired';
+        window.renderChannelOverview();
       }
     } catch (e) {
-      list.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red">Error: ' + e.message + '</td></tr>';
+      list.innerHTML = errColspan('Error: ' + e.message);
+      if (listExp) listExp.innerHTML = errColspan('Error: ' + e.message);
     }
   };
 
@@ -945,18 +1248,30 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     return Math.floor(seconds/86400) + 'd ago';
   };
 
+  const formatExpiry = (timestamp) => {
+    if (!timestamp || timestamp === 0) return '<span style="color:#8bc34a">Unlimited</span>';
+    const diff = timestamp - Date.now();
+    if (diff < 0) return '<span style="color:#ff4b2b">EXPIRED</span>';
+    const d = new Date(timestamp);
+    return `<span style="color:#00d4ff">${d.toLocaleDateString()}</span>`;
+  };
+
   window.copyData = (text) => {
     navigator.clipboard.writeText(text);
     alert('Copied to clipboard');
   };
 
   window.selectAll = (master) => {
-    const checks = document.querySelectorAll('.user-check');
-    checks.forEach(c => c.checked = master.checked);
+    const scope = document.querySelector('#adminDashboard .admin-page.active');
+    if (!scope) return;
+    scope.querySelectorAll('.user-check').forEach((c) => { c.checked = master.checked; });
   };
 
   window.bulkDelete = async () => {
-    const selected = Array.from(document.querySelectorAll('.user-check:checked')).map(c => c.getAttribute('data-code'));
+    const scope = document.querySelector('#adminDashboard .admin-page.active');
+    const selected = scope
+      ? Array.from(scope.querySelectorAll('.user-check:checked')).map((c) => c.getAttribute('data-code'))
+      : [];
     if (selected.length === 0) return alert('Select users first');
     if (!confirm(`Delete ${selected.length} selected accounts?`)) return;
     for (const code of selected) {
@@ -976,30 +1291,54 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
   };
 
   window.filterUsers = () => {
-    const filter = document.getElementById('adminSearch').value.toUpperCase();
+    const el = document.getElementById('adminSearch');
+    if (!el) return;
+    const filter = el.value.toUpperCase();
     const rows = document.getElementById('userList').getElementsByTagName('tr');
     for (let i = 0; i < rows.length; i++) {
-      if (rows[i].cells.length === 1) continue; // Skip the 'No active sync codes' message
+      if (rows[i].cells.length === 1) continue;
+      const textData = rows[i].textContent || rows[i].innerText;
+      rows[i].style.display = textData.toUpperCase().indexOf(filter) > -1 ? '' : 'none';
+    }
+  };
+
+  window.filterUsersExpired = () => {
+    const el = document.getElementById('adminSearchExpired');
+    if (!el) return;
+    const filter = el.value.toUpperCase();
+    const rows = document.getElementById('userListExpired').getElementsByTagName('tr');
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].cells.length === 1) continue;
       const textData = rows[i].textContent || rows[i].innerText;
       rows[i].style.display = textData.toUpperCase().indexOf(filter) > -1 ? '' : 'none';
     }
   };
 
   window.openAddManual = () => {
-    document.getElementById('add-code').value = 'global';
-    window.setAddMethod('xtream');
-    document.getElementById('addModal').style.display = 'flex';
+    window.navigateAdmin('add');
   };
-  window.closeAddModal = () => document.getElementById('addModal').style.display = 'none';
+  window.closeAddModal = () => window.navigateAdmin('home');
 
   window.saveAddManual = async () => {
-    const code = (document.getElementById('add-code').value || 'global').trim();
-    if (!code) return alert('Sync key is required');
+    const code = normalizeDeviceId(document.getElementById('add-code').value);
+    if (!isValidDeviceId8(code)) {
+      alert('Enter exactly 8 digits (0–9). You can paste with a space (e.g. 1234 5678); spaces are removed automatically.');
+      return;
+    }
 
-    const addBtn = document.querySelector('#addModal .sync-btn');
+    const addBtn = document.querySelector('#adminPageAdd .sync-btn');
     const prevBtnText = addBtn ? addBtn.innerText : '';
 
     let payload = { method: addMethod, timestamp: Date.now() };
+    
+    // Handle Expiry
+    const duration = parseInt(document.getElementById('add-duration').value || '0');
+    if (duration > 0) {
+      payload.expiryDate = Date.now() + (duration * 30 * 24 * 60 * 60 * 1000);
+    } else {
+      payload.expiryDate = 0; // Unlimited
+    }
+
     try {
       if (addMethod === 'xtream') {
         const s = document.getElementById('add-server');
@@ -1141,6 +1480,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
         }
       }
       if (u.managedPlaylist != null) payload.managedPlaylist = u.managedPlaylist;
+      if (u.expiryDate != null) payload.expiryDate = u.expiryDate;
 
       await set(dbRef, stripUndefinedDeep(payload));
       window.closeModal();
@@ -1677,7 +2017,7 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
     window.channelMgrPage = 1;
     window.channelMgrSelected = {};
     window.channelMgrDraggedRowId = null;
-    document.getElementById('channelMgrSyncKeyLabel').innerText = 'sync key: ' + code;
+    document.getElementById('channelMgrSyncKeyLabel').innerText = 'Device ID: ' + code;
     document.getElementById('channelMgrStatus').innerText = '';
     document.getElementById('channelManagerModal').style.display = 'flex';
     try {

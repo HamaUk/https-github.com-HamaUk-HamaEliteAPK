@@ -16,10 +16,10 @@
     <application
         android:name=".IptvApplication"
         android:allowBackup="true"
-        android:banner="@mipmap/ic_launcher_hama"
-        android:icon="@mipmap/ic_launcher_hama"
+        android:banner="@drawable/ic_logo_yousif"
+        android:icon="@drawable/ic_logo_yousif"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_hama"
+        android:roundIcon="@drawable/ic_logo_yousif"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"

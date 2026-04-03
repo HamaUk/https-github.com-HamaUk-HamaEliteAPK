@@ -55,7 +55,11 @@ data class SyncData(
     val pass: String?,
     val url: String?,
     val content: String?,
-    val managedPlaylist: ManagedPlaylist? = null
+    val managedPlaylist: ManagedPlaylist? = null,
+    /** Expiry timestamp in milliseconds. 0 or null means unlimited. */
+    val expiryDate: Long? = null,
+    /** Optional activation status (e.g. "active", "pending", "expired"). */
+    val status: String? = "active"
 )
 
 /** Firebase RTDB node `app_status` — create manually: `{ "state": "ok|maintenance|degraded", "message_ku": "..." }` */
@@ -76,7 +80,6 @@ interface IptvService {
         @Query("password") pass: String
     ): Call<XtreamAuthResponse>
 
-    // Firebase Sync REST
     @GET("sync/{deviceId}.json")
     fun getSyncData(
         @Path("deviceId") deviceId: String
@@ -84,4 +87,14 @@ interface IptvService {
 
     @GET("app_status.json")
     fun getAppStatus(): Call<AppStatus>
+}
+
+/** WorldTimeAPI model */
+data class WorldTimeResponse(
+    @SerializedName("unixtime") val unixTime: Long
+)
+
+interface WorldTimeService {
+    @GET("api/timezone/Etc/UTC")
+    fun getUtcTime(): Call<WorldTimeResponse>
 }
