@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingVertical="16dp"
+    android:paddingHorizontal="8dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <TextView
+        android:id="@+id/tv_ayah_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:lineSpacingExtra="14dp"
+        android:textDirection="rtl"
+        android:gravity="end"
+        android:fontFamily="sans-serif" />
+
+    <TextView
+        android:id="@+id/tv_ayah_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/sports_text_secondary"
+        android:textSize="14sp"
+        android:layout_marginTop="8dp" />
+</LinearLayout>

@@ -20,9 +20,8 @@ class SportsActivity : AppCompatActivity() {
     private lateinit var rvLeagues: RecyclerView
     private lateinit var pbLoading: ProgressBar
 
-    // Using Android emulator default loopback. 
-    // If testing on a real device, replace this with your computer's local IP (e.g. 192.168.1.5)
-    private val BASE_URL = "http://10.0.2.2:3000"
+    // Deployed Render Node.js Server
+    private val BASE_URL = "https://https-github-com-hamauk-hamaeliteapk.onrender.com"
 
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private val fetchRunnable = object : Runnable {
