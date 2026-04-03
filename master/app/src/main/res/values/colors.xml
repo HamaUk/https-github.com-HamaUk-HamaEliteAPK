@@ -44,4 +44,11 @@
     <color name="crimson_mid">#E53935</color>
     <color name="crimson_light">#FF6E6E</color>
     <color name="crimson_glow">#33E53935</color>
+
+    <!-- Sports UI colors -->
+    <color name="sports_bg">#0F111A</color>
+    <color name="sports_card">#171926</color>
+    <color name="sports_card_stroke">#212436</color>
+    <color name="sports_text_secondary">#8C92B1</color>
+    <color name="sports_live_green">#01D192</color>
 </resources>

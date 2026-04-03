@@ -126,6 +126,10 @@ class DashboardActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        binding.cardSports.setOnClickListener {
+            startActivity(Intent(this, com.bachors.iptv.sports.SportsActivity::class.java))
+        }
+
         binding.cardSettings.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
