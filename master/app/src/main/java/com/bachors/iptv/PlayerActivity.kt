@@ -1182,10 +1182,6 @@ class PlayerActivity : AppCompatActivity() {
 
         btnAudioTrack.visibility = View.GONE
         btnSubtitle.visibility = View.GONE
-
-        if (isTelevisionUi()) {
-            playerView.setSurfaceType(PlayerView.SURFACE_TYPE_SURFACE_VIEW)
-        }
     }
 
     /** Android TV / leanback: SurfaceView avoids TextureView+GPU path that often shows green decode artifacts. */
