@@ -45,6 +45,8 @@
     <color name="crimson_light">#FF6E6E</color>
     <color name="crimson_glow">#33E53935</color>
 
+    <color name="white">#FFFFFF</color>
+
     <!-- Sports UI colors -->
     <color name="sports_bg">#0F111A</color>
     <color name="sports_card">#171926</color>
