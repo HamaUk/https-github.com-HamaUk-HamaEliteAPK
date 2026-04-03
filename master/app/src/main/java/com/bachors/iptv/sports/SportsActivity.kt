@@ -39,6 +39,8 @@ class SportsActivity : AppCompatActivity() {
         rvLeagues.layoutManager = LinearLayoutManager(this)
         pbLoading = findViewById(R.id.pb_loading)
 
+        findViewById<android.widget.ImageView>(R.id.iv_back).setOnClickListener { finish() }
+
         handler.post(fetchRunnable)
     }
 

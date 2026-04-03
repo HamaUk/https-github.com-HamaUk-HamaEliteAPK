@@ -46,6 +46,8 @@ class SurahActivity : AppCompatActivity() {
         tvPlayerStatus = findViewById(R.id.tv_player_status)
         ivPlayPause = findViewById(R.id.iv_play_pause)
 
+        findViewById<ImageView>(R.id.iv_back).setOnClickListener { finish() }
+
         tvSurahName.text = surahName
         rvAyahs.layoutManager = LinearLayoutManager(this)
 
