@@ -151,7 +151,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="@drawable/bg_dashboard_card_active"
+                        android:background="@drawable/bg_dashboard_card"
                         android:duplicateParentState="true" />
 
                     <ImageView
@@ -159,7 +159,7 @@
                         android:layout_height="match_parent"
                         android:padding="20dp"
                         android:src="@drawable/ic_live"
-                        app:tint="#E53935" />
+                        app:tint="#FFFFFF" />
                 </FrameLayout>
 
                 <TextView

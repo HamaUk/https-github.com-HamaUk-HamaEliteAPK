@@ -39,6 +39,8 @@ import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
+import androidx.media3.exoplayer.mediacodec.MediaCodecUtil
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
@@ -539,6 +541,33 @@ class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Settings → hardware acceleration: when off, prefer software MediaCodec decoders (and FFmpeg ext)
+     * to work around TV box HW decoder green/corrupt output.
+     */
+    private fun buildMediaCodecSelector(): MediaCodecSelector {
+        if (SharedPrefManager(this).getHwAccel()) {
+            return MediaCodecSelector.DEFAULT
+        }
+        return MediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
+            try {
+                val all = MediaCodecUtil.getDecoderInfos(
+                    mimeType,
+                    requiresSecureDecoder,
+                    requiresTunnelingDecoder
+                )
+                val softwareOnly = all.filter { !it.hardwareAccelerated }
+                if (softwareOnly.isNotEmpty()) softwareOnly else all
+            } catch (_: MediaCodecUtil.DecoderQueryException) {
+                MediaCodecSelector.DEFAULT.getDecoderInfos(
+                    mimeType,
+                    requiresSecureDecoder,
+                    requiresTunnelingDecoder
+                )
+            }
+        }
+    }
+
     private fun initPlayer() {
         val savedResize = SharedPrefManager(this).getSpString(SharedPrefManager.SP_RESIZE_MODE)
         currentResizeIndex = resizeModes.indexOfFirst { it.toString() == savedResize }.coerceAtLeast(0)
@@ -597,13 +626,16 @@ class PlayerActivity : AppCompatActivity() {
         }
         val loadControl = loadControlBuilder.build()
 
-        val extMode = when (engine) {
-            PlayerLauncher.ENGINE_EXO_CINEMA -> DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON
+        val hwAccel = SharedPrefManager(this).getHwAccel()
+        val extMode = when {
+            !hwAccel -> DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON
+            engine == PlayerLauncher.ENGINE_EXO_CINEMA -> DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON
             else -> DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
         }
         val renderersFactory = DefaultRenderersFactory(this)
+            .setMediaCodecSelector(buildMediaCodecSelector())
             .setExtensionRendererMode(extMode)
-            .setEnableDecoderFallback(false)
+            .setEnableDecoderFallback(true)
         exoPlayer = ExoPlayer.Builder(this, renderersFactory)
             .setTrackSelector(trackSelector)
             .setLoadControl(loadControl)
@@ -1150,6 +1182,17 @@ class PlayerActivity : AppCompatActivity() {
 
         btnAudioTrack.visibility = View.GONE
         btnSubtitle.visibility = View.GONE
+
+        if (isTelevisionUi()) {
+            playerView.setSurfaceType(PlayerView.SURFACE_TYPE_SURFACE_VIEW)
+        }
+    }
+
+    /** Android TV / leanback: SurfaceView avoids TextureView+GPU path that often shows green decode artifacts. */
+    private fun isTelevisionUi(): Boolean {
+        if (packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)) return true
+        val uiModeType = resources.configuration.uiMode and Configuration.UI_MODE_TYPE_MASK
+        return uiModeType == Configuration.UI_MODE_TYPE_TELEVISION
     }
 
     private fun setupControls() {
