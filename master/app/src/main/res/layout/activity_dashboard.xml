@@ -144,6 +144,7 @@
                 <FrameLayout
                     android:layout_width="90dp"
                     android:layout_height="90dp"
+                    android:duplicateParentState="true"
                     android:clipChildren="false"
                     android:clipToPadding="false">
 
@@ -193,6 +194,7 @@
                 <FrameLayout
                     android:layout_width="90dp"
                     android:layout_height="90dp"
+                    android:duplicateParentState="true"
                     android:clipChildren="false"
                     android:clipToPadding="false">
 
@@ -242,6 +244,7 @@
                 <FrameLayout
                     android:layout_width="90dp"
                     android:layout_height="90dp"
+                    android:duplicateParentState="true"
                     android:clipChildren="false"
                     android:clipToPadding="false">
 
@@ -291,6 +294,7 @@
                 <FrameLayout
                     android:layout_width="90dp"
                     android:layout_height="90dp"
+                    android:duplicateParentState="true"
                     android:clipChildren="false"
                     android:clipToPadding="false">
 
@@ -349,6 +353,7 @@
                 <FrameLayout
                     android:layout_width="90dp"
                     android:layout_height="90dp"
+                    android:duplicateParentState="true"
                     android:clipChildren="false"
                     android:clipToPadding="false">
 

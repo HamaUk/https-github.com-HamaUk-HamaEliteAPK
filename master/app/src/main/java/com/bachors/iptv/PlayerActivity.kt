@@ -603,7 +603,7 @@ class PlayerActivity : AppCompatActivity() {
         }
         val renderersFactory = DefaultRenderersFactory(this)
             .setExtensionRendererMode(extMode)
-            .setEnableDecoderFallback(true)
+            .setEnableDecoderFallback(false)
         exoPlayer = ExoPlayer.Builder(this, renderersFactory)
             .setTrackSelector(trackSelector)
             .setLoadControl(loadControl)
@@ -616,6 +616,7 @@ class PlayerActivity : AppCompatActivity() {
                 true
             )
             player.volume = 1f
+            player.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT
             playerView.player = player
             player.addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(state: Int) {
