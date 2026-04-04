@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bachors.iptv.databinding.ActivityDashboardBinding
 import com.bachors.iptv.models.PlaylistData
+import com.bachors.iptv.utils.ActivationHelper
 import com.bachors.iptv.utils.AppStatus
 import com.bachors.iptv.utils.ContinueWatchingStore
 import com.bachors.iptv.utils.GlobalSync
