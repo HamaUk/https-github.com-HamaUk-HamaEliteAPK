@@ -16,121 +16,119 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ScrollView
+    <LinearLayout
+        android:id="@+id/layout_activation"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
-            android:id="@+id/layout_activation"
-            android:layout_width="match_parent"
+        <ImageView
+            android:id="@+id/img_logo"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/ic_logo_yousif" />
+
+        <TextView
+            android:id="@+id/txt_app_name"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/rabar_044"
+            android:text="@string/app_name"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txt_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:fontFamily="@font/rabar_044"
+            android:text="@string/activation_status_not_active"
+            android:textColor="#FF4B2B"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="32dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:background="#22FFFFFF" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/rabar_044"
+            android:text="@string/activation_code_label"
+            android:textColor="#AAAAAA"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/txt_device_code"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:includeFontPadding="false"
+            android:letterSpacing="0.1"
+            android:padding="4dp"
+            android:text="0000 0000"
+            android:textColor="#00D4FF"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/rabar_044"
             android:gravity="center"
-            android:orientation="vertical"
-            android:padding="24dp">
+            android:lineSpacingExtra="2dp"
+            android:text="@string/activation_instructions"
+            android:textColor="#CCCCCC"
+            android:textSize="12sp" />
 
-            <ImageView
-                android:id="@+id/img_logo"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:src="@drawable/ic_logo_yousif" />
+        <TextView
+            android:id="@+id/txt_telegram"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="@font/rabar_044"
+            android:text="@string/activation_telegram"
+            android:textColor="#00D4FF"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/txt_app_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:fontFamily="@font/rabar_044"
-                android:text="@string/app_name"
-                android:textColor="#FFFFFF"
-                android:textSize="28sp"
-                android:textStyle="bold" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_retry"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="160dp"
+            android:layout_height="44dp"
+            android:layout_marginTop="20dp"
+            android:backgroundTint="#22FFFFFF"
+            android:fontFamily="@font/rabar_044"
+            android:text="@string/activation_btn_retry"
+            android:textColor="#FFFFFF"
+            app:cornerRadius="22dp"
+            app:strokeColor="#44FFFFFF"
+            app:strokeWidth="1dp" />
 
-            <TextView
-                android:id="@+id/txt_status"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:fontFamily="@font/rabar_044"
-                android:text="@string/activation_status_not_active"
-                android:textColor="#FF4B2B"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+        <ProgressBar
+            android:id="@+id/progress_sync"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginTop="8dp"
+            android:indeterminateTint="#00D4FF"
+            android:visibility="gone" />
 
-            <View
-                android:layout_width="32dp"
-                android:layout_height="1dp"
-                android:layout_marginTop="20dp"
-                android:background="#22FFFFFF" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:fontFamily="@font/rabar_044"
-                android:text="@string/activation_code_label"
-                android:textColor="#AAAAAA"
-                android:textSize="13sp" />
-
-            <TextView
-                android:id="@+id/txt_device_code"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:includeFontPadding="false"
-                android:letterSpacing="0.1"
-                android:padding="4dp"
-                android:text="0000 0000"
-                android:textColor="#00D4FF"
-                android:textSize="36sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="260dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:fontFamily="@font/rabar_044"
-                android:gravity="center"
-                android:lineSpacingExtra="2dp"
-                android:text="@string/activation_instructions"
-                android:textColor="#CCCCCC"
-                android:textSize="13sp" />
-
-            <TextView
-                android:id="@+id/txt_telegram"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:fontFamily="@font/rabar_044"
-                android:text="@string/activation_telegram"
-                android:textColor="#00D4FF"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_retry"
-                style="@style/Widget.MaterialComponents.Button"
-                android:layout_width="180dp"
-                android:layout_height="48dp"
-                android:layout_marginTop="24dp"
-                android:backgroundTint="#22FFFFFF"
-                android:fontFamily="@font/rabar_044"
-                android:text="@string/activation_btn_retry"
-                android:textColor="#FFFFFF"
-                app:cornerRadius="24dp"
-                app:strokeColor="#44FFFFFF"
-                app:strokeWidth="1dp" />
-
-            <ProgressBar
-                android:id="@+id/progress_sync"
-                style="?android:attr/progressBarStyle"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:layout_marginTop="12dp"
-                android:indeterminateTint="#00D4FF"
-                android:visibility="gone" />
-
-        </LinearLayout>
-    </ScrollView>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
