@@ -6,14 +6,13 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
 import com.bachors.iptv.databinding.ActivityMainBinding
 import com.bachors.iptv.utils.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseThemedAppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var sharedPrefManager: SharedPrefManager
@@ -121,6 +120,7 @@ class MainActivity : AppCompatActivity() {
     private fun completeSync(data: SyncData) {
         val synced = GlobalSync.applySyncedConfig(this, sharedPrefManager, data)
         if (synced) {
+            sharedPrefManager.recordSuccessfulSync()
             startActivity(Intent(this, DashboardActivity::class.java))
             finish()
         } else {

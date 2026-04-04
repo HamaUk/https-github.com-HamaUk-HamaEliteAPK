@@ -37,63 +37,89 @@
     </LinearLayout>
 
     <!-- Sidebar Menu -->
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/sidebar"
-        android:layout_width="200dp"
+        android:layout_width="228dp"
         android:layout_height="0dp"
         android:layout_marginTop="12dp"
         android:background="@drawable/hk_rounded_bg"
-        android:orientation="vertical"
-        android:padding="16dp"
+        android:fillViewport="true"
+        android:padding="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/settings_header">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_general"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:textColor="#FFFFFF"
-            android:text="@string/settings_general"
-            android:textAlignment="viewStart" />
+            android:orientation="vertical">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_player_section"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:textColor="#FFFFFF"
-            android:text="@string/settings_player"
-            android:textAlignment="viewStart" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_general"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:text="@string/settings_general"
+                android:textAlignment="viewStart"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_content"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:textColor="#FFFFFF"
-            android:text="@string/settings_content"
-            android:textAlignment="viewStart" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_player_section"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:text="@string/settings_player"
+                android:textAlignment="viewStart"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_account"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:textColor="#FFFFFF"
-            android:text="@string/settings_account"
-            android:textAlignment="viewStart" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_account"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:text="@string/settings_account"
+                android:textAlignment="viewStart"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-    </LinearLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_language"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:text="@string/settings_language"
+                android:textAlignment="viewStart"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_appearance"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:text="@string/settings_appearance"
+                android:textAlignment="viewStart"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_last_sync_section"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_last_sync_section"
+                android:textAlignment="viewStart"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
     <!-- Content Area -->
     <FrameLayout
@@ -207,6 +233,159 @@
                             android:layout_height="wrap_content" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/VuCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:strokeColor="@color/white_opacity_10"
+                    app:strokeWidth="1dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_stream_resolution"
+                            android:textColor="#FFFFFF"
+                            android:textSize="16sp" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/settings_stream_hint"
+                            android:textColor="#8890A0"
+                            android:textSize="12sp" />
+                        <RadioGroup
+                            android:id="@+id/rg_stream_quality"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp">
+                            <RadioButton
+                                android:id="@+id/rb_stream_auto"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/settings_stream_auto"
+                                android:textColor="#B0B0C0" />
+                            <RadioButton
+                                android:id="@+id/rb_stream_720"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/settings_stream_720"
+                                android:textColor="#B0B0C0" />
+                            <RadioButton
+                                android:id="@+id/rb_stream_1080"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/settings_stream_1080"
+                                android:textColor="#B0B0C0" />
+                            <RadioButton
+                                android:id="@+id/rb_stream_4k"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/settings_stream_4k"
+                                android:textColor="#B0B0C0" />
+                        </RadioGroup>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/settings_playlist_mgmt"
+                    android:textColor="@color/vu_purple"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/VuCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:strokeColor="@color/white_opacity_10"
+                    app:strokeWidth="1dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="16dp">
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/settings_active_playlist"
+                            android:textColor="#FFFFFF"
+                            android:textSize="14sp" />
+                        <TextView
+                            android:id="@+id/tv_active_playlist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_active_default"
+                            android:textColor="#E53935"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_save_playlist"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="12dp"
+                    android:backgroundTint="@color/vu_purple"
+                    android:text="@string/settings_save_playlist" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_load_playlist"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="8dp"
+                    android:backgroundTint="@color/vu_purple"
+                    android:text="@string/settings_switch_playlist" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_delete_playlist"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="8dp"
+                    android:backgroundTint="#E53935"
+                    android:text="@string/settings_delete_playlist" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/settings_data_cache"
+                    android:textColor="@color/vu_purple"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_clear_cache"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="12dp"
+                    android:backgroundTint="@color/vu_purple"
+                    android:text="@string/settings_clear_cache" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_refresh_data"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:backgroundTint="@color/vu_purple"
+                    android:text="@string/settings_refresh_data" />
             </LinearLayout>
         </ScrollView>
 
@@ -358,119 +537,6 @@
             </LinearLayout>
         </ScrollView>
 
-        <!-- Content Section -->
-        <ScrollView
-            android:id="@+id/layout_content"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fillViewport="true"
-            android:visibility="gone">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settings_playlist_mgmt"
-                    android:textColor="@color/vu_purple"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <!-- Active playlist indicator -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    app:strokeColor="@color/white_opacity_10"
-                    app:strokeWidth="1dp"
-                    style="@style/VuCard">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:padding="16dp">
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/settings_active_playlist"
-                            android:textColor="#FFFFFF"
-                            android:textSize="14sp" />
-                        <TextView
-                            android:id="@+id/tv_active_playlist"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/settings_active_default"
-                            android:textColor="#E53935"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_save_playlist"
-                    style="@style/Widget.MaterialComponents.Button"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="12dp"
-                    android:backgroundTint="@color/vu_purple"
-                    android:text="@string/settings_save_playlist" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_load_playlist"
-                    style="@style/Widget.MaterialComponents.Button"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="8dp"
-                    android:backgroundTint="@color/vu_purple"
-                    android:text="@string/settings_switch_playlist" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_delete_playlist"
-                    style="@style/Widget.MaterialComponents.Button"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="8dp"
-                    android:backgroundTint="#E53935"
-                    android:text="@string/settings_delete_playlist" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginBottom="12dp"
-                    android:background="#22FFFFFF" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settings_data_cache"
-                    android:textColor="@color/vu_purple"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_clear_cache"
-                    style="@style/Widget.MaterialComponents.Button"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="12dp"
-                    android:backgroundTint="@color/vu_purple"
-                    android:text="@string/settings_clear_cache" />
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_refresh_data"
-                    style="@style/Widget.MaterialComponents.Button"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="8dp"
-                    android:backgroundTint="@color/vu_purple"
-                    android:text="@string/settings_refresh_data" />
-            </LinearLayout>
-        </ScrollView>
-
         <!-- Account Section -->
         <ScrollView
             android:id="@+id/layout_account"
@@ -482,45 +548,266 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/settings_subscription"
                     android:textColor="@color/vu_purple"
-                    android:textSize="14sp"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
+
                 <com.google.android.material.card.MaterialCardView
+                    style="@style/VuCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    app:strokeColor="@color/white_opacity_10"
-                    app:strokeWidth="1dp"
-                    style="@style/VuCard">
+                    app:strokeColor="@color/crimson_glow"
+                    app:strokeWidth="1dp">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="20dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/activation_code_label"
+                            android:textColor="#9E9E9E"
+                            android:textSize="12sp" />
+                        <TextView
+                            android:id="@+id/tv_device_id_display"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:fontFamily="sans-serif-medium"
+                            android:letterSpacing="0.08"
+                            android:text="0000 0000"
+                            android:textColor="#00D4FF"
+                            android:textSize="32sp"
+                            android:textStyle="bold" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_copy_device_id"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:text="@string/settings_copy_device_id"
+                            android:textColor="#00D4FF"
+                            app:strokeColor="#00D4FF" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/VuCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    app:strokeColor="@color/white_opacity_10"
+                    app:strokeWidth="1dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="18dp">
                         <TextView
                             android:id="@+id/tv_pkg"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text=""
-                            android:textColor="#FFFFFF" />
+                            android:textColor="#FFFFFF"
+                            android:textSize="14sp" />
                         <TextView
-                            android:id="@+id/tv_mac"
+                            android:id="@+id/tv_version"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="@string/settings_id_label"
-                            android:textColor="#FFFFFF" />
+                            android:layout_marginTop="10dp"
+                            android:textColor="#CCCCCC"
+                            android:textSize="14sp" />
                         <TextView
                             android:id="@+id/tv_expiry"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
+                            android:layout_marginTop="10dp"
+                            android:textColor="#B0B0C0"
+                            android:textSize="14sp" />
+                        <TextView
+                            android:id="@+id/tv_account_status"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
                             android:text="@string/settings_status_premium"
-                            android:textColor="#FFFFFF" />
+                            android:textColor="#8BC34A"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Language Section -->
+        <ScrollView
+            android:id="@+id/layout_language"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:visibility="gone">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_language_title"
+                    android:textColor="@color/vu_purple"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/VuCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:strokeColor="@color/white_opacity_10"
+                    app:strokeWidth="1dp">
+                    <RadioGroup
+                        android:id="@+id/rg_app_language"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp">
+                        <RadioButton
+                            android:id="@+id/rb_lang_sorani"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_language_sorani"
+                            android:textColor="#B0B0C0" />
+                        <RadioButton
+                            android:id="@+id/rb_lang_badini"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_language_badini"
+                            android:textColor="#B0B0C0" />
+                        <RadioButton
+                            android:id="@+id/rb_lang_ar"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_language_arabic"
+                            android:textColor="#B0B0C0" />
+                        <RadioButton
+                            android:id="@+id/rb_lang_en"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_language_english"
+                            android:textColor="#B0B0C0" />
+                        <RadioButton
+                            android:id="@+id/rb_lang_system"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_language_system"
+                            android:textColor="#B0B0C0" />
+                    </RadioGroup>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Appearance Section -->
+        <ScrollView
+            android:id="@+id/layout_appearance"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:visibility="gone">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_appearance_title"
+                    android:textColor="@color/vu_purple"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/VuCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:strokeColor="@color/white_opacity_10"
+                    app:strokeWidth="1dp">
+                    <RadioGroup
+                        android:id="@+id/rg_theme_mode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp">
+                        <RadioButton
+                            android:id="@+id/rb_theme_dark"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_theme_dark"
+                            android:textColor="#B0B0C0" />
+                        <RadioButton
+                            android:id="@+id/rb_theme_amoled"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_theme_amoled"
+                            android:textColor="#B0B0C0" />
+                        <RadioButton
+                            android:id="@+id/rb_theme_light"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_theme_light"
+                            android:textColor="#B0B0C0" />
+                    </RadioGroup>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Last sync Section -->
+        <ScrollView
+            android:id="@+id/layout_last_sync"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:visibility="gone">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_last_sync_title"
+                    android:textColor="@color/vu_purple"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/VuCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:strokeColor="@color/white_opacity_10"
+                    app:strokeWidth="1dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+                        <TextView
+                            android:id="@+id/tv_last_sync_value"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_last_sync_never"
+                            android:textColor="#FFFFFF"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:lineSpacingExtra="4dp"
+                            android:text="@string/settings_last_sync_hint"
+                            android:textColor="#8890A0"
+                            android:textSize="13sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>

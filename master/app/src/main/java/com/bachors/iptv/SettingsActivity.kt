@@ -1,24 +1,34 @@
 package com.bachors.iptv
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.ui.AspectRatioFrameLayout
 import com.bachors.iptv.databinding.ActivitySettingsBinding
+import com.bachors.iptv.utils.ActivationHelper
+import com.bachors.iptv.utils.AppLocaleHelper
 import com.bachors.iptv.utils.PlayerLauncher
 import com.bachors.iptv.utils.SharedPrefManager
+import com.bachors.iptv.utils.ThemeHelper
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.json.JSONObject
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-class SettingsActivity : AppCompatActivity() {
+class SettingsActivity : BaseThemedAppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var sharedPrefManager: SharedPrefManager
+
+    private var suppressStreamQuality = false
+    private var suppressLanguageRadio = false
+    private var suppressThemeRadio = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,14 +43,20 @@ class SettingsActivity : AppCompatActivity() {
         showSection("general")
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateLastSyncDisplay()
+        refreshAccountPanel()
+    }
+
     private fun setupUI() {
         val ver = runCatching {
             packageManager.getPackageInfo(packageName, 0).versionName
         }.getOrNull() ?: "—"
 
         binding.tvPkg.text = getString(R.string.settings_package_line, packageName)
-        binding.tvMac.text = getString(R.string.settings_version_line, ver)
-        binding.tvExpiry.text = getString(R.string.settings_status_premium)
+        binding.tvVersion.text = getString(R.string.settings_version_line, ver)
+        refreshAccountPanel()
 
         val savedResize = sharedPrefManager.getResizeMode()
         when (savedResize) {
@@ -67,7 +83,75 @@ class SettingsActivity : AppCompatActivity() {
             else -> binding.rbPlayerExo.isChecked = true
         }
 
+        suppressStreamQuality = true
+        when (sharedPrefManager.getSpInt(SharedPrefManager.SP_VIDEO_QUALITY_PRESET, 0)) {
+            1 -> binding.rbStream720.isChecked = true
+            2 -> binding.rbStream1080.isChecked = true
+            3 -> binding.rbStream4k.isChecked = true
+            else -> binding.rbStreamAuto.isChecked = true
+        }
+        suppressStreamQuality = false
+
+        bindLanguageRadiosFromPrefs()
+        bindThemeRadiosFromPrefs()
+
         updateActivePlaylistLabel()
+        updateLastSyncDisplay()
+    }
+
+    private fun deviceCodeForDisplay(): String {
+        val code = ActivationHelper.getDeviceCode(this)
+        return if (code.length == 8) "${code.substring(0, 4)} ${code.substring(4)}" else code
+    }
+
+    private fun refreshAccountPanel() {
+        binding.tvDeviceIdDisplay.text = deviceCodeForDisplay()
+
+        val expiry = sharedPrefManager.getSpLong(SharedPrefManager.SP_EXPIRY_DATE, 0L)
+        val now = System.currentTimeMillis()
+        binding.tvExpiry.text = when {
+            expiry <= 0L -> getString(R.string.settings_expiry_unlimited)
+            else -> {
+                val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                getString(R.string.settings_expiry_line, sdf.format(Date(expiry)))
+            }
+        }
+        binding.tvAccountStatus.text = when {
+            expiry > 0L && expiry < now -> getString(R.string.activation_status_expired)
+            else -> getString(R.string.settings_status_premium)
+        }
+    }
+
+    private fun bindLanguageRadiosFromPrefs() {
+        suppressLanguageRadio = true
+        when (sharedPrefManager.getAppLanguageKey()) {
+            SharedPrefManager.LANGUAGE_KMR -> binding.rbLangBadini.isChecked = true
+            SharedPrefManager.LANGUAGE_AR -> binding.rbLangAr.isChecked = true
+            SharedPrefManager.LANGUAGE_EN -> binding.rbLangEn.isChecked = true
+            SharedPrefManager.LANGUAGE_SYSTEM -> binding.rbLangSystem.isChecked = true
+            else -> binding.rbLangSorani.isChecked = true
+        }
+        suppressLanguageRadio = false
+    }
+
+    private fun bindThemeRadiosFromPrefs() {
+        suppressThemeRadio = true
+        when (sharedPrefManager.getThemeMode()) {
+            ThemeHelper.THEME_AMOLED -> binding.rbThemeAmoled.isChecked = true
+            ThemeHelper.THEME_LIGHT -> binding.rbThemeLight.isChecked = true
+            else -> binding.rbThemeDark.isChecked = true
+        }
+        suppressThemeRadio = false
+    }
+
+    private fun updateLastSyncDisplay() {
+        val ms = sharedPrefManager.getSpLong(SharedPrefManager.SP_LAST_SYNC_SUCCESS_AT, 0L)
+        binding.tvLastSyncValue.text = if (ms <= 0L) {
+            getString(R.string.settings_last_sync_never)
+        } else {
+            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+            sdf.format(Date(ms))
+        }
     }
 
     private fun setupClickListeners() {
@@ -75,8 +159,17 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.btnGeneral.setOnClickListener { showSection("general") }
         binding.btnPlayerSection.setOnClickListener { showSection("player") }
-        binding.btnContent.setOnClickListener { showSection("content") }
         binding.btnAccount.setOnClickListener { showSection("account") }
+        binding.btnLanguage.setOnClickListener { showSection("language") }
+        binding.btnAppearance.setOnClickListener { showSection("appearance") }
+        binding.btnLastSyncSection.setOnClickListener { showSection("last_sync") }
+
+        binding.btnCopyDeviceId.setOnClickListener {
+            val code = ActivationHelper.getDeviceCode(this)
+            val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            cm.setPrimaryClip(ClipData.newPlainText("device_id", code))
+            Toast.makeText(this, getString(R.string.settings_device_id_copied), Toast.LENGTH_SHORT).show()
+        }
 
         binding.rgResizeMode.setOnCheckedChangeListener { _, checkedId ->
             val mode = when (checkedId) {
@@ -87,6 +180,17 @@ class SettingsActivity : AppCompatActivity() {
                 else -> AspectRatioFrameLayout.RESIZE_MODE_FIT
             }
             sharedPrefManager.saveSPString(SharedPrefManager.SP_RESIZE_MODE, mode.toString())
+        }
+
+        binding.rgStreamQuality.setOnCheckedChangeListener { _, checkedId ->
+            if (suppressStreamQuality) return@setOnCheckedChangeListener
+            val preset = when (checkedId) {
+                R.id.rb_stream_720 -> 1
+                R.id.rb_stream_1080 -> 2
+                R.id.rb_stream_4k -> 3
+                else -> 0
+            }
+            sharedPrefManager.saveSPInt(SharedPrefManager.SP_VIDEO_QUALITY_PRESET, preset)
         }
 
         binding.switchAutoplay.setOnCheckedChangeListener { _, isChecked ->
@@ -115,10 +219,37 @@ class SettingsActivity : AppCompatActivity() {
             sharedPrefManager.saveSPString(SharedPrefManager.SP_PLAYER_ENGINE, engine)
         }
 
+        binding.rgAppLanguage.setOnCheckedChangeListener { _, checkedId ->
+            if (suppressLanguageRadio) return@setOnCheckedChangeListener
+            val key = when (checkedId) {
+                R.id.rb_lang_badini -> SharedPrefManager.LANGUAGE_KMR
+                R.id.rb_lang_ar -> SharedPrefManager.LANGUAGE_AR
+                R.id.rb_lang_en -> SharedPrefManager.LANGUAGE_EN
+                R.id.rb_lang_system -> SharedPrefManager.LANGUAGE_SYSTEM
+                else -> SharedPrefManager.LANGUAGE_CKB
+            }
+            if (key == sharedPrefManager.getAppLanguageKey()) return@setOnCheckedChangeListener
+            sharedPrefManager.saveAppLanguageKey(key)
+            AppLocaleHelper.applySavedApplicationLocales(this)
+            recreate()
+        }
+
+        binding.rgThemeMode.setOnCheckedChangeListener { _, checkedId ->
+            if (suppressThemeRadio) return@setOnCheckedChangeListener
+            val mode = when (checkedId) {
+                R.id.rb_theme_amoled -> ThemeHelper.THEME_AMOLED
+                R.id.rb_theme_light -> ThemeHelper.THEME_LIGHT
+                else -> ThemeHelper.THEME_DARK
+            }
+            if (mode == sharedPrefManager.getThemeMode()) return@setOnCheckedChangeListener
+            sharedPrefManager.saveThemeMode(mode)
+            ThemeHelper.applyDefaultNightMode(this)
+            recreate()
+        }
+
         binding.btnClearCache.setOnClickListener { clearAppCache() }
         binding.btnRefreshData.setOnClickListener { refreshPlaylistData() }
 
-        // Playlist management
         binding.btnSavePlaylist.setOnClickListener { showSavePlaylistDialog() }
         binding.btnLoadPlaylist.setOnClickListener { showLoadPlaylistDialog() }
         binding.btnDeletePlaylist.setOnClickListener { showDeletePlaylistDialog() }
@@ -127,16 +258,21 @@ class SettingsActivity : AppCompatActivity() {
     private fun showSection(section: String) {
         binding.layoutGeneral.visibility = if (section == "general") View.VISIBLE else View.GONE
         binding.layoutPlayer.visibility = if (section == "player") View.VISIBLE else View.GONE
-        binding.layoutContent.visibility = if (section == "content") View.VISIBLE else View.GONE
         binding.layoutAccount.visibility = if (section == "account") View.VISIBLE else View.GONE
+        binding.layoutLanguage.visibility = if (section == "language") View.VISIBLE else View.GONE
+        binding.layoutAppearance.visibility = if (section == "appearance") View.VISIBLE else View.GONE
+        binding.layoutLastSync.visibility = if (section == "last_sync") View.VISIBLE else View.GONE
 
         binding.btnGeneral.alpha = if (section == "general") 1.0f else 0.6f
         binding.btnPlayerSection.alpha = if (section == "player") 1.0f else 0.6f
-        binding.btnContent.alpha = if (section == "content") 1.0f else 0.6f
         binding.btnAccount.alpha = if (section == "account") 1.0f else 0.6f
+        binding.btnLanguage.alpha = if (section == "language") 1.0f else 0.6f
+        binding.btnAppearance.alpha = if (section == "appearance") 1.0f else 0.6f
+        binding.btnLastSyncSection.alpha = if (section == "last_sync") 1.0f else 0.6f
+
+        if (section == "last_sync") updateLastSyncDisplay()
     }
 
-    // ── Playlist Management ─────────────────────────────────
     private fun getPlaylistsJson(): JSONObject {
         return try { JSONObject(sharedPrefManager.getSavedPlaylists()) } catch (_: Exception) { JSONObject() }
     }
@@ -232,7 +368,6 @@ class SettingsActivity : AppCompatActivity() {
             .show()
     }
 
-    // ── Cache / Data ────────────────────────────────────────
     private fun clearAppCache() {
         try {
             val dir: File = cacheDir

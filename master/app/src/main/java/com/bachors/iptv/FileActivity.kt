@@ -16,7 +16,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.WindowInsetsControllerCompat
@@ -37,7 +36,7 @@ import java.util.regex.Pattern
 import androidx.core.net.toUri
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class FileActivity : AppCompatActivity() {
+class FileActivity : BaseThemedAppCompatActivity() {
     companion object {
         private const val TAG = "FileActivity"
         private const val EXT_M3U = "#EXTM3U"

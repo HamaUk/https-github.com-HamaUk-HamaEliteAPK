@@ -7,12 +7,11 @@ import android.os.Looper
 import android.view.animation.AnimationUtils
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
-class SplashActivity : AppCompatActivity() {
+class SplashActivity : BaseThemedAppCompatActivity() {
 
     private val splashDelay = 2000L // 2 seconds
     private val handler = Handler(Looper.getMainLooper())

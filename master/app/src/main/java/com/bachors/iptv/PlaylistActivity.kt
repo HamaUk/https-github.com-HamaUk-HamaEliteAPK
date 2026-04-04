@@ -9,7 +9,6 @@ import android.text.TextWatcher
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -33,7 +32,7 @@ import java.text.NumberFormat
 
 enum class SortMode { DEFAULT, NAME_AZ, NAME_ZA }
 
-class PlaylistActivity : AppCompatActivity() {
+class PlaylistActivity : BaseThemedAppCompatActivity() {
 
     companion object {
         private const val PROGRESS_UPDATE_INTERVAL = 200L

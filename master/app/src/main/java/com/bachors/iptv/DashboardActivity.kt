@@ -8,7 +8,6 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.bachors.iptv.databinding.ActivityDashboardBinding
 import com.bachors.iptv.models.PlaylistData
 import com.bachors.iptv.utils.ActivationHelper
@@ -27,7 +26,7 @@ import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.*
 
-class DashboardActivity : AppCompatActivity() {
+class DashboardActivity : BaseThemedAppCompatActivity() {
     private lateinit var binding: ActivityDashboardBinding
     private lateinit var sharedPrefManager: SharedPrefManager
     private val handler = Handler(Looper.getMainLooper())
@@ -195,6 +194,7 @@ class DashboardActivity : AppCompatActivity() {
                 if (response.isSuccessful && body != null) {
                     val synced = GlobalSync.applySyncedConfig(this@DashboardActivity, sharedPrefManager, body)
                     if (synced) {
+                        sharedPrefManager.recordSuccessfulSync()
                         Toast.makeText(this@DashboardActivity, R.string.sync_success, Toast.LENGTH_SHORT).show()
                         setupExpiryDate()
                         updateCategoryCounts()

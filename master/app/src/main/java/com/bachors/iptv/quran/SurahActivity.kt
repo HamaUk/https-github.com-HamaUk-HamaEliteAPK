@@ -6,7 +6,7 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import com.bachors.iptv.BaseThemedAppCompatActivity
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class SurahActivity : AppCompatActivity() {
+class SurahActivity : BaseThemedAppCompatActivity() {
 
     private lateinit var rvAyahs: RecyclerView
     private lateinit var pbLoading: ProgressBar

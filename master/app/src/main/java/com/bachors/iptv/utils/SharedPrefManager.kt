@@ -30,6 +30,20 @@ class SharedPrefManager(context: Context) {
         const val SP_PLAYER_ENGINE = "spPlayerEngine"
         /** Subscription expiry timestamp (Long) */
         const val SP_EXPIRY_DATE = "spExpiryDate"
+        /** Last successful Firebase / playlist sync (epoch millis) */
+        const val SP_LAST_SYNC_SUCCESS_AT = "spLastSyncSuccessAt"
+        /**
+         * App UI language: [LANGUAGE_SYSTEM], [LANGUAGE_CKB], [LANGUAGE_AR], [LANGUAGE_EN], [LANGUAGE_KMR]
+         */
+        const val SP_APP_LANGUAGE = "spAppLanguage"
+        /** Theme: dark | amoled | light */
+        const val SP_THEME_MODE = "spThemeMode"
+
+        const val LANGUAGE_SYSTEM = "system"
+        const val LANGUAGE_CKB = "ckb"
+        const val LANGUAGE_AR = "ar"
+        const val LANGUAGE_EN = "en"
+        const val LANGUAGE_KMR = "kmr"
     }
 
     private val sp: SharedPreferences = context.getSharedPreferences(SP_SS_APP, Context.MODE_PRIVATE)
@@ -85,4 +99,23 @@ class SharedPrefManager(context: Context) {
     fun getSavedPlaylists(): String = sp.getString(SP_SAVED_PLAYLISTS, "{}") ?: "{}"
 
     fun getActivePlaylistName(): String = sp.getString(SP_ACTIVE_PLAYLIST_NAME, "") ?: ""
+
+    fun recordSuccessfulSync() {
+        saveSPLong(SP_LAST_SYNC_SUCCESS_AT, System.currentTimeMillis())
+    }
+
+    fun getThemeMode(): String =
+        sp.getString(SP_THEME_MODE, "dark") ?: "dark"
+
+    fun saveThemeMode(mode: String) {
+        saveSPString(SP_THEME_MODE, mode)
+    }
+
+    /** Stored key: system, ckb, ar, en, kmr — default ckb (Sorani). */
+    fun getAppLanguageKey(): String =
+        sp.getString(SP_APP_LANGUAGE, LANGUAGE_CKB) ?: LANGUAGE_CKB
+
+    fun saveAppLanguageKey(key: String) {
+        saveSPString(SP_APP_LANGUAGE, key)
+    }
 }

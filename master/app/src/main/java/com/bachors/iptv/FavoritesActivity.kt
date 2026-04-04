@@ -10,7 +10,6 @@ import android.view.MenuItem
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.WindowInsetsControllerCompat
@@ -28,7 +27,7 @@ import org.json.JSONArray
 import androidx.core.net.toUri
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class FavoritesActivity : AppCompatActivity() {
+class FavoritesActivity : BaseThemedAppCompatActivity() {
     private lateinit var sharedPrefManager: SharedPrefManager
     private var key: Int = 0
     private lateinit var mcon: Context

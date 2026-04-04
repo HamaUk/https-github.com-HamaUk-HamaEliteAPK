@@ -19,7 +19,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -60,7 +59,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 @OptIn(UnstableApi::class)
-class PlayerActivity : AppCompatActivity() {
+class PlayerActivity : BaseThemedAppCompatActivity() {
 
     // ── Player ──────────────────────────────────────────────
     private var exoPlayer: ExoPlayer? = null

@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.WindowInsetsControllerCompat
@@ -22,7 +21,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import androidx.core.net.toUri
 
-class ChannelsActivity : AppCompatActivity() {
+class ChannelsActivity : BaseThemedAppCompatActivity() {
     private lateinit var sharedPrefManager: SharedPrefManager
     private lateinit var mcon: Context
     private val allData = mutableListOf<ChannelsData>()

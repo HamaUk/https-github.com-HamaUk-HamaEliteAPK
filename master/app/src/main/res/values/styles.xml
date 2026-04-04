@@ -28,6 +28,52 @@
         <item name="android:windowContentOverlay">@null</item>
     </style>
 
+    <!-- AMOLED: true black backgrounds -->
+    <style name="AppTheme.Amoled" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:fontFamily">@font/rabar_044</item>
+        <item name="fontFamily">@font/rabar_044</item>
+        <item name="colorPrimary">#E53935</item>
+        <item name="colorPrimaryVariant">#B71C1C</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#FF6E6E</item>
+        <item name="colorSecondaryVariant">#C62828</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="colorSurface">#000000</item>
+        <item name="colorOnSurface">#FFFFFF</item>
+        <item name="android:colorBackground">#000000</item>
+        <item name="colorOnBackground">#FFFFFF</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColorSecondary">#9E9E9E</item>
+    </style>
+
+    <style name="AppTheme.FullScreen.Amoled" parent="AppTheme.Amoled">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+    <style name="AppTheme.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="android:fontFamily">@font/rabar_044</item>
+        <item name="fontFamily">@font/rabar_044</item>
+        <item name="colorPrimary">#C62828</item>
+        <item name="colorPrimaryVariant">#B71C1C</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#E53935</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#1A1A1A</item>
+        <item name="android:colorBackground">#F5F5F5</item>
+        <item name="colorOnBackground">#1A1A1A</item>
+        <item name="android:textColorPrimary">#1A1A1A</item>
+        <item name="android:textColorSecondary">#616161</item>
+    </style>
+
+    <style name="AppTheme.FullScreen.Light" parent="AppTheme.Light">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
     <style name="VuCard" parent="Widget.MaterialComponents.CardView">
         <item name="cardBackgroundColor">@color/vu_card_bg</item>
         <item name="cardCornerRadius">16dp</item>
