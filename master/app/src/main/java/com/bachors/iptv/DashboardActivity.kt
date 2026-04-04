@@ -72,7 +72,12 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun deviceCodeForDisplay(): String {
-        return ActivationHelper.getDeviceCode(this)
+        val code = ActivationHelper.getDeviceCode(this)
+        return if (code.length == 8) {
+            "${code.substring(0, 4)} ${code.substring(4)}"
+        } else {
+            code
+        }
     }
 
 

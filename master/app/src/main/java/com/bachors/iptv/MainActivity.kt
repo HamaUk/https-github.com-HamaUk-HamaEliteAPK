@@ -28,7 +28,12 @@ class MainActivity : AppCompatActivity() {
         sharedPrefManager = SharedPrefManager(this)
         deviceCode = ActivationHelper.getDeviceCode(this)
         
-        binding.txtDeviceCode.text = deviceCode
+        val formattedCode = if (deviceCode.length == 8) {
+            "${deviceCode.substring(0, 4)} ${deviceCode.substring(4)}"
+        } else {
+            deviceCode
+        }
+        binding.txtDeviceCode.text = formattedCode
         
         // Setup Button
         binding.btnRetry.setOnClickListener {
