@@ -117,7 +117,6 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.btnClearCache.setOnClickListener { clearAppCache() }
         binding.btnRefreshData.setOnClickListener { refreshPlaylistData() }
-        binding.btnLogout.setOnClickListener { showLogoutConfirmation() }
 
         // Playlist management
         binding.btnSavePlaylist.setOnClickListener { showSavePlaylistDialog() }
@@ -247,31 +246,6 @@ class SettingsActivity : AppCompatActivity() {
     private fun refreshPlaylistData() {
         sharedPrefManager.saveSPString(SharedPrefManager.SP_CHANNELS, "[]")
         Toast.makeText(this, getString(R.string.data_refresh_scheduled), Toast.LENGTH_SHORT).show()
-        finish()
-    }
-
-    private fun showLogoutConfirmation() {
-        MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
-            .setTitle(getString(R.string.dialog_logout_title))
-            .setMessage(getString(R.string.dialog_logout_msg))
-            .setPositiveButton(getString(R.string.dialog_logout_btn)) { _, _ ->
-                performLogout()
-            }
-            .setNegativeButton(getString(R.string.dialog_cancel), null)
-            .show()
-    }
-
-    private fun performLogout() {
-        val prefs = getSharedPreferences("hk_prefs", Context.MODE_PRIVATE)
-        prefs.edit().remove("hk_device_id").apply()
-
-        sharedPrefManager.saveSPString(SharedPrefManager.SP_PLAYLIST, "")
-        sharedPrefManager.saveSPString(SharedPrefManager.SP_CHANNELS, "")
-        sharedPrefManager.saveSPString(SharedPrefManager.SP_M3U_DIRECT, "")
-
-        val intent = Intent(this, MainActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
         finish()
     }
 }

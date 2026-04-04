@@ -46,6 +46,7 @@ class DashboardActivity : AppCompatActivity() {
             binding.tvBrandSecondary.text = getString(R.string.app_name_part_uk)
             setupClock()
             setupDeviceCode()
+            setupExpiryDate()
             setupClickListeners()
             updateCategoryCounts()
             fetchAppStatus()
@@ -77,6 +78,19 @@ class DashboardActivity : AppCompatActivity() {
             "${code.substring(0, 4)} ${code.substring(4)}"
         } else {
             code
+        }
+    }
+
+    private fun setupExpiryDate() {
+        val expiry = sharedPrefManager.getSpLong(SharedPrefManager.SP_EXPIRY_DATE, 0L)
+        if (expiry > 0L) {
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val dateStr = sdf.format(Date(expiry))
+            binding.tvExpiry.text = "کۆتایی: $dateStr"
+            binding.tvExpiry.visibility = View.VISIBLE
+        } else {
+            binding.tvExpiry.text = "کۆتایی: ----"
+            binding.tvExpiry.visibility = View.VISIBLE
         }
     }
 
@@ -112,9 +126,7 @@ class DashboardActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        binding.cardSports.setOnClickListener {
-            startActivity(Intent(this, com.bachors.iptv.sports.SportsActivity::class.java))
-        }
+
 
         binding.cardQuran.setOnClickListener {
             startActivity(Intent(this, com.bachors.iptv.quran.QuranActivity::class.java))
@@ -184,6 +196,7 @@ class DashboardActivity : AppCompatActivity() {
                     val synced = GlobalSync.applySyncedConfig(this@DashboardActivity, sharedPrefManager, body)
                     if (synced) {
                         Toast.makeText(this@DashboardActivity, R.string.sync_success, Toast.LENGTH_SHORT).show()
+                        setupExpiryDate()
                         updateCategoryCounts()
                     } else {
                         Toast.makeText(this@DashboardActivity, R.string.sync_invalid, Toast.LENGTH_LONG).show()

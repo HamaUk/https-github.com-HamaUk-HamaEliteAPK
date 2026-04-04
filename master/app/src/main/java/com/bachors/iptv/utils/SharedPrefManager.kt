@@ -28,6 +28,8 @@ class SharedPrefManager(context: Context) {
         const val SP_VIDEO_QUALITY_PRESET = "spVideoQualityPreset"
         /** See [com.bachors.iptv.utils.PlayerLauncher] for values (exo, exo_cinema, exo_arena, web_hls, vlc). */
         const val SP_PLAYER_ENGINE = "spPlayerEngine"
+        /** Subscription expiry timestamp (Long) */
+        const val SP_EXPIRY_DATE = "spExpiryDate"
     }
 
     private val sp: SharedPreferences = context.getSharedPreferences(SP_SS_APP, Context.MODE_PRIVATE)
@@ -57,6 +59,13 @@ class SharedPrefManager(context: Context) {
     }
 
     fun getSpInt(key: String, default: Int = 0): Int = sp.getInt(key, default)
+
+    fun saveSPLong(keySP: String, value: Long) {
+        spEditor.putLong(keySP, value)
+        spEditor.commit()
+    }
+
+    fun getSpLong(key: String, default: Long = 0L): Long = sp.getLong(key, default)
 
     fun saveSPBoolean(keySP: String, value: Boolean) {
         spEditor.putBoolean(keySP, value)

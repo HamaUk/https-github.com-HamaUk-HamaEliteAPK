@@ -50,6 +50,7 @@ object GlobalSync {
         }
         if (ok) {
             prefs.saveSPString(SharedPrefManager.SP_CHANNELS, "[]")
+            prefs.saveSPLong(SharedPrefManager.SP_EXPIRY_DATE, data.expiryDate ?: 0L)
             M3uPlaylistCache.invalidate(ctx)
             ManagedPlaylistCache.persistFromSync(ctx, data.managedPlaylist)
         }
