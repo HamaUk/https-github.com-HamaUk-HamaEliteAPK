@@ -49,6 +49,7 @@ import com.bachors.iptv.models.ChannelsData
 import com.bachors.iptv.utils.ContinueWatchingStore
 import com.bachors.iptv.utils.PlayerLauncher
 import com.bachors.iptv.utils.SharedPrefManager
+import com.bachors.iptv.utils.ThemeHelper
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -840,7 +841,7 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
         }
 
         val names = audioTracks.map { it.first }.toTypedArray()
-        MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
+        MaterialAlertDialogBuilder(this, ThemeHelper.getMaterialAlertDialogThemeResId(this))
             .setTitle("ڕێچکەی دەنگ")
             .setItems(names) { _, which ->
                 val override = audioTracks[which].second
@@ -869,7 +870,7 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
         val names = mutableListOf("کوژاوە")
         names.addAll(subtitleTracks.map { it.first })
 
-        MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
+        MaterialAlertDialogBuilder(this, ThemeHelper.getMaterialAlertDialogThemeResId(this))
             .setTitle("ژێرنووس")
             .setItems(names.toTypedArray()) { _, which ->
                 if (which == 0) {
@@ -919,7 +920,7 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
         )
         names.addAll(videoTracks.map { "ڕێچکە: ${it.first}" })
 
-        MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
+        MaterialAlertDialogBuilder(this, ThemeHelper.getMaterialAlertDialogThemeResId(this))
             .setTitle("کوالێتی ڤیدیۆ")
             .setItems(names.toTypedArray()) { _, which ->
                 when {

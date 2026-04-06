@@ -23,7 +23,7 @@
         android:id="@+id/tv_sports_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Today Matches"
+        android:text="@string/sports_title"
         android:textColor="@color/white"
         android:textSize="24sp"
         android:textStyle="bold"

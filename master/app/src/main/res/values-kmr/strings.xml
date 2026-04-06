@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Yousif Store</string>
+    <string name="app_name_part_hama">Yousif</string>
+    <string name="app_name_part_uk">Store</string>
+    <string name="app_v">Yousif Manager</string>
+
+    <string name="main_subtitle">Premium activation</string>
+    <string name="btn_start">Get started</string>
+    <string name="sync_success">Sync completed successfully.</string>
+    <string name="sync_invalid">Sync data is invalid.</string>
+    <string name="sync_no_data">No playlist on the server yet. Ask the admin to publish it.</string>
+    <string name="sync_error">Sync error: %1$s</string>
+    <string name="auto_resume_failed">Could not reopen the app. Tap Get started again.</string>
+    <string name="dashboard_device_code">Device ID: %1$s</string>
+    <string name="activation_required">Activation required</string>
+    <string name="activation_code_label">Your ID code:</string>
+    <string name="activation_instructions">To activate this app, send the code below on Telegram:</string>
+    <string name="activation_telegram">https://t.me/Opt1c_gh0st</string>
+    <string name="activation_status_not_active">Not activated yet</string>
+    <string name="activation_status_expired">Subscription expired</string>
+    <string name="activation_btn_retry">Check again</string>
+    <string name="activation_expiry_date">Expires on: %1$s</string>
+    <string name="settings_version_line">Version: %1$s</string>
+    <string name="dashboard_version_line">Version: %1$s</string>
+    <string name="settings_package_line">Package: %1$s</string>
+
+    <string name="search">Search…</string>
+    <string name="playlist">Playlist</string>
+
+    <string name="iptvorg">IPTV-ORG</string>
+    <string name="m3u">M3U file</string>
+    <string name="favorite">Favorites</string>
+    <string name="hint_search_categories">Search categories…</string>
+    <string name="no_information">No information</string>
+
+    <string name="dash_live">Live TV</string>
+    <string name="dash_vod">Movies</string>
+    <string name="dash_series">Series</string>
+    <string name="dash_sports">Werzîş</string>
+    <string name="sports_no_live">Niha tu lîstikên zindî tune</string>
+    <string name="sports_load_error">Çewtiya werzîşê: %1$s</string>
+    <string name="dash_reload">Refresh</string>
+    <string name="dash_settings">Sazûkarî</string>
+    <string name="dash_continue_watching">Continue watching</string>
+    <string name="dash_status_active">Status: Active</string>
+    <string name="dash_startup_error">Recovered from a startup error. Please open the app again.</string>
+    <string name="dash_live_count">Live TV (%1$d)</string>
+
+    <string name="settings_title">Sazûkariyên sîstemê</string>
+    <string name="settings_general">General</string>
+    <string name="settings_player">Player</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_last_sync_section">Last sync time</string>
+    <string name="settings_account">Account</string>
+    <string name="settings_logout">Log out</string>
+
+    <string name="settings_general_title">General settings</string>
+    <string name="settings_resize_mode">Default video scaling</string>
+    <string name="settings_resize_fit">Fit to screen</string>
+    <string name="settings_resize_zoom">Zoom (100%)</string>
+    <string name="settings_resize_fill">Fill screen</string>
+    <string name="settings_resize_fixed">Fixed width</string>
+    <string name="settings_autoplay">Autoplay when opening a channel</string>
+
+    <string name="settings_stream_resolution">Playback quality (max resolution)</string>
+    <string name="settings_stream_auto">Auto (default)</string>
+    <string name="settings_stream_720">720p</string>
+    <string name="settings_stream_1080">1080p</string>
+    <string name="settings_stream_4k">4K</string>
+    <string name="settings_stream_hint">Applies to new playback sessions.</string>
+    <string name="settings_stream_saved">Playback quality saved</string>
+
+    <string name="settings_player_title">Player settings</string>
+    <string name="settings_playback_engine">Playback engine</string>
+    <string name="settings_playback_hint">Profiles differ by buffering. Web HLS = Chromium + hls.js (.m3u8 only). LibVLC = LGPL.</string>
+    <string name="settings_engine_exo">ExoPlayer · Standard (balanced)</string>
+    <string name="settings_engine_cinema">ExoPlayer · Cinema (deep buffer, weak networks)</string>
+    <string name="settings_engine_arena">ExoPlayer · Arena (low latency for live)</string>
+    <string name="settings_engine_web">Chromium · Web HLS (hls.js)</string>
+    <string name="settings_engine_vlc">LibVLC (VLC)</string>
+    <string name="settings_buffer_size">Buffer size</string>
+    <string name="settings_buffer_low">Low (faster start, more rebuffering)</string>
+    <string name="settings_buffer_medium">Medium (balanced)</string>
+    <string name="settings_buffer_high">High (slower start, smoother playback)</string>
+    <string name="settings_hw_accel">Hardware acceleration</string>
+
+    <string name="settings_playlist_mgmt">Playlist management</string>
+    <string name="settings_active_playlist">Active playlist:</string>
+    <string name="settings_active_default">Default</string>
+    <string name="settings_save_playlist">Save current playlist as…</string>
+    <string name="settings_switch_playlist">Switch playlist</string>
+    <string name="settings_delete_playlist">Delete saved playlist</string>
+    <string name="settings_data_cache">Data &amp; cache</string>
+    <string name="settings_clear_cache">Clear all app cache</string>
+    <string name="settings_refresh_data">Refresh playlist data</string>
+
+    <string name="settings_subscription">Subscription &amp; device</string>
+    <string name="settings_copy_device_id">Copy 8-digit code</string>
+    <string name="settings_device_id_copied">Code copied to clipboard</string>
+    <string name="settings_status_premium">Status: Premium active</string>
+
+    <string name="settings_language_title">Zimanê sepanê</string>
+    <string name="settings_language_sorani">Kurdish (Sorani)</string>
+    <string name="settings_language_badini">Kurdish (Kurmanji / Badini)</string>
+    <string name="settings_language_arabic">Arabic</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_system">Use system default</string>
+
+    <string name="settings_appearance_title">Theme</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_theme_amoled">Black (AMOLED)</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_applied">Theme updated</string>
+
+    <string name="settings_last_sync_title">Last successful server sync</string>
+    <string name="settings_last_sync_never">Not synced yet</string>
+    <string name="settings_last_sync_hint">Updated after successful activation or dashboard refresh.</string>
+
+    <string name="dialog_save_playlist_title">Save current playlist</string>
+    <string name="dialog_save_playlist_hint">Playlist name</string>
+    <string name="dialog_save_btn">Save</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_name_empty">Name cannot be empty</string>
+    <string name="dialog_playlist_saved">Playlist \'%1$s\' saved</string>
+    <string name="dialog_switch_title">Switch playlist</string>
+    <string name="dialog_switched_to">Switched to \'%1$s\'</string>
+    <string name="dialog_load_failed">Could not load playlist</string>
+    <string name="dialog_no_saved">No saved playlists</string>
+    <string name="dialog_delete_title">Delete playlist</string>
+    <string name="dialog_delete_confirm">Delete \'%1$s\'?</string>
+    <string name="dialog_delete_warn">This cannot be undone.</string>
+    <string name="dialog_delete_btn">Delete</string>
+    <string name="dialog_deleted">\'%1$s\' deleted</string>
+
+    <string name="dialog_logout_title">Log out</string>
+    <string name="dialog_logout_msg">Log out and clear account data on this device?</string>
+    <string name="dialog_logout_btn">Log out</string>
+
+    <string name="cache_cleared">Cache cleared</string>
+    <string name="cache_error">Could not clear cache</string>
+    <string name="data_refresh_scheduled">Playlist refresh scheduled</string>
+
+    <string name="settings_expiry_line">Subscription ends: %1$s</string>
+    <string name="settings_expiry_unlimited">Subscription: unlimited</string>
+
+    <string name="sports_title">Canê zindî</string>
+    <string name="sports_status_live">Zindî</string>
+    <string name="sports_status_ended">Qediya</string>
+    <string name="dashboard_expiry_line">Dawî: %1$s</string>
+    <string name="dashboard_expiry_none">Dawî: —</string>
+</resources>

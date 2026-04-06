@@ -25,6 +25,14 @@ object ThemeHelper {
             else AppCompatDelegate.MODE_NIGHT_YES
         )
     }
+
+    /** Material alert dialogs: light surface when app theme is light. */
+    fun getMaterialAlertDialogThemeResId(context: Context): Int {
+        return when (SharedPrefManager(context).getThemeMode()) {
+            THEME_LIGHT -> R.style.MyDialogThemeLight
+            else -> R.style.MyDialogTheme
+        }
+    }
 }
 
 object AppLocaleHelper {

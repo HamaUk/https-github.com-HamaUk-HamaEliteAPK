@@ -14,6 +14,7 @@ import com.bachors.iptv.utils.AppLocaleHelper
 import com.bachors.iptv.utils.PlayerLauncher
 import com.bachors.iptv.utils.SharedPrefManager
 import com.bachors.iptv.utils.ThemeHelper
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.json.JSONObject
 import java.io.File
@@ -285,11 +286,13 @@ class SettingsActivity : BaseThemedAppCompatActivity() {
     private fun showSavePlaylistDialog() {
         val input = EditText(this).apply {
             hint = getString(R.string.dialog_save_playlist_hint)
-            setTextColor(resources.getColor(android.R.color.white, null))
-            setHintTextColor(resources.getColor(android.R.color.darker_gray, null))
+            val onSurface = MaterialColors.getColor(this@SettingsActivity, com.google.android.material.R.attr.colorOnSurface, android.graphics.Color.WHITE)
+            val onSurfaceVar = MaterialColors.getColor(this@SettingsActivity, com.google.android.material.R.attr.colorOnSurfaceVariant, android.graphics.Color.GRAY)
+            setTextColor(onSurface)
+            setHintTextColor(onSurfaceVar)
             setPadding(48, 32, 48, 32)
         }
-        MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
+        MaterialAlertDialogBuilder(this, ThemeHelper.getMaterialAlertDialogThemeResId(this))
             .setTitle(getString(R.string.dialog_save_playlist_title))
             .setView(input)
             .setPositiveButton(getString(R.string.dialog_save_btn)) { _, _ ->
@@ -320,7 +323,7 @@ class SettingsActivity : BaseThemedAppCompatActivity() {
             Toast.makeText(this, getString(R.string.dialog_no_saved), Toast.LENGTH_SHORT).show()
             return
         }
-        MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
+        MaterialAlertDialogBuilder(this, ThemeHelper.getMaterialAlertDialogThemeResId(this))
             .setTitle(getString(R.string.dialog_switch_title))
             .setItems(names.toTypedArray()) { _, which ->
                 val name = names[which]
@@ -346,11 +349,11 @@ class SettingsActivity : BaseThemedAppCompatActivity() {
             Toast.makeText(this, getString(R.string.dialog_no_saved), Toast.LENGTH_SHORT).show()
             return
         }
-        MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
+        MaterialAlertDialogBuilder(this, ThemeHelper.getMaterialAlertDialogThemeResId(this))
             .setTitle(getString(R.string.dialog_delete_title))
             .setItems(names.toTypedArray()) { _, which ->
                 val name = names[which]
-                MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
+                MaterialAlertDialogBuilder(this, ThemeHelper.getMaterialAlertDialogThemeResId(this))
                     .setTitle(getString(R.string.dialog_delete_confirm, name))
                     .setMessage(getString(R.string.dialog_delete_warn))
                     .setPositiveButton(getString(R.string.dialog_delete_btn)) { _, _ ->

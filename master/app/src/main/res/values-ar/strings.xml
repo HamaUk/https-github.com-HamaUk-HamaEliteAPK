@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">متجر يوسف</string>
+    <string name="app_name_part_hama">يوسف</string>
+    <string name="app_name_part_uk">ستور</string>
+    <string name="app_v">مدير يوسف</string>
+
+    <string name="main_subtitle">تفعيل بريميوم</string>
+    <string name="btn_start">ابدأ</string>
+    <string name="sync_success">اكتملت المزامنة بنجاح.</string>
+    <string name="sync_invalid">بيانات المزامنة غير صالحة.</string>
+    <string name="sync_no_data">لا توجد قائمة على الخادم بعد. اطلب من المسؤول النشر.</string>
+    <string name="sync_error">خطأ في المزامنة: %1$s</string>
+    <string name="auto_resume_failed">تعذر إعادة فتح التطبيق. اضغط ابدأ مرة أخرى.</string>
+    <string name="dashboard_device_code">معرف الجهاز: %1$s</string>
+    <string name="activation_required">التفعيل مطلوب</string>
+    <string name="activation_code_label">رمز التعريف الخاص بك:</string>
+    <string name="activation_instructions">لتفعيل التطبيق، أرسل الرمز أدناه عبر تيليجرام:</string>
+    <string name="activation_telegram">https://t.me/Opt1c_gh0st</string>
+    <string name="activation_status_not_active">غير مفعّل بعد</string>
+    <string name="activation_status_expired">انتهى الاشتراك</string>
+    <string name="activation_btn_retry">تحقق مرة أخرى</string>
+    <string name="activation_expiry_date">ينتهي في: %1$s</string>
+    <string name="settings_version_line">الإصدار: %1$s</string>
+    <string name="dashboard_version_line">الإصدار: %1$s</string>
+    <string name="settings_package_line">الحزمة: %1$s</string>
+
+    <string name="search">بحث…</string>
+    <string name="playlist">قائمة التشغيل</string>
+
+    <string name="iptvorg">IPTV-ORG</string>
+    <string name="m3u">ملف M3U</string>
+    <string name="favorite">المفضلة</string>
+    <string name="hint_search_categories">البحث في التصنيفات…</string>
+    <string name="no_information">لا توجد معلومات</string>
+
+    <string name="dash_live">بث مباشر</string>
+    <string name="dash_vod">أفلام</string>
+    <string name="dash_series">مسلسلات</string>
+    <string name="dash_sports">رياضة</string>
+    <string name="sports_no_live">لا توجد مباريات مباشرة الآن</string>
+    <string name="sports_load_error">خطأ في الرياضة: %1$s</string>
+    <string name="dash_reload">تحديث</string>
+    <string name="dash_settings">الإعدادات</string>
+    <string name="dash_continue_watching">متابعة المشاهدة</string>
+    <string name="dash_status_active">الحالة: نشط</string>
+    <string name="dash_startup_error">تم التعافي من خطأ في التشغيل. يرجى فتح التطبيق مرة أخرى.</string>
+    <string name="dash_live_count">بث مباشر (%1$d)</string>
+
+    <string name="settings_title">إعدادات النظام</string>
+    <string name="settings_general">عام</string>
+    <string name="settings_player">المشغّل</string>
+    <string name="settings_language">اللغة</string>
+    <string name="settings_appearance">المظهر</string>
+    <string name="settings_last_sync_section">وقت آخر مزامنة</string>
+    <string name="settings_account">الحساب</string>
+    <string name="settings_logout">تسجيل الخروج</string>
+
+    <string name="settings_general_title">الإعدادات العامة</string>
+    <string name="settings_resize_mode">تكبير الفيديو الافتراضي</string>
+    <string name="settings_resize_fit">ملاءمة الشاشة</string>
+    <string name="settings_resize_zoom">تكبير (100٪)</string>
+    <string name="settings_resize_fill">ملء الشاشة</string>
+    <string name="settings_resize_fixed">عرض ثابت</string>
+    <string name="settings_autoplay">تشغيل تلقائي عند فتح قناة</string>
+
+    <string name="settings_stream_resolution">جودة التشغيل (أقصى دقة)</string>
+    <string name="settings_stream_auto">تلقائي (افتراضي)</string>
+    <string name="settings_stream_720">720p</string>
+    <string name="settings_stream_1080">1080p</string>
+    <string name="settings_stream_4k">4K</string>
+    <string name="settings_stream_hint">يطبق على جلسات التشغيل الجديدة.</string>
+    <string name="settings_stream_saved">تم حفظ جودة التشغيل</string>
+
+    <string name="settings_player_title">إعدادات المشغّل</string>
+    <string name="settings_playback_engine">محرك التشغيل</string>
+    <string name="settings_playback_hint">تختلف الملفات حسب التخزين المؤقت. Web HLS = Chromium + hls.js (m3u8 فقط). LibVLC = LGPL.</string>
+    <string name="settings_engine_exo">ExoPlayer · قياسي (متوازن)</string>
+    <string name="settings_engine_cinema">ExoPlayer · سينما (تخزين عميق، شبكات ضعيفة)</string>
+    <string name="settings_engine_arena">ExoPlayer · أرينا (زمن انتقال منخفض للبث المباشر)</string>
+    <string name="settings_engine_web">Chromium · Web HLS (hls.js)</string>
+    <string name="settings_engine_vlc">LibVLC (VLC)</string>
+    <string name="settings_buffer_size">حجم المخزن المؤقت</string>
+    <string name="settings_buffer_low">منخفض (بدء أسرع، إعادة تخزين أكثر)</string>
+    <string name="settings_buffer_medium">متوسط (متوازن)</string>
+    <string name="settings_buffer_high">مرتفع (بدء أبطأ، تشغيل أنعم)</string>
+    <string name="settings_hw_accel">تسريع العتاد</string>
+
+    <string name="settings_playlist_mgmt">إدارة قوائم التشغيل</string>
+    <string name="settings_active_playlist">قائمة التشغيل النشطة:</string>
+    <string name="settings_active_default">افتراضي</string>
+    <string name="settings_save_playlist">حفظ قائمة التشغيل الحالية باسم…</string>
+    <string name="settings_switch_playlist">تبديل قائمة التشغيل</string>
+    <string name="settings_delete_playlist">حذف قائمة محفوظة</string>
+    <string name="settings_data_cache">البيانات والذاكرة المؤقتة</string>
+    <string name="settings_clear_cache">مسح كل ذاكرة التطبيق المؤقتة</string>
+    <string name="settings_refresh_data">تحديث بيانات القائمة</string>
+
+    <string name="settings_subscription">الاشتراك والجهاز</string>
+    <string name="settings_copy_device_id">نسخ الرمز المكوّن من 8 أرقام</string>
+    <string name="settings_device_id_copied">تم نسخ الرمز إلى الحافظة</string>
+    <string name="settings_status_premium">الحالة: بريميوم نشط</string>
+
+    <string name="settings_language_title">لغة التطبيق</string>
+    <string name="settings_language_sorani">كردي (سوراني)</string>
+    <string name="settings_language_badini">كردي (كورمانجي / باديني)</string>
+    <string name="settings_language_arabic">العربية</string>
+    <string name="settings_language_english">الإنجليزية</string>
+    <string name="settings_language_system">لغة النظام</string>
+
+    <string name="settings_appearance_title">السمة</string>
+    <string name="settings_theme_dark">داكن</string>
+    <string name="settings_theme_amoled">أسود (AMOLED)</string>
+    <string name="settings_theme_light">فاتح</string>
+    <string name="settings_theme_applied">تم تحديث السمة</string>
+
+    <string name="settings_last_sync_title">آخر مزامنة ناجحة مع الخادم</string>
+    <string name="settings_last_sync_never">لم تتم المزامنة بعد</string>
+    <string name="settings_last_sync_hint">يُحدَّث بعد تفعيل ناجح أو تحديث من الشاشة الرئيسية.</string>
+
+    <string name="dialog_save_playlist_title">حفظ قائمة التشغيل الحالية</string>
+    <string name="dialog_save_playlist_hint">اسم القائمة</string>
+    <string name="dialog_save_btn">حفظ</string>
+    <string name="dialog_cancel">إلغاء</string>
+    <string name="dialog_name_empty">لا يمكن أن يكون الاسم فارغًا</string>
+    <string name="dialog_playlist_saved">تم حفظ القائمة \'%1$s\'</string>
+    <string name="dialog_switch_title">تبديل قائمة التشغيل</string>
+    <string name="dialog_switched_to">تم التبديل إلى \'%1$s\'</string>
+    <string name="dialog_load_failed">تعذر تحميل القائمة</string>
+    <string name="dialog_no_saved">لا توجد قوائم محفوظة</string>
+    <string name="dialog_delete_title">حذف قائمة التشغيل</string>
+    <string name="dialog_delete_confirm">حذف \'%1$s\'؟</string>
+    <string name="dialog_delete_warn">لا يمكن التراجع عن هذا الإجراء.</string>
+    <string name="dialog_delete_btn">حذف</string>
+    <string name="dialog_deleted">تم حذف \'%1$s\'</string>
+
+    <string name="dialog_logout_title">تسجيل الخروج</string>
+    <string name="dialog_logout_msg">تسجيل الخروج ومسح بيانات الحساب على هذا الجهاز؟</string>
+    <string name="dialog_logout_btn">تسجيل الخروج</string>
+
+    <string name="cache_cleared">تم مسح الذاكرة المؤقتة</string>
+    <string name="cache_error">تعذر مسح الذاكرة المؤقتة</string>
+    <string name="data_refresh_scheduled">تم جدولة تحديث القائمة</string>
+
+    <string name="settings_expiry_line">ينتهي الاشتراك: %1$s</string>
+    <string name="settings_expiry_unlimited">الاشتراك: غير محدود</string>
+
+    <string name="sports_title">نتائج مباشرة</string>
+    <string name="sports_status_live">مباشر</string>
+    <string name="sports_status_ended">انتهت</string>
+    <string name="dashboard_expiry_line">ينتهي: %1$s</string>
+    <string name="dashboard_expiry_none">ينتهي: —</string>
+</resources>

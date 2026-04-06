@@ -15,6 +15,7 @@
 
     <application
         android:name=".IptvApplication"
+        android:localeConfig="@xml/locales_config"
         android:allowBackup="true"
         android:banner="@drawable/ic_logo_yousif"
         android:icon="@drawable/ic_logo_yousif"

@@ -38,6 +38,14 @@
     <string name="dash_live">پەخشی ڕاستەوخۆ</string>
     <string name="dash_vod">فیلمەکان</string>
     <string name="dash_series">زنجیرەکان</string>
+    <string name="dash_sports">وەرزش</string>
+    <string name="sports_title">یارییەکانی ئەمڕۆ</string>
+    <string name="sports_no_live">ئێستا هیچ یارییەکی ڕاستەوخۆ نییە</string>
+    <string name="sports_load_error">هەڵەی وەرزش: %1$s</string>
+    <string name="sports_status_live">ڕاستەوخۆ</string>
+    <string name="sports_status_ended">کۆتایی هات</string>
+    <string name="dashboard_expiry_line">کۆتایی: %1$s</string>
+    <string name="dashboard_expiry_none">کۆتایی: ----</string>
     <string name="dash_reload">نوێکردنەوە</string>
     <string name="dash_settings">ڕێکخستنەکان</string>
     <string name="dash_continue_watching">بەردەوام بینین</string>

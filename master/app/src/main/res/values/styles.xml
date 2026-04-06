@@ -89,4 +89,9 @@
         <item name="colorOnSurface">#FFFFFF</item>
     </style>
 
+    <style name="MyDialogThemeLight" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#1A1A1A</item>
+    </style>
+
 </resources>

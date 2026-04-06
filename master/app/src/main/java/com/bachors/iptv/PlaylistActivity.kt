@@ -24,6 +24,7 @@ import com.bachors.iptv.utils.M3uPlaylistCache
 import com.bachors.iptv.utils.M3uTypeDetect
 import com.bachors.iptv.utils.PlaylistOrderStore
 import com.bachors.iptv.utils.SharedPrefManager
+import com.bachors.iptv.utils.ThemeHelper
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -625,7 +626,7 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
     private fun showSortDialog() {
         val options = arrayOf("ڕیزبەندی بنەڕەت", "ناو A \u2192 Z", "ناو Z \u2192 A")
         val currentIdx = currentSortMode.ordinal
-        MaterialAlertDialogBuilder(this, R.style.MyDialogTheme)
+        MaterialAlertDialogBuilder(this, ThemeHelper.getMaterialAlertDialogThemeResId(this))
             .setTitle("ڕیزکردنی کەناڵەکان")
             .setSingleChoiceItems(options, currentIdx) { dialog, which ->
                 currentSortMode = SortMode.entries[which]

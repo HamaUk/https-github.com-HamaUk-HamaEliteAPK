@@ -60,14 +60,30 @@ class SportsAdapter(private val leagues: List<League>) : RecyclerView.Adapter<Sp
                 tvAwayScore.text = "-"
             }
 
-            // Time/Status styling and mapping
-            if (match.status.contains(":") || match.status.contains("Half")) {
-                tvMatchTime.text = match.status
-                tvMatchStatus.text = "Live"
-                tvMatchTime.visibility = View.VISIBLE
-            } else {
-                tvMatchTime.visibility = View.GONE
-                tvMatchStatus.text = match.status
+            val ctx = holder.itemView.context
+            val endedLabel = ctx.getString(R.string.sports_status_ended)
+            val liveLabel = ctx.getString(R.string.sports_status_live)
+            val statusNorm = match.status.trim()
+            val isEnded = statusNorm.equals("Ended", ignoreCase = true)
+
+            when {
+                isEnded -> {
+                    tvMatchTime.visibility = View.GONE
+                    tvMatchStatus.text = endedLabel
+                }
+                statusNorm.contains(":") || statusNorm.contains("Half", ignoreCase = true) -> {
+                    tvMatchTime.text = match.status
+                    tvMatchStatus.text = liveLabel
+                    tvMatchTime.visibility = View.VISIBLE
+                }
+                statusNorm.equals("Live", ignoreCase = true) -> {
+                    tvMatchTime.visibility = View.GONE
+                    tvMatchStatus.text = liveLabel
+                }
+                else -> {
+                    tvMatchTime.visibility = View.GONE
+                    tvMatchStatus.text = match.status
+                }
             }
 
             if (match.homeLogo.isNotEmpty()) Picasso.get().load(match.homeLogo).into(ivHomeLogo)

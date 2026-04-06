@@ -16,6 +16,7 @@ import com.bachors.iptv.utils.ContinueWatchingStore
 import com.bachors.iptv.utils.GlobalSync
 import com.bachors.iptv.utils.IptvService
 import com.bachors.iptv.utils.SharedPrefManager
+import com.bachors.iptv.sports.SportsActivity
 import com.bachors.iptv.utils.SyncData
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -85,10 +86,10 @@ class DashboardActivity : BaseThemedAppCompatActivity() {
         if (expiry > 0L) {
             val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val dateStr = sdf.format(Date(expiry))
-            binding.tvExpiry.text = "کۆتایی: $dateStr"
+            binding.tvExpiry.text = getString(R.string.dashboard_expiry_line, dateStr)
             binding.tvExpiry.visibility = View.VISIBLE
         } else {
-            binding.tvExpiry.text = "کۆتایی: ----"
+            binding.tvExpiry.text = getString(R.string.dashboard_expiry_none)
             binding.tvExpiry.visibility = View.VISIBLE
         }
     }
@@ -129,6 +130,10 @@ class DashboardActivity : BaseThemedAppCompatActivity() {
 
         binding.cardQuran.setOnClickListener {
             startActivity(Intent(this, com.bachors.iptv.quran.QuranActivity::class.java))
+        }
+
+        binding.cardSports.setOnClickListener {
+            startActivity(Intent(this, SportsActivity::class.java))
         }
 
         binding.cardSettings.setOnClickListener {
