@@ -1187,6 +1187,7 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
         resizeOsd       = findViewById(R.id.resize_osd)
         channelNumberOsd = findViewById(R.id.channel_number_osd)
         seekBar         = findViewById(R.id.seek_bar)
+        seekBar.secondaryProgress = 0
         seekSpacer      = findViewById(R.id.seek_spacer)
         tvChannel       = findViewById(R.id.tv_current_channel)
         tvEpg           = findViewById(R.id.tv_current_epg)

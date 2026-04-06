@@ -4,12 +4,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.bachors.iptv.utils.ThemeHelper
 
 class SplashActivity : BaseThemedAppCompatActivity() {
 
@@ -29,6 +31,9 @@ class SplashActivity : BaseThemedAppCompatActivity() {
         super.onCreate(savedInstanceState)
         goFullscreen()
         setContentView(R.layout.activity_splash)
+        (findViewById<ViewGroup>(android.R.id.content).getChildAt(0))?.let {
+            ThemeHelper.applyPremiumHeroBackground(it)
+        }
 
         val logoContainer = findViewById<LinearLayout>(R.id.logo_container)
         val subtitleText = findViewById<TextView>(R.id.subtitle_text)

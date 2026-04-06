@@ -16,6 +16,7 @@ import com.bachors.iptv.utils.ContinueWatchingEntry
 import com.bachors.iptv.utils.ContinueWatchingStore
 import com.bachors.iptv.utils.PlayerLauncher
 import com.bachors.iptv.utils.SharedPrefManager
+import com.bachors.iptv.utils.ThemeHelper
 
 class ContinueWatchingActivity : BaseThemedAppCompatActivity() {
 
@@ -23,6 +24,9 @@ class ContinueWatchingActivity : BaseThemedAppCompatActivity() {
         super.onCreate(savedInstanceState)
         goFullscreen()
         setContentView(R.layout.activity_continue_watching)
+        (findViewById<ViewGroup>(android.R.id.content).getChildAt(0))?.let {
+            ThemeHelper.applyPremiumHeroBackground(it)
+        }
         supportActionBar?.hide()
 
         findViewById<View>(R.id.btn_back).setOnClickListener { finish() }

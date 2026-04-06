@@ -36,6 +36,7 @@ class SettingsActivity : BaseThemedAppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        ThemeHelper.applyPremiumHeroBackground(binding.root)
 
         supportActionBar?.hide()
         sharedPrefManager = SharedPrefManager(this)
@@ -47,6 +48,7 @@ class SettingsActivity : BaseThemedAppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        ThemeHelper.applyPremiumHeroBackground(binding.root)
         updateLastSyncDisplay()
         refreshAccountPanel()
     }

@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.SearchView
 import androidx.core.graphics.drawable.toDrawable
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bachors.iptv.adapters.ChannelsAdapter
 import com.bachors.iptv.models.ChannelsData
 import com.bachors.iptv.utils.SharedPrefManager
+import com.bachors.iptv.utils.ThemeHelper
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import androidx.core.net.toUri
@@ -32,6 +34,9 @@ class ChannelsActivity : BaseThemedAppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_channels)
+        (findViewById<ViewGroup>(android.R.id.content).getChildAt(0))?.let {
+            ThemeHelper.applyPremiumHeroBackground(it)
+        }
         supportActionBar?.elevation = 0f
         supportActionBar?.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
 

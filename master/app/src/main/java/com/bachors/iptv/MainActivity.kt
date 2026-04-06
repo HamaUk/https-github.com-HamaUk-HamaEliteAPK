@@ -10,6 +10,7 @@ import com.bachors.iptv.utils.DeviceSyncCoordinator
 import com.bachors.iptv.utils.GlobalSync
 import com.bachors.iptv.utils.ActivationHelper
 import com.bachors.iptv.utils.SharedPrefManager
+import com.bachors.iptv.utils.ThemeHelper
 import com.bachors.iptv.utils.SyncData
 import com.bachors.iptv.utils.WorldTimeResponse
 import com.bachors.iptv.utils.WorldTimeService
@@ -26,6 +27,7 @@ class MainActivity : BaseThemedAppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        ThemeHelper.applyMainActivationBackground(binding.root)
         supportActionBar?.hide()
 
         sharedPrefManager = SharedPrefManager(this)

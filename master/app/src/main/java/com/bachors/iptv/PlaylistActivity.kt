@@ -69,6 +69,7 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
         goFullscreen()
         binding = ActivityPlaylistBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        ThemeHelper.applyPremiumHeroBackground(binding.root)
         supportActionBar?.hide()
 
         sharedPrefManager = SharedPrefManager(this)

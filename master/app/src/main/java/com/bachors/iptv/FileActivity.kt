@@ -27,6 +27,7 @@ import com.bachors.iptv.databinding.ActivityFilesBinding
 import com.bachors.iptv.models.PlaylistData
 import com.bachors.iptv.utils.RecyclerTouchListener
 import com.bachors.iptv.utils.SharedPrefManager
+import com.bachors.iptv.utils.ThemeHelper
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.json.JSONArray
@@ -64,6 +65,7 @@ class FileActivity : BaseThemedAppCompatActivity() {
 
         binding = ActivityFilesBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        ThemeHelper.applyPremiumHeroBackground(binding.root)
 
         supportActionBar?.elevation = 0f
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

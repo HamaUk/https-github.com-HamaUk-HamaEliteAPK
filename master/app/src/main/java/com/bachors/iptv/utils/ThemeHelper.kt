@@ -1,6 +1,8 @@
 package com.bachors.iptv.utils
 
 import android.content.Context
+import android.graphics.Color
+import android.view.View
 import androidx.appcompat.app.AppCompatDelegate
 import com.bachors.iptv.R
 
@@ -31,6 +33,24 @@ object ThemeHelper {
         return when (SharedPrefManager(context).getThemeMode()) {
             THEME_LIGHT -> R.style.MyDialogThemeLight
             else -> R.style.MyDialogTheme
+        }
+    }
+
+    /** Dashboard / Settings use [R.drawable.premium_page_bg] in XML; re-apply when theme changes. */
+    fun applyPremiumHeroBackground(view: View) {
+        when (SharedPrefManager(view.context).getThemeMode()) {
+            THEME_LIGHT -> view.setBackgroundResource(R.drawable.premium_page_bg_light)
+            THEME_AMOLED -> view.setBackgroundColor(Color.BLACK)
+            else -> view.setBackgroundResource(R.drawable.premium_page_bg)
+        }
+    }
+
+    /** Main activation screen uses a flat color in XML. */
+    fun applyMainActivationBackground(view: View) {
+        when (SharedPrefManager(view.context).getThemeMode()) {
+            THEME_LIGHT -> view.setBackgroundColor(Color.parseColor("#EEF1F6"))
+            THEME_AMOLED -> view.setBackgroundColor(Color.BLACK)
+            else -> view.setBackgroundColor(Color.parseColor("#050505"))
         }
     }
 }

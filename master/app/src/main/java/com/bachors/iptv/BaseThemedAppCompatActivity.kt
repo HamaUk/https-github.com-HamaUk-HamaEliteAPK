@@ -24,6 +24,7 @@ abstract class BaseThemedAppCompatActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppLocaleHelper.applySavedApplicationLocales(this)
+        ThemeHelper.applyDefaultNightMode(this)
         setTheme(ThemeHelper.getFullscreenThemeResId(this))
         super.onCreate(savedInstanceState)
     }

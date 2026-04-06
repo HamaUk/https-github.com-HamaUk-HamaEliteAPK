@@ -106,7 +106,7 @@
             android:padding="10dp"
             android:background="@drawable/bg_tv_icon_focus"
             android:focusable="true"
-            android:focusableInTouchMode="true"
+            android:focusableInTouchMode="false"
             android:src="@drawable/ic_back"
             app:tint="#FFFFFF" />
 
@@ -166,7 +166,7 @@
             android:padding="10dp"
             android:background="@drawable/bg_tv_icon_focus"
             android:focusable="true"
-            android:focusableInTouchMode="true"
+            android:focusableInTouchMode="false"
             android:src="@drawable/ic_chevron_left_white"
             android:contentDescription="کەناڵی پێشوو"
             app:tint="#FFFFFF" />
@@ -179,7 +179,7 @@
             android:padding="10dp"
             android:background="@drawable/bg_tv_icon_focus"
             android:focusable="true"
-            android:focusableInTouchMode="true"
+            android:focusableInTouchMode="false"
             android:src="@drawable/ic_pause_white"
             android:contentDescription="پەخش/وەستان"
             app:tint="#FFFFFF" />
@@ -192,7 +192,7 @@
             android:padding="10dp"
             android:background="@drawable/bg_tv_icon_focus"
             android:focusable="true"
-            android:focusableInTouchMode="true"
+            android:focusableInTouchMode="false"
             android:src="@drawable/ic_chevron_right_white"
             android:contentDescription="کەناڵی داهاتوو"
             app:tint="#FFFFFF" />
@@ -205,8 +205,12 @@
             android:layout_weight="1"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
+            android:max="1000"
             android:progressTint="#BB86FC"
+            android:progressBackgroundTint="#33FFFFFF"
+            android:secondaryProgressTint="@android:color/transparent"
             android:thumbTint="#BB86FC"
+            android:splitTrack="false"
             android:visibility="gone" />
 
         <!-- Spacer when no seekbar -->
@@ -225,7 +229,7 @@
             android:padding="10dp"
             android:background="@drawable/bg_tv_icon_focus"
             android:focusable="true"
-            android:focusableInTouchMode="true"
+            android:focusableInTouchMode="false"
             android:src="@drawable/ic_volume_high"
             android:contentDescription="ڕێچکەی دەنگ"
             app:tint="#BBBBBB" />
@@ -238,7 +242,7 @@
             android:padding="10dp"
             android:background="@drawable/bg_tv_icon_focus"
             android:focusable="true"
-            android:focusableInTouchMode="true"
+            android:focusableInTouchMode="false"
             android:src="@drawable/ic_file"
             android:contentDescription="ژێرنووس"
             app:tint="#BBBBBB" />
@@ -250,7 +254,7 @@
             android:layout_height="44dp"
             android:background="@drawable/bg_tv_icon_focus"
             android:focusable="true"
-            android:focusableInTouchMode="true"
+            android:focusableInTouchMode="false"
             android:gravity="center"
             android:text="1x"
             android:textColor="#BBBBBB"
@@ -265,7 +269,7 @@
             android:padding="10dp"
             android:background="@drawable/bg_tv_icon_focus"
             android:focusable="true"
-            android:focusableInTouchMode="true"
+            android:focusableInTouchMode="false"
             android:src="@drawable/ic_settings"
             android:contentDescription="کوالێتی"
             app:tint="#BBBBBB" />
@@ -278,7 +282,7 @@
             android:padding="10dp"
             android:background="@drawable/bg_tv_icon_focus"
             android:focusable="true"
-            android:focusableInTouchMode="true"
+            android:focusableInTouchMode="false"
             android:src="@drawable/ic_fullscreen_white"
             android:contentDescription="دۆخی گەورەکردنەوە"
             app:tint="#BBBBBB" />

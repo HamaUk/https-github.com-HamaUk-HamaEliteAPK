@@ -221,6 +221,18 @@
   }
   .cm-url-panel.open { display: block; }
   .cm-cors-hint { font-size: 0.72rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 0.55rem; }
+  .cm-profile-hint {
+    display: none;
+    margin: 0 1.5rem 0.65rem;
+    padding: 0.65rem 1rem;
+    font-size: 0.76rem;
+    line-height: 1.5;
+    color: #cbd5e1;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.28);
+    border-radius: 0.85rem;
+  }
+  .cm-profile-hint code { color: #7dd3fc; font-size: 0.72rem; word-break: break-all; }
   .cm-type { font-size: 0.62rem; padding: 0.15rem 0.45rem; border-radius: 1rem; font-weight: 700; text-transform: uppercase; }
   .cm-type.live { background: rgba(16,185,129,0.2); color: #6ee7b7; }
   .cm-type.vod { background: rgba(245,158,11,0.2); color: #fcd34d; }
@@ -244,6 +256,7 @@
   .cm-field label { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 0.25rem; }
   .cm-check-row { display: flex; gap: 1.25rem; margin-top: 0.65rem; font-size: 0.82rem; align-items: center; }
   .cm-check-row label { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; text-transform: none; letter-spacing: 0; }
+  .cm-group-hint { font-size: 0.65rem; color: var(--text-muted); margin: 0 0 0.4rem; line-height: 1.4; }
   .cm-editor-actions { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
   @media (max-width: 760px) {
     .dashboard-container { padding: 1rem; }
@@ -427,10 +440,12 @@
       </div>
     </div>
     <div class="cm-toolbar">
-      <button type="button" id="cmNewChBtn" class="action-btn primary cm-mini"><i class="fas fa-plus"></i> New channel</button>
+      <button type="button" id="cmNewChBtn" class="action-btn primary cm-mini" title="Add a channel — pick an existing group or type a new one"><i class="fas fa-plus"></i> New channel</button>
+      <button type="button" id="cmAddToGroupBtn" class="action-btn cm-mini" title="Add a channel and choose a group from your current list first"><i class="fas fa-folder-plus"></i> Add to group</button>
       <button type="button" id="cmImportM3uBtn" class="action-btn cm-mini"><i class="fas fa-file-import"></i> Import file</button>
       <button type="button" id="cmTogglePasteBtn" class="action-btn cm-mini"><i class="fas fa-paste"></i> Paste M3U</button>
       <button type="button" id="cmToggleUrlBtn" class="action-btn cm-mini"><i class="fas fa-cloud-arrow-down"></i> From URL</button>
+      <button type="button" id="cmLoadProfileM3uBtn" class="action-btn cm-mini" title="Load M3U text stored on this profile in Firebase (FILE type)"><i class="fas fa-database"></i> From profile M3U</button>
       <button type="button" id="cmBulkHideBtn" class="action-btn cm-mini"><i class="fas fa-eye-slash"></i> Hide selected</button>
       <button type="button" id="cmBulkDelBtn" class="action-btn danger cm-mini"><i class="fas fa-trash"></i> Delete selected</button>
       <span class="spacer"></span>
@@ -440,6 +455,7 @@
       </div>
       <input type="file" id="cmFileInput" accept=".m3u,.m3u8,.txt" style="display:none">
     </div>
+    <div id="cmProfileHint" class="cm-profile-hint" role="status"></div>
     <div class="cm-paste-panel" id="cmPastePanel">
       <textarea id="cmPasteTa" placeholder="#EXTINF:-1,Channel name&#10;https://…"></textarea>
       <button type="button" id="cmParsePasteBtn" class="action-btn primary cm-mini" style="margin-bottom:0.75rem"><i class="fas fa-code"></i> Parse pasted M3U</button>
@@ -482,7 +498,16 @@
       <input type="hidden" id="cmEdId">
       <div class="cm-editor-grid">
         <div class="cm-field"><label>Name</label><input type="text" id="cmEdName" class="field-input" style="margin-bottom:0"></div>
-        <div class="cm-field"><label>Group</label><input type="text" id="cmEdGroup" class="field-input" style="margin-bottom:0"></div>
+        <div class="cm-field" style="grid-column:1/-1">
+          <label>Group</label>
+          <p class="cm-group-hint">Select a group that already exists in this list, or choose <b>New group</b> and type a name below.</p>
+          <select id="cmEdGroupPreset" class="field-input" style="margin-bottom:0.45rem">
+            <option value="">— Select existing group —</option>
+            <option value="__new_custom__">+ New group (type name below)</option>
+          </select>
+          <input type="text" id="cmEdGroup" class="field-input" style="margin-bottom:0" placeholder="Group name (e.g. Kurdish - News)" list="cmEdGroupDatalist" autocomplete="off">
+          <datalist id="cmEdGroupDatalist"></datalist>
+        </div>
         <div class="cm-field" style="grid-column:1/-1"><label>Stream URL</label><input type="text" id="cmEdUrl" class="field-input" style="margin-bottom:0"></div>
         <div class="cm-field"><label>Logo URL (optional)</label><input type="text" id="cmEdLogo" class="field-input" style="margin-bottom:0" placeholder="https://…"></div>
         <div class="cm-field"><label>Type</label>
@@ -504,7 +529,7 @@
     </div>
     <div class="cm-inner" style="padding-top:0">
       <div class="flex-between" style="margin:0">
-        <span style="font-size:0.72rem;color:var(--text-muted)">Saves <code>managedPlaylist</code> on this sync node. App reload required for logos.</span>
+        <span style="font-size:0.72rem;color:var(--text-muted)">Writes <code>managedPlaylist</code> (curated list). Your profile’s FILE/URL playlist is separate until you save here — then the app can use these names, logos, and order.</span>
         <button type="button" id="cmSaveToFirebaseBtn" class="action-btn primary"><i class="fas fa-cloud-arrow-up"></i> Save to Firebase</button>
       </div>
     </div>
@@ -733,24 +758,38 @@
     await fetchAllSync();
   }
 
+  /** Match stream lines: http(s), rtmp(s), rtsp, rtp, mmsh, udp, etc. (not only http) */
+  function lineLooksLikeStreamUrl(line) {
+    return /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\/.+/.test(line.trim());
+  }
+
   function parseM3UText(text) {
-    const lines = String(text).split(/\r?\n/);
+    const raw = String(text).replace(/^\uFEFF/, '');
+    const lines = raw.split(/\r?\n/);
     const out = [];
     let pendingName = null;
+    let pendingGroup = 'Imported';
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
+      if (!line) continue;
       if (line.startsWith('#EXTINF')) {
+        const g = line.match(/group-title="([^"]*)"/i);
+        pendingGroup = (g && g[1] && g[1].trim()) ? g[1].trim() : 'Imported';
         const comma = line.lastIndexOf(',');
         pendingName = comma >= 0 ? line.slice(comma + 1).trim() : 'Channel';
-      } else if (pendingName && /^https?:\/\//i.test(line)) {
-        out.push({ name: pendingName, url: line, group: 'Imported', type: 'live' });
+        if (!pendingName) pendingName = 'Channel';
+      } else if (line.startsWith('#')) {
+        continue;
+      } else if (pendingName && lineLooksLikeStreamUrl(line)) {
+        out.push({ name: pendingName, url: line.trim(), group: pendingGroup, type: 'live' });
         pendingName = null;
+        pendingGroup = 'Imported';
       }
     }
     return out;
   }
 
-  function applyChannelImport(parsed, replace) {
+  function applyChannelImport(parsed, replace, quietToast) {
     const newRows = parsed.map((p) => ({
       id: newChannelId(),
       name: p.name,
@@ -763,13 +802,112 @@
     }));
     if (replace) {
       currentChannels = newRows;
-      showToast(`Replaced with ${newRows.length} channel(s)`);
+      if (!quietToast) showToast(`Replaced with ${newRows.length} channel(s)`);
     } else {
       currentChannels.push(...newRows);
-      showToast(`Merged +${newRows.length} channel(s)`);
+      if (!quietToast) showToast(`Merged +${newRows.length} channel(s)`);
     }
     cmPage = 1;
     renderChannelTable();
+  }
+
+  function setCmProfileHint(html, visible) {
+    const el = document.getElementById('cmProfileHint');
+    if (!el) return;
+    el.innerHTML = html || '';
+    el.style.display = visible && html ? 'block' : 'none';
+  }
+
+  /**
+   * Channel studio edits `managedPlaylist`. FILE profiles store raw M3U in `content`.
+   * Always reads live Firebase for this key (dashboard cache can omit or stale `content`).
+   */
+  async function hydrateChannelStudioFromProfileIfEmpty() {
+    if (currentChannels.length > 0) {
+      setCmProfileHint('', false);
+      return;
+    }
+    let val;
+    try {
+      const snap = await get(ref(db, `sync/${currentChannelSyncKey}`));
+      val = snap.exists() ? snap.val() : null;
+    } catch (e) {
+      setCmProfileHint(`Could not read <code>sync/${escapeHtml(currentChannelSyncKey)}</code>: ${escapeHtml(e.message || String(e))}`, true);
+      return;
+    }
+    if (!val) {
+      setCmProfileHint('No data for this sync key. Click <b>Refresh</b> on the dashboard, then open Channel studio again.', true);
+      return;
+    }
+    currentUserData[currentChannelSyncKey] = val;
+    const method = String(val.method || '').toLowerCase();
+    if (method === 'm3u_file' || method === 'file') {
+      const raw = val.content != null ? String(val.content) : '';
+      if (!raw.trim()) {
+        setCmProfileHint('Profile is <b>FILE</b> but <code>content</code> is empty in Firebase. Open <b>Edit</b> on the row, choose the M3U again, and <b>Save to Firebase</b>.', true);
+        return;
+      }
+      const parsed = parseM3UText(raw);
+      if (!parsed.length) {
+        const kb = (raw.length / 1024).toFixed(1);
+        setCmProfileHint(
+          `Firebase has <code>content</code> (~${kb} KB) but <strong>0 channels</strong> parsed. Use <b>From profile M3U</b> after fixing the file, or <b>Paste M3U</b>. Expected: <code>#EXTINF:…,Name</code> then a URL line (<code>http://</code>, <code>rtmp://</code>, etc.).`,
+          true
+        );
+        return;
+      }
+      applyChannelImport(parsed, true, true);
+      setCmProfileHint(
+        `<strong><i class="fas fa-circle-check" style="color:#34d399"></i> Loaded ${parsed.length} channels</strong> from this profile’s embedded M3U (not saved yet). Click <b>Save to Firebase</b> to write <code>managedPlaylist</code>.`,
+        true
+      );
+      showToast(`Loaded ${parsed.length} channels from profile M3U — Save to Firebase when ready`);
+      return;
+    }
+    if (method === 'm3u' && val.url) {
+      document.getElementById('cmImportUrl').value = String(val.url).trim();
+      setCmProfileHint(
+        `This sync uses an <b>M3U URL</b> only — there is no <code>managedPlaylist</code> yet. Open <b>From URL</b> and try <b>Fetch & import</b> (often blocked by CORS), or paste the playlist. The URL field is pre-filled.`,
+        true
+      );
+      return;
+    }
+    if (method === 'xtream') {
+      setCmProfileHint(
+        `This sync uses <b>Xtream</b> (no M3U text on the server). Build a managed list with <b>Import file</b>, <b>Paste M3U</b>, or add rows manually, then <b>Save to Firebase</b>.`,
+        true
+      );
+      return;
+    }
+    setCmProfileHint(
+      `No <code>managedPlaylist</code> yet. Profile <code>method</code> is <code>${escapeHtml(String(val.method || '—'))}</code>. Use <b>Import file</b>, <b>Paste M3U</b>, or <b>From profile M3U</b> if this key stores embedded M3U.`,
+      true
+    );
+  }
+
+  async function loadProfileM3uIntoStudioClicked() {
+    if (currentChannels.length > 0 && !confirm('Replace the channel table with the M3U stored on this sync profile in Firebase?')) return;
+    try {
+      const snap = await get(ref(db, `sync/${currentChannelSyncKey}`));
+      const val = snap.exists() ? snap.val() : null;
+      if (!val) return showToast('No data for this sync key', true);
+      currentUserData[currentChannelSyncKey] = val;
+      const method = String(val.method || '').toLowerCase();
+      if (method !== 'm3u_file' && method !== 'file') {
+        return showToast('This profile is not FILE / embedded M3U type', true);
+      }
+      const raw = val.content != null ? String(val.content) : '';
+      if (!raw.trim()) return showToast('No M3U content in Firebase. Edit profile and upload the file again.', true);
+      const parsed = parseM3UText(raw);
+      if (!parsed.length) return showToast(`Parse found 0 channels (${(raw.length / 1024).toFixed(1)} KB in Firebase). Check M3U format.`, true);
+      applyChannelImport(parsed, true, false);
+      setCmProfileHint(
+        `<strong><i class="fas fa-circle-check" style="color:#34d399"></i> Loaded ${parsed.length} channels</strong> from Firebase <code>content</code>. Click <b>Save to Firebase</b> to publish <code>managedPlaylist</code>.`,
+        true
+      );
+    } catch (e) {
+      showToast(e.message || String(e), true);
+    }
   }
 
   function getCmImportMode() {
@@ -798,18 +936,86 @@
     }
   }
 
+  const CM_GROUP_NEW = '__new_custom__';
+
   function closeCmEditor() {
     document.getElementById('cmEditor').classList.remove('open');
   }
 
-  function openCmEditor(ch) {
+  function getDistinctChannelGroups() {
+    return [...new Set(currentChannels.map((c) => (c.group || '').trim()).filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b, undefined, { sensitivity: 'base' })
+    );
+  }
+
+  function rebuildCmGroupPresetAndDatalist() {
+    const groups = getDistinctChannelGroups();
+    const sel = document.getElementById('cmEdGroupPreset');
+    const data = document.getElementById('cmEdGroupDatalist');
+    sel.innerHTML = '<option value="">— Select existing group —</option>';
+    groups.forEach((g) => {
+      const o = document.createElement('option');
+      o.value = g;
+      o.textContent = g.length > 72 ? `${g.slice(0, 69)}…` : g;
+      sel.appendChild(o);
+    });
+    const oNew = document.createElement('option');
+    oNew.value = CM_GROUP_NEW;
+    oNew.textContent = '+ New group (type name below)';
+    sel.appendChild(oNew);
+    data.innerHTML = '';
+    groups.forEach((g) => {
+      const o = document.createElement('option');
+      o.value = g;
+      data.appendChild(o);
+    });
+  }
+
+  function syncCmGroupPresetSelectToGroupField() {
+    const g = (document.getElementById('cmEdGroup').value || '').trim();
+    const sel = document.getElementById('cmEdGroupPreset');
+    if (!g) {
+      sel.value = '';
+      return;
+    }
+    for (let i = 0; i < sel.options.length; i++) {
+      const opt = sel.options[i];
+      if (opt.value && opt.value !== CM_GROUP_NEW && opt.value === g) {
+        sel.value = g;
+        return;
+      }
+    }
+    sel.value = CM_GROUP_NEW;
+  }
+
+  /**
+   * @param {object|null} ch
+   * @param {{ pickGroup?: boolean }} [opts] — pickGroup: start with empty group and focus the group picker (Add to group)
+   */
+  function openCmEditor(ch, opts) {
+    const options = opts || {};
     const ed = document.getElementById('cmEditor');
+    rebuildCmGroupPresetAndDatalist();
     document.getElementById('cmEditorTitle').innerHTML = ch
       ? '<i class="fas fa-pen-to-square"></i> Edit channel'
-      : '<i class="fas fa-plus"></i> New channel';
+      : options.pickGroup
+        ? '<i class="fas fa-folder-plus"></i> New channel — choose group'
+        : '<i class="fas fa-plus"></i> New channel';
     document.getElementById('cmEdId').value = ch ? ch.id : '';
     document.getElementById('cmEdName').value = ch ? (ch.name || '') : '';
-    document.getElementById('cmEdGroup').value = ch ? (ch.group || 'General') : 'General';
+    if (ch) {
+      document.getElementById('cmEdGroup').value = ch.group || 'General';
+    } else if (options.pickGroup) {
+      document.getElementById('cmEdGroup').value = '';
+      document.getElementById('cmEdGroupPreset').value = '';
+      if (!getDistinctChannelGroups().length) {
+        document.getElementById('cmEdGroupPreset').value = CM_GROUP_NEW;
+        showToast('No groups in this list yet — type a new group name in the field below.', false);
+      }
+    } else {
+      document.getElementById('cmEdGroup').value = 'General';
+    }
+    if (ch || !options.pickGroup) syncCmGroupPresetSelectToGroupField();
     document.getElementById('cmEdUrl').value = ch ? (ch.url || '') : '';
     document.getElementById('cmEdLogo').value = ch ? (ch.logo || '') : '';
     document.getElementById('cmEdType').value = ch && ch.type === 'vod' ? 'vod' : (ch && ch.type === 'series' ? 'series' : 'live');
@@ -817,6 +1023,9 @@
     document.getElementById('cmEdAdult').checked = !!(ch && ch.adult);
     ed.classList.add('open');
     ed.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (options.pickGroup) {
+      requestAnimationFrame(() => document.getElementById('cmEdGroupPreset').focus());
+    }
   }
 
   async function openChannelManager(syncKey) {
@@ -828,8 +1037,10 @@
     document.getElementById('cmUrlPanel').classList.remove('open');
     document.getElementById('cmPasteTa').value = '';
     document.getElementById('cmImportUrl').value = '';
+    setCmProfileHint('', false);
     closeCmEditor();
     await loadChannelsFromFirebase();
+    await hydrateChannelStudioFromProfileIfEmpty();
     renderChannelTable();
     setModal(document.getElementById('channelManagerModal'), true);
   }
@@ -1120,6 +1331,18 @@
   document.getElementById('closeCmBtn').addEventListener('click', () => setModal(document.getElementById('channelManagerModal'), false));
   document.getElementById('cmSaveToFirebaseBtn').addEventListener('click', () => saveManagedPlaylist().catch((e) => showToast(e.message, true)));
   document.getElementById('cmNewChBtn').addEventListener('click', () => openCmEditor(null));
+  document.getElementById('cmAddToGroupBtn').addEventListener('click', () => openCmEditor(null, { pickGroup: true }));
+  document.getElementById('cmEdGroupPreset').addEventListener('change', (e) => {
+    const v = e.target.value;
+    const inp = document.getElementById('cmEdGroup');
+    if (v === CM_GROUP_NEW) {
+      inp.value = '';
+      inp.focus();
+    } else if (v) {
+      inp.value = v;
+    }
+  });
+  document.getElementById('cmEdGroup').addEventListener('blur', () => syncCmGroupPresetSelectToGroupField());
   document.getElementById('cmEdCancel').addEventListener('click', closeCmEditor);
   document.getElementById('cmEdApply').addEventListener('click', () => {
     const id = document.getElementById('cmEdId').value;
@@ -1160,6 +1383,9 @@
   });
   document.getElementById('cmFetchUrlBtn').addEventListener('click', () => {
     fetchAndImportM3uFromUrl().catch((e) => showToast(e.message || String(e), true));
+  });
+  document.getElementById('cmLoadProfileM3uBtn').addEventListener('click', () => {
+    loadProfileM3uIntoStudioClicked().catch((e) => showToast(e.message || String(e), true));
   });
   document.getElementById('cmParsePasteBtn').addEventListener('click', () => {
     const text = document.getElementById('cmPasteTa').value;

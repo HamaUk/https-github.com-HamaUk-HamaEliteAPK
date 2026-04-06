@@ -16,6 +16,7 @@ import com.bachors.iptv.utils.DeviceSyncCoordinator
 import com.bachors.iptv.utils.GlobalSync
 import com.bachors.iptv.utils.IptvService
 import com.bachors.iptv.utils.SharedPrefManager
+import com.bachors.iptv.utils.ThemeHelper
 import com.bachors.iptv.sports.SportsActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -36,6 +37,7 @@ class DashboardActivity : BaseThemedAppCompatActivity() {
         try {
             binding = ActivityDashboardBinding.inflate(layoutInflater)
             setContentView(binding.root)
+            ThemeHelper.applyPremiumHeroBackground(binding.root)
 
             supportActionBar?.hide()
             sharedPrefManager = SharedPrefManager(this)
@@ -61,6 +63,7 @@ class DashboardActivity : BaseThemedAppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        ThemeHelper.applyPremiumHeroBackground(binding.root)
         updateCategoryCounts()
         refreshContinueWatchingRow()
         fetchAppStatus()
