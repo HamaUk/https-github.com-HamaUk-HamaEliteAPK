@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Yousif Store</string>
-    <string name="app_name_part_hama">Yousif</string>
-    <string name="app_name_part_uk">Store</string>
-    <string name="app_v">Yousif Manager</string>
+    <string name="app_name">Optic Ghost</string>
+    <string name="app_name_part_hama">OpTiC</string>
+    <string name="app_name_part_uk">GhOsT</string>
+    <string name="app_v">IPTV Manager</string>
 
     <string name="main_subtitle">Premium activation</string>
+    <string name="main_sync_checking">Lîsteya giştî tê barkirin…</string>
+    <string name="main_playlist_unavailable">Li ser serverê lîsteya giştî tune an nederbasdar e. Paşê dîsa biceribîne.</string>
+    <string name="main_subscription_ended">Ev lîste nema çalak e.</string>
     <string name="btn_start">Get started</string>
     <string name="sync_success">Sync completed successfully.</string>
     <string name="sync_invalid">Sync data is invalid.</string>
     <string name="sync_no_data">No playlist on the server yet. Ask the admin to publish it.</string>
     <string name="sync_error">Sync error: %1$s</string>
+    <string name="sync_assigned_unavailable">The dedicated playlist for this device is missing or invalid. Contact the administrator.</string>
+    <string name="sync_private_not_linked">Private playlist is on, but this device is not linked yet. Send your device code to the administrator, or turn off private playlist in Settings to use the public one.</string>
+    <string name="main_device_ref">Device code for admin: %1$s</string>
     <string name="auto_resume_failed">Could not reopen the app. Tap Get started again.</string>
     <string name="dashboard_device_code">Device ID: %1$s</string>
     <string name="activation_required">Activation required</string>
@@ -97,16 +103,22 @@
     <string name="settings_refresh_data">Refresh playlist data</string>
 
     <string name="settings_subscription">Subscription &amp; device</string>
+    <string name="settings_playlist_source_title">Playlist source</string>
+    <string name="settings_device_code_label">Device code (8 digits) — send to admin for a private playlist</string>
+    <string name="settings_device_code_hint">If you want a private playlist, send this code to your administrator. Then turn on Private playlist below.</string>
+    <string name="settings_private_playlist_switch">Private playlist (admin-assigned)</string>
+    <string name="settings_private_playlist_hint">Off: public playlist (global). On: only the playlist linked to this device in the admin panel — global is not used.</string>
+    <string name="settings_playlist_source_saved">Saved. Tap Get started or Refresh to apply.</string>
     <string name="settings_copy_device_id">Copy 8-digit code</string>
     <string name="settings_device_id_copied">Code copied to clipboard</string>
     <string name="settings_status_premium">Status: Premium active</string>
+    <string name="settings_account_public">Rewş: lîsteya giştî</string>
 
     <string name="settings_language_title">Zimanê sepanê</string>
     <string name="settings_language_sorani">Kurdish (Sorani)</string>
     <string name="settings_language_badini">Kurdish (Kurmanji / Badini)</string>
     <string name="settings_language_arabic">Arabic</string>
     <string name="settings_language_english">English</string>
-    <string name="settings_language_system">Use system default</string>
 
     <string name="settings_appearance_title">Theme</string>
     <string name="settings_theme_dark">Dark</string>

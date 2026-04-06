@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">OpTiC GhOsT</string>
+    <string name="app_name">Optic Ghost</string>
     <string name="app_name_part_hama">OpTiC</string>
     <string name="app_name_part_uk">GhOsT</string>
     <string name="app_v">IPTV</string>
 
     <string name="main_subtitle">چالاککردنی پریمیۆم</string>
+    <string name="main_sync_checking">بارکردنی لیستی گشتی…</string>
+    <string name="main_playlist_unavailable">لیستی گشتی لە سێرڤەر دا نییە یان نادروستە. دواتر هەوڵبدەرەوە.</string>
+    <string name="main_subscription_ended">بەکارهێنان کۆتایی هاتووە.</string>
     <string name="btn_start">دەستپێکردن</string>
     <string name="sync_success">هاوبەشکردن سەرکەوتوو بوو!</string>
     <string name="sync_invalid">زانیاری هاوبەشکردن نادروستە</string>
     <string name="sync_no_data">هێشتا لیست لە سێرڤەر نییە. بەرپرس لە وێب بار بکات.</string>
     <string name="sync_error">هەڵەی هاوبەشکردن: %1$s</string>
+    <string name="sync_assigned_unavailable">لیستی تایبەت بۆ ئەم ئامێرە لە سێرڤەر نییە یان نادروستە. پەیوەندی بە بەڕێوەبەرەوە بکە.</string>
+    <string name="sync_private_not_linked">لیستی تایبەت چالاکە، بەڵام ئامێرەکەت هێشتا لەلایەن بەڕێوەبەرەوە بەستراونەتەوە نییە. ئەم کۆدە بنێرە بۆ بەڕێوەبەر، یان لە ڕێکخستنەکاندا لیستی تایبەت بکوژێنەرەوە بۆ بەکارهێنانی لیستی گشتی.</string>
+    <string name="main_device_ref">کۆدی ئامێر بۆ بەڕێوەبەر: %1$s</string>
     <string name="auto_resume_failed">نەتوانرا بەرنامەکە بکرێتەوە. دووبارە «دەستپێکردن» دابگرە.</string>
     <string name="dashboard_device_code">کۆد: %1$s</string>
     <string name="settings_version_line">وەشان: %1$s</string>
@@ -95,16 +101,22 @@
     <string name="settings_refresh_data">نوێکردنەوەی داتای پلەی لیست</string>
 
     <string name="settings_subscription">زانیاری ئابوونە و ئامێر</string>
+    <string name="settings_playlist_source_title">سەرچاوەی لیست</string>
+    <string name="settings_device_code_label">کۆدی ئامێر (٨ ژمارە) — بنێرە بۆ بەڕێوەبەر بۆ لیستی تایبەت</string>
+    <string name="settings_device_code_hint">ئەگەر لیستی تایبەت دەتەوێت، ئەم کۆدە بنێرە بۆ بەڕێوەبەر. پاشان لە خوارەوە «لیستی تایبەت» چالاک بکە.</string>
+    <string name="settings_private_playlist_switch">لیستی تایبەت (لەلایەن بەڕێوەبەرەوە)</string>
+    <string name="settings_private_playlist_hint">کووژاوە: لیستی گشتی (global). چالاک: تەنها لیستی بەستراو بە کۆدی ئامێرەکەت لە پانێلی بەڕێوەبەر — لیستی گشتی بەکارناهێنرێت.</string>
+    <string name="settings_playlist_source_saved">پاشەکەوت کرا. بۆ جێبەجێکردن دووبارە «دەستپێکردن» یان نوێکردنەوە بگرە.</string>
     <string name="settings_copy_device_id">کۆپی کردنی کۆدی ٨ ژمارەیی</string>
     <string name="settings_device_id_copied">کۆدەکە لە کلیپبۆرد کۆپی کرا</string>
     <string name="settings_status_premium">دۆخ: پڕیمیۆمی چالاک</string>
+    <string name="settings_account_public">دۆخ: لیستی گشتیی بەردەست</string>
 
     <string name="settings_language_title">زمانی ڕووکار</string>
     <string name="settings_language_sorani">کوردی (سۆرانی)</string>
     <string name="settings_language_badini">کوردی (بادینی)</string>
     <string name="settings_language_arabic">عەرەبی</string>
     <string name="settings_language_english">ئینگلیزی</string>
-    <string name="settings_language_system">وەک سیستەم</string>
 
     <string name="settings_appearance_title">ڕووکار و ڕەنگ</string>
     <string name="settings_theme_dark">تاریک (ئێستا)</string>

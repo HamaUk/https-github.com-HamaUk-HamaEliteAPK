@@ -10,14 +10,13 @@ import android.view.View
 import android.widget.Toast
 import com.bachors.iptv.databinding.ActivityDashboardBinding
 import com.bachors.iptv.models.PlaylistData
-import com.bachors.iptv.utils.ActivationHelper
 import com.bachors.iptv.utils.AppStatus
 import com.bachors.iptv.utils.ContinueWatchingStore
+import com.bachors.iptv.utils.DeviceSyncCoordinator
 import com.bachors.iptv.utils.GlobalSync
 import com.bachors.iptv.utils.IptvService
 import com.bachors.iptv.utils.SharedPrefManager
 import com.bachors.iptv.sports.SportsActivity
-import com.bachors.iptv.utils.SyncData
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import retrofit2.Call
@@ -45,7 +44,6 @@ class DashboardActivity : BaseThemedAppCompatActivity() {
             binding.tvBrandPrimary.text = getString(R.string.app_name_part_hama)
             binding.tvBrandSecondary.text = getString(R.string.app_name_part_uk)
             setupClock()
-            setupDeviceCode()
             setupExpiryDate()
             setupClickListeners()
             updateCategoryCounts()
@@ -66,19 +64,6 @@ class DashboardActivity : BaseThemedAppCompatActivity() {
         updateCategoryCounts()
         refreshContinueWatchingRow()
         fetchAppStatus()
-    }
-
-    private fun setupDeviceCode() {
-        binding.tvDeviceCode.text = getString(R.string.dashboard_device_code, deviceCodeForDisplay())
-    }
-
-    private fun deviceCodeForDisplay(): String {
-        val code = ActivationHelper.getDeviceCode(this)
-        return if (code.length == 8) {
-            "${code.substring(0, 4)} ${code.substring(4)}"
-        } else {
-            code
-        }
     }
 
     private fun setupExpiryDate() {
@@ -189,39 +174,51 @@ class DashboardActivity : BaseThemedAppCompatActivity() {
         binding.cardReload.isClickable = false
         binding.reloadProgress.visibility = View.VISIBLE
 
-        val service = GlobalSync.retrofit().create(IptvService::class.java)
-        service.getSyncData(ActivationHelper.getDeviceCode(this)).enqueue(object : Callback<SyncData> {
-            override fun onResponse(call: Call<SyncData>, response: Response<SyncData>) {
+        DeviceSyncCoordinator.loadEffectivePlaylist(
+            this,
+            onLoaded = { body ->
                 binding.cardReload.isEnabled = true
                 binding.cardReload.isClickable = true
                 binding.reloadProgress.visibility = View.GONE
-                val body = response.body()
-                if (response.isSuccessful && body != null) {
-                    val synced = GlobalSync.applySyncedConfig(this@DashboardActivity, sharedPrefManager, body)
-                    if (synced) {
-                        sharedPrefManager.recordSuccessfulSync()
-                        Toast.makeText(this@DashboardActivity, R.string.sync_success, Toast.LENGTH_SHORT).show()
-                        setupExpiryDate()
-                        updateCategoryCounts()
-                    } else {
-                        Toast.makeText(this@DashboardActivity, R.string.sync_invalid, Toast.LENGTH_LONG).show()
-                    }
+                val synced = GlobalSync.applySyncedConfig(this@DashboardActivity, sharedPrefManager, body)
+                if (synced) {
+                    sharedPrefManager.recordSuccessfulSync()
+                    Toast.makeText(this@DashboardActivity, R.string.sync_success, Toast.LENGTH_SHORT).show()
+                    setupExpiryDate()
+                    updateCategoryCounts()
                 } else {
-                    Toast.makeText(this@DashboardActivity, R.string.sync_no_data, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@DashboardActivity, R.string.sync_invalid, Toast.LENGTH_LONG).show()
                 }
-            }
-
-            override fun onFailure(call: Call<SyncData>, t: Throwable) {
+            },
+            onGlobalMissing = {
+                binding.cardReload.isEnabled = true
+                binding.cardReload.isClickable = true
+                binding.reloadProgress.visibility = View.GONE
+                Toast.makeText(this@DashboardActivity, R.string.sync_no_data, Toast.LENGTH_SHORT).show()
+            },
+            onDedicatedMissing = {
+                binding.cardReload.isEnabled = true
+                binding.cardReload.isClickable = true
+                binding.reloadProgress.visibility = View.GONE
+                Toast.makeText(this@DashboardActivity, R.string.sync_assigned_unavailable, Toast.LENGTH_LONG).show()
+            },
+            onPrivateNotLinked = {
+                binding.cardReload.isEnabled = true
+                binding.cardReload.isClickable = true
+                binding.reloadProgress.visibility = View.GONE
+                Toast.makeText(this@DashboardActivity, R.string.sync_private_not_linked, Toast.LENGTH_LONG).show()
+            },
+            onFailure = { msg ->
                 binding.cardReload.isEnabled = true
                 binding.cardReload.isClickable = true
                 binding.reloadProgress.visibility = View.GONE
                 Toast.makeText(
                     this@DashboardActivity,
-                    getString(R.string.sync_error, t.message ?: ""),
-                    Toast.LENGTH_SHORT
+                    getString(R.string.sync_error, msg.ifBlank { "—" }),
+                    Toast.LENGTH_SHORT,
                 ).show()
-            }
-        })
+            },
+        )
     }
 
     private fun updateCategoryCounts() {

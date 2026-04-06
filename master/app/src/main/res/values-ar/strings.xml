@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">متجر يوسف</string>
-    <string name="app_name_part_hama">يوسف</string>
-    <string name="app_name_part_uk">ستور</string>
-    <string name="app_v">مدير يوسف</string>
+    <string name="app_name">Optic Ghost</string>
+    <string name="app_name_part_hama">OpTiC</string>
+    <string name="app_name_part_uk">GhOsT</string>
+    <string name="app_v">مدير IPTV</string>
 
     <string name="main_subtitle">تفعيل بريميوم</string>
+    <string name="main_sync_checking">جاري تحميل قائمة التشغيل العامة…</string>
+    <string name="main_playlist_unavailable">لا توجد قائمة عامة على الخادم بعد أو أنها غير صالحة. حاول لاحقًا.</string>
+    <string name="main_subscription_ended">انتهت صلاحية هذه القائمة.</string>
     <string name="btn_start">ابدأ</string>
     <string name="sync_success">اكتملت المزامنة بنجاح.</string>
     <string name="sync_invalid">بيانات المزامنة غير صالحة.</string>
     <string name="sync_no_data">لا توجد قائمة على الخادم بعد. اطلب من المسؤول النشر.</string>
     <string name="sync_error">خطأ في المزامنة: %1$s</string>
+    <string name="sync_assigned_unavailable">قائمة هذا الجهاز المخصصة غير متوفرة أو غير صالحة. تواصل مع المسؤول.</string>
+    <string name="sync_private_not_linked">قائمة خاصة مفعّلة، لكن الجهاز غير مربوط بعد. أرسل رمز الجهاز للمسؤول، أو عطّل القائمة الخاصة في الإعدادات لاستخدام العامة.</string>
+    <string name="main_device_ref">رمز الجهاز للمسؤول: %1$s</string>
     <string name="auto_resume_failed">تعذر إعادة فتح التطبيق. اضغط ابدأ مرة أخرى.</string>
     <string name="dashboard_device_code">معرف الجهاز: %1$s</string>
     <string name="activation_required">التفعيل مطلوب</string>
@@ -97,16 +103,22 @@
     <string name="settings_refresh_data">تحديث بيانات القائمة</string>
 
     <string name="settings_subscription">الاشتراك والجهاز</string>
+    <string name="settings_playlist_source_title">مصدر القائمة</string>
+    <string name="settings_device_code_label">رمز الجهاز (8 أرقام) — أرسله للمسؤول لقائمة خاصة</string>
+    <string name="settings_device_code_hint">إذا أردت قائمة خاصة، أرسل هذا الرمز للمسؤول ثم فعّل «قائمة خاصة» أدناه.</string>
+    <string name="settings_private_playlist_switch">قائمة خاصة (من المسؤول)</string>
+    <string name="settings_private_playlist_hint">إيقاف: قائمة عامة. تشغيل: فقط القائمة المربوطة بهذا الجهاز في لوحة الإدارة — لا تُستخدم العامة.</string>
+    <string name="settings_playlist_source_saved">تم الحفظ. اضغط بدء أو تحديث للتطبيق.</string>
     <string name="settings_copy_device_id">نسخ الرمز المكوّن من 8 أرقام</string>
     <string name="settings_device_id_copied">تم نسخ الرمز إلى الحافظة</string>
     <string name="settings_status_premium">الحالة: بريميوم نشط</string>
+    <string name="settings_account_public">الحالة: قائمة عامة</string>
 
     <string name="settings_language_title">لغة التطبيق</string>
     <string name="settings_language_sorani">كردي (سوراني)</string>
     <string name="settings_language_badini">كردي (كورمانجي / باديني)</string>
     <string name="settings_language_arabic">العربية</string>
     <string name="settings_language_english">الإنجليزية</string>
-    <string name="settings_language_system">لغة النظام</string>
 
     <string name="settings_appearance_title">السمة</string>
     <string name="settings_theme_dark">داكن</string>

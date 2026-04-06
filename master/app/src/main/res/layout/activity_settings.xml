@@ -561,40 +561,81 @@
                     style="@style/VuCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    app:strokeColor="@color/crimson_glow"
+                    android:layout_marginTop="14dp"
+                    app:strokeColor="@color/white_opacity_10"
                     app:strokeWidth="1dp">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="20dp">
+                        android:padding="18dp">
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/activation_code_label"
-                            android:textColor="#9E9E9E"
+                            android:text="@string/settings_playlist_source_title"
+                            android:textColor="#FFFFFF"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/settings_device_code_label"
+                            android:textColor="#8890A0"
                             android:textSize="12sp" />
                         <TextView
-                            android:id="@+id/tv_device_id_display"
+                            android:id="@+id/tv_device_code_value"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
-                            android:fontFamily="sans-serif-medium"
+                            android:fontFamily="monospace"
                             android:letterSpacing="0.08"
-                            android:text="0000 0000"
                             android:textColor="#00D4FF"
-                            android:textSize="32sp"
+                            android:textSize="22sp"
                             android:textStyle="bold" />
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_copy_device_id"
-                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="14dp"
+                            android:layout_marginTop="10dp"
+                            android:lineSpacingExtra="3dp"
+                            android:text="@string/settings_device_code_hint"
+                            android:textColor="#8890A0"
+                            android:textSize="12sp" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_copy_device_code"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
                             android:text="@string/settings_copy_device_id"
-                            android:textColor="#00D4FF"
-                            app:strokeColor="#00D4FF" />
+                            android:textColor="#FFFFFF"
+                            app:strokeColor="@color/white_opacity_10" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:lineSpacingExtra="3dp"
+                            android:text="@string/settings_private_playlist_hint"
+                            android:textColor="#8890A0"
+                            android:textSize="12sp" />
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/settings_private_playlist_switch"
+                                android:textColor="#FFFFFF"
+                                android:textSize="15sp" />
+                            <com.google.android.material.switchmaterial.SwitchMaterial
+                                android:id="@+id/switch_private_playlist"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+                        </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -697,12 +738,6 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/settings_language_english"
-                            android:textColor="#B0B0C0" />
-                        <RadioButton
-                            android:id="@+id/rb_lang_system"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/settings_language_system"
                             android:textColor="#B0B0C0" />
                     </RadioGroup>
                 </com.google.android.material.card.MaterialCardView>

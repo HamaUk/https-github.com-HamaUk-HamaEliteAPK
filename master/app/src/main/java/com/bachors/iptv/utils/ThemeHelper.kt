@@ -36,20 +36,18 @@ object ThemeHelper {
 }
 
 object AppLocaleHelper {
+    /**
+     * Applies a concrete app locale (never "follow system").
+     * Default and fallback: Kurdish Sorani (`ckb-IQ`) so `values/` + `values-ckb` stay the norm; English only when the user picks it.
+     */
     fun applySavedApplicationLocales(context: Context) {
         val key = SharedPrefManager(context).getAppLanguageKey()
         val tags = when (key) {
-            SharedPrefManager.LANGUAGE_SYSTEM -> null
-            SharedPrefManager.LANGUAGE_CKB -> "ckb-IQ"
             SharedPrefManager.LANGUAGE_AR -> "ar"
             SharedPrefManager.LANGUAGE_EN -> "en"
             SharedPrefManager.LANGUAGE_KMR -> "kmr"
             else -> "ckb-IQ"
         }
-        if (tags == null) {
-            AppCompatDelegate.setApplicationLocales(androidx.core.os.LocaleListCompat.getEmptyLocaleList())
-        } else {
-            AppCompatDelegate.setApplicationLocales(androidx.core.os.LocaleListCompat.forLanguageTags(tags))
-        }
+        AppCompatDelegate.setApplicationLocales(androidx.core.os.LocaleListCompat.forLanguageTags(tags))
     }
 }

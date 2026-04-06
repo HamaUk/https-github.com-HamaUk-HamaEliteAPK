@@ -3,6 +3,10 @@
     "sync": {
       ".read": true,
       ".write": "auth != null"
+    },
+    "device_assignments": {
+      ".read": true,
+      ".write": "auth != null"
     }
   }
 }

@@ -62,6 +62,12 @@ data class SyncData(
     val status: String? = "active"
 )
 
+/** Firebase `device_assignments/{8-digit}` — when [active] and [syncKey] (not "global"), app loads only [sync/syncKey]. */
+data class DeviceAssignment(
+    val syncKey: String? = null,
+    val active: Boolean? = null
+)
+
 /** Firebase RTDB node `app_status` — create manually: `{ "state": "ok|maintenance|degraded", "message_ku": "..." }` */
 data class AppStatus(
     val state: String? = "ok",
@@ -80,10 +86,15 @@ interface IptvService {
         @Query("password") pass: String
     ): Call<XtreamAuthResponse>
 
-    @GET("sync/{deviceId}.json")
-    fun getSyncData(
-        @Path("deviceId") deviceId: String
-    ): Call<SyncData>
+    /** Public playlist for all users (Firebase `sync/global`). */
+    @GET("sync/global.json")
+    fun getGlobalSync(): Call<SyncData>
+
+    @GET("sync/{key}.json")
+    fun getSyncByKey(@Path("key") key: String): Call<SyncData>
+
+    @GET("device_assignments/{code}.json")
+    fun getDeviceAssignment(@Path("code") code: String): Call<DeviceAssignment>
 
     @GET("app_status.json")
     fun getAppStatus(): Call<AppStatus>

@@ -2,862 +2,519 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Yousif Store — Activation Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Optic Ghost Nexus — Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
 <style>
-:root {
-  --bg-gradient: radial-gradient(circle at top right, #0a101f, #050510);
-  --accent: #00d4ff;
-  --accent-glow: rgba(0, 212, 255, 0.4);
-  --glass: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --text-main: #ffffff;
-  --text-dim: #94a3b8;
-  --error: #ff4b2b;
-  --success: #00f2fe;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--bg-gradient);
-  color: var(--text-main);
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow-x: hidden;
-}
-body.admin-open {
-  align-items: flex-start;
-  padding: 20px 0 48px;
-}
-
-/* Background Elements */
-.bg-glow {
-  position: fixed;
-  top: -10%;
-  right: -10%;
-  width: 50vw;
-  height: 50vw;
-  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-  z-index: -1;
-  filter: blur(80px);
-}
-
-.portal-container {
-  width: 95%;
-  max-width: 500px;
-  animation: fadeIn 0.8s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.portal-card {
-  background: var(--glass);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border: 1px solid var(--glass-border);
-  border-radius: 32px;
-  padding: 40px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
-
-.header { text-align: center; margin-bottom: 40px; }
-.logo { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.05em; color: white; }
-.logo span { color: var(--accent); }
-.subtitle { font-size: 0.85rem; color: var(--text-dim); letter-spacing: 0.4em; text-transform: uppercase; margin-top: 5px; }
-
-/* Tabs */
-.tabs {
-  display: flex;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 5px;
-  border-radius: 16px;
-  margin-bottom: 30px;
-}
-.tab {
-  flex: 1;
-  padding: 12px;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.3s ease;
-  color: var(--text-dim);
-}
-.tab.active {
-  background: var(--accent);
-  color: #000;
-}
-
-/* Form */
-.form-group { margin-bottom: 24px; }
-label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.1em; }
-input {
-  width: 100%;
-  padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  color: white;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-}
-input:focus {
-  outline: none;
-  border-color: var(--accent);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
-}
-
-.row { display: flex; gap: 15px; }
-.row > div { flex: 1; }
-
-.sync-btn {
-  width: 100%;
-  padding: 18px;
-  border-radius: 16px;
-  background: var(--accent);
-  color: #000;
-  font-size: 1.1rem;
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-top: 10px;
-}
-.sync-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3);
-  filter: brightness(1.1);
-}
-.sync-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-.status-msg {
-  text-align: center;
-  margin-top: 20px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  min-height: 1.5em;
-  transition: all 0.3s ease;
-}
-.status-msg.success { color: var(--success); text-shadow: 0 0 10px rgba(0, 242, 254, 0.3); }
-.status-msg.error { color: var(--error); }
-
-/* Admin Styles */
-.admin-link {
-  display: block;
-  text-align: center;
-  margin-top: 20px;
-  font-size: 0.7rem;
-  color: var(--text-dim);
-  text-decoration: none;
-  opacity: 0.5;
-  transition: opacity 0.3s;
-}
-.admin-link:hover { opacity: 1; color: var(--accent); }
-
-.admin-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.9);
-  backdrop-filter: blur(20px);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
-}
-
-.admin-dashboard {
-  display: none;
-  width: 95%;
-  max-width: 1100px;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-radius: 32px;
-  padding: 40px;
-  margin: 20px auto;
-  animation: fadeIn 0.5s ease;
-}
-.admin-page { display: none; }
-.admin-page.active { display: block; animation: fadeIn 0.35s ease; }
-.admin-nav-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
-  margin-top: 28px;
-}
-@media (max-width: 640px) {
-  .admin-nav-grid { grid-template-columns: 1fr; }
-}
-.admin-nav-card {
-  text-align: left;
-  padding: 24px 22px;
-  border-radius: 20px;
-  border: 1px solid var(--glass-border);
-  background: rgba(0, 0, 0, 0.22);
-  cursor: pointer;
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-  position: relative;
-  overflow: hidden;
-}
-.admin-nav-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), transparent 55%);
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  pointer-events: none;
-}
-.admin-nav-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(0, 212, 255, 0.45);
-  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.45);
-}
-.admin-nav-card:hover::before { opacity: 1; }
-.admin-nav-card-title {
-  font-size: 1.05rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin-bottom: 8px;
-  color: #fff;
-}
-.admin-nav-card-desc {
-  font-size: 0.78rem;
-  color: var(--text-dim);
-  line-height: 1.5;
-  margin-bottom: 14px;
-}
-.admin-nav-card-badge {
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 999px;
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  background: rgba(0, 212, 255, 0.15);
-  color: var(--accent);
-  border: 1px solid rgba(0, 212, 255, 0.35);
-}
-.admin-back-btn {
-  padding: 8px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-dim);
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-right: 10px;
-}
-.admin-back-btn:hover {
-  color: #fff;
-  border-color: var(--accent);
-}
-.admin-hub-welcome {
-  font-size: 0.85rem;
-  color: var(--text-dim);
-  line-height: 1.65;
-  margin-top: 12px;
-  max-width: 52rem;
-}
-.add-page-panel {
-  max-width: 440px;
-  margin-top: 16px;
-  padding: 24px;
-  border-radius: 20px;
-  border: 1px solid var(--glass-border);
-  background: rgba(0, 0, 0, 0.2);
-}
-.admin-hero {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-  margin-top: -6px;
-  margin-bottom: 18px;
-  padding: 14px 16px;
-  border: 1px solid var(--glass-border);
-  border-radius: 14px;
-  background: rgba(0,0,0,0.22);
-}
-.admin-note {
-  font-size: 0.78rem;
-  color: var(--text-dim);
-}
-.admin-chip {
-  padding: 7px 10px;
-  border-radius: 999px;
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
-  font-weight: 800;
-  color: #00101a;
-  background: linear-gradient(90deg, #00d4ff, #5df7ff);
-  text-transform: uppercase;
-}
-
-.admin-table-wrapper {
-  overflow-x: auto;
-  margin-top: 30px;
-  background: rgba(0,0,0,0.2);
-  border-radius: 20px;
-  border: 1px solid var(--glass-border);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-th {
-  padding: 20px;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  border-bottom: 1px solid var(--glass-border);
-}
-
-td {
-  padding: 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
-  font-size: 0.9rem;
-}
-
-.action-btn {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: none;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-  margin-right: 5px;
-}
-.btn-edit { background: rgba(255,255,255,0.1); color: white; }
-.btn-delete { background: rgba(255, 75, 43, 0.1); color: var(--error); }
-
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.8);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 200;
-}
-.modal-content {
-  background: #111;
-  padding: 30px;
-  border-radius: 24px;
-  width: 90%;
-  max-width: 400px;
-  border: 1px solid var(--glass-border);
-}
-
-.badge { padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 900; }
-.badge.xtream { background: #913cff; color: white; }
-.badge.m3u { background: #00d4ff; color: white; }
-.badge.file { background: #ff9800; color: white; }
-
-.search-bar {
-  width: 100%;
-  padding: 12px 20px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  color: white;
-  margin-bottom: 20px;
-}
-
-/* Custom File Upload */
-.file-upload-wrapper {
-  position: relative;
-  width: 100%;
-}
-.file-upload-label {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 30px;
-  background: rgba(255,255,255,0.03);
-  border: 2px dashed var(--glass-border);
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.file-upload-label:hover {
-  background: rgba(0, 212, 255, 0.05);
-  border-color: var(--accent);
-}
-.file-upload-label span { font-size: 0.8rem; font-weight: 700; color: var(--accent); margin-bottom: 5px; }
-.file-upload-label small { font-size: 0.7rem; color: var(--text-dim); }
-.file-upload-input { display: none; }
-.file-selected-name {
-  margin-top: 10px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--success);
-  text-align: center;
-}
-
-/* Admin Dashboard Pro Styles */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-}
-.stat-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--glass-border);
-  padding: 20px;
-  border-radius: 20px;
-  text-align: center;
-  transition: transform 0.3s ease;
-}
-.stat-card:hover { transform: translateY(-5px); border-color: var(--accent); }
-.stat-val { display: block; font-size: 1.8rem; font-weight: 900; color: var(--accent); }
-.stat-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-dim); font-weight: 700; letter-spacing: 0.1em; }
-
-.admin-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-bottom: 20px;
-  align-items: center;
-}
-.toolbar-group { display: flex; gap: 10px; }
-.tool-btn {
-  padding: 10px 15px;
-  border-radius: 12px;
-  border: 1px solid var(--glass-border);
-  background: rgba(255,255,255,0.05);
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-.tool-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); }
-.tool-btn.accent { background: var(--accent); color: #000; border: none; }
-.tool-btn.danger { background: rgba(255, 75, 43, 0.1); color: var(--error); border-color: var(--error); }
-
-.copy-icon { cursor: pointer; opacity: 0.5; transition: opacity 0.3s; margin-left: 5px; }
-.copy-icon:hover { opacity: 1; color: var(--accent); }
-
-/* Channel manager */
-.channel-mgr-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; align-items: center; }
-.channel-mgr-table-wrap { overflow-x: auto; max-height: 48vh; border: 1px solid var(--glass-border); border-radius: 12px; background: rgba(0,0,0,0.2); }
-.channel-mgr-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-.channel-mgr-table th { position: sticky; top: 0; background: rgba(0,0,0,0.55); z-index: 1; padding: 10px 8px; text-align: left; }
-.channel-mgr-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: middle; }
-.channel-mgr-table tr:hover { background: rgba(255,255,255,0.04); }
-.channel-mgr-logo-cell { width: 56px; text-align: center; vertical-align: middle; }
-.channel-mgr-logo-thumb { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.35); display: inline-block; vertical-align: middle; }
-#cm-edit-logo { width: 100%; min-height: 4.5rem; max-height: 10rem; padding: 10px; font-family: ui-monospace, monospace; font-size: 0.65rem; word-break: break-all; resize: vertical; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; color: #fff; box-sizing: border-box; }
-.tag-hidden { color: #ff9800; font-weight: 700; }
-.tag-adult { color: #ff4b2b; font-weight: 700; }
-.channel-mgr-pager { display: flex; align-items: center; gap: 12px; margin-top: 12px; justify-content: center; }
-.channel-mgr-table tr.cm-dragging { opacity: 0.45; }
-.channel-mgr-table tr.cm-drag-over { outline: 2px dashed var(--accent); outline-offset: -2px; }
-.channel-mgr-validation { font-size: 0.72rem; padding: 10px 12px; border-radius: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); }
-.channel-mgr-validation .val-err { color: var(--error); font-weight: 700; }
-.channel-mgr-validation .val-warn { color: #ff9800; font-weight: 700; }
-.channel-mgr-validation .val-ok { color: #8bc34a; font-weight: 700; }
-.channel-mgr-bulk-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; padding: 10px; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); }
-.cm-move-cell .btn-small { padding: 2px 6px; min-width: 28px; }
-.cm-drag-handle { cursor: grab; display: inline-block; padding: 2px 4px; user-select: none; opacity: 0.85; font-size: 1rem; line-height: 1; vertical-align: middle; }
-.cm-drag-handle:active { cursor: grabbing; }
-.btn-small { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.06); color: #fff; cursor: pointer; font-size: 0.72rem; }
-.btn-small:hover { border-color: var(--accent); }
-.mgr-note { font-size: 0.72rem; color: var(--text-dim); margin-bottom: 10px; line-height: 1.5; }
-.pass-hidden { filter: blur(5px); transition: filter 0.3s; }
-.pass-hidden:hover { filter: none; }
-
-.checkbox-col { width: 40px; text-align: center; }
-input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: var(--accent); }
-
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-  .portal-card { padding: 30px 20px; }
-  .logo { font-size: 2rem; }
-  .stats-grid { grid-template-columns: 1fr; gap: 10px; }
-  .admin-dashboard { padding: 20px; margin: 10px; border-radius: 20px; max-width: 100%; }
-  .admin-nav-card { padding: 20px 18px; }
-  .admin-toolbar { flex-direction: column; align-items: stretch; }
-  .toolbar-group { justify-content: space-between; }
-  .tool-btn { flex: 1; text-align: center; font-size: 0.7rem; padding: 12px 5px; }
-  .admin-table-wrapper { margin-top: 20px; }
-  th, td { padding: 12px 10px; font-size: 0.8rem; }
-  .modal-content { width: 95%; padding: 20px; }
-  .stat-val { font-size: 1.5rem; }
-}
-
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg-deep: #03050b;
+    --glass-edge: rgba(255, 255, 255, 0.06);
+    --glass-edge-bright: rgba(255, 255, 255, 0.12);
+    --accent-primary: #3b82f6;
+    --accent-glow: #38bdf8;
+    --accent-violet: #8b5cf6;
+    --accent-danger: #f43f5e;
+    --accent-success: #10b981;
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.55);
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: radial-gradient(ellipse at 20% 20%, #0f172a 0%, #02040c 55%);
+    color: var(--text-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+  #loginShell {
+    position: fixed; inset: 0; z-index: 2000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem;
+    background: radial-gradient(ellipse at 20% 30%, #0f172a, #02040c);
+  }
+  #loginShell .login-card {
+    width: 100%; max-width: 420px;
+    background: linear-gradient(165deg, #0f172a, #0a0f1a);
+    border: 1px solid var(--glass-edge-bright);
+    border-radius: 1.75rem;
+    padding: 2rem;
+    box-shadow: var(--shadow-xl);
+  }
+  #loginShell h2 {
+    font-size: 1.35rem;
+    margin-bottom: 0.35rem;
+    background: linear-gradient(135deg, #fff, #60a5fa);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  #loginShell .sub { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5; }
+  .dashboard-container { max-width: 1440px; margin: 0 auto; padding: 1.5rem; position: relative; z-index: 2; }
+  .top-bar {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+    margin-bottom: 1.75rem; padding: 0.85rem 1.5rem;
+    background: rgba(0,0,0,0.35); backdrop-filter: blur(14px);
+    border-radius: 3rem; border: 1px solid var(--glass-edge);
+  }
+  .logo-area { display: flex; align-items: baseline; gap: 0.5rem; }
+  .logo-icon { font-size: 1.75rem; filter: drop-shadow(0 0 10px var(--accent-glow)); }
+  .logo-text {
+    font-weight: 800; font-size: 1.45rem; letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fff, #60a5fa);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .badge-version {
+    background: rgba(59,130,246,0.22); padding: 0.2rem 0.65rem; border-radius: 2rem;
+    font-size: 0.68rem; font-weight: 700; color: var(--accent-primary);
+  }
+  .exit-btn {
+    background: rgba(255,255,255,0.05); border: 1px solid var(--glass-edge);
+    padding: 0.5rem 1.2rem; border-radius: 2rem; font-weight: 600; font-size: 0.85rem;
+    cursor: pointer; color: var(--text-main); transition: 0.2s var(--ease);
+  }
+  .exit-btn:hover { background: var(--accent-danger); border-color: var(--accent-danger); color: #fff; }
+  .stats-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.1rem; margin-bottom: 1.5rem;
+  }
+  .stat-tile {
+    background: rgba(0,0,0,0.38); backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-edge); border-radius: 1.35rem; padding: 1.15rem;
+    transition: 0.2s var(--ease);
+  }
+  .stat-tile:hover { border-color: rgba(59,130,246,0.45); transform: translateY(-2px); }
+  .stat-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 0.45rem; }
+  .stat-number {
+    font-size: 2rem; font-weight: 800;
+    background: linear-gradient(120deg, #e2e8f0, #818cf8);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .action-strip { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-bottom: 1.5rem; align-items: center; }
+  .action-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid var(--glass-edge);
+    padding: 0.65rem 1.25rem; border-radius: 2rem; font-weight: 600; font-size: 0.82rem;
+    display: inline-flex; align-items: center; gap: 0.45rem; cursor: pointer; color: var(--text-main);
+    transition: 0.2s var(--ease);
+  }
+  .action-btn i { font-size: 0.95rem; }
+  .action-btn.primary {
+    background: linear-gradient(105deg, #2563eb, #3b82f6);
+    border-color: transparent; color: #fff; box-shadow: 0 8px 24px -8px rgba(37,99,235,0.55);
+  }
+  .action-btn.accent-violet {
+    background: linear-gradient(105deg, #6d28d9, #8b5cf6);
+    border-color: transparent; color: #fff;
+    box-shadow: 0 8px 24px -8px rgba(109,40,217,0.45);
+  }
+  .action-btn.danger { border-color: rgba(244,63,94,0.5); color: #fda4af; }
+  .action-btn:hover { transform: translateY(-1px); filter: brightness(1.06); }
+  .table-wrapper {
+    overflow-x: auto; border-radius: 1.35rem; border: 1px solid var(--glass-edge);
+    background: rgba(0,0,0,0.25); backdrop-filter: blur(6px);
+  }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+  .data-table th {
+    text-align: left; padding: 0.95rem 1rem; color: var(--text-muted); font-weight: 600;
+    text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--glass-edge);
+  }
+  .data-table td { padding: 0.95rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+  .data-table tr:hover td { background: rgba(59,130,246,0.07); }
+  .badge-method {
+    background: rgba(30,41,59,0.9); padding: 0.22rem 0.65rem; border-radius: 2rem;
+    font-weight: 600; font-size: 0.68rem; color: var(--accent-glow);
+  }
+  .copy-badge { cursor: pointer; opacity: 0.55; margin-left: 6px; color: var(--accent-glow); transition: opacity 0.15s; }
+  .copy-badge:hover { opacity: 1; }
+  .action-icons button {
+    background: rgba(255,255,255,0.06); border: 1px solid var(--glass-edge);
+    margin: 0 3px; cursor: pointer; font-size: 0.85rem; padding: 0.35rem 0.5rem;
+    border-radius: 0.65rem; color: var(--text-muted); transition: 0.15s;
+  }
+  .action-icons button[data-action="channels"] { color: #c4b5fd; border-color: rgba(139,92,246,0.35); }
+  .action-icons button[data-action="edit"] { color: #7dd3fc; border-color: rgba(56,189,248,0.35); }
+  .action-icons button[data-action="delete"] { color: #fda4af; border-color: rgba(244,63,94,0.35); }
+  .modal-modern {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.82); backdrop-filter: blur(14px);
+    display: flex; align-items: flex-start; justify-content: center; z-index: 1000;
+    visibility: hidden; opacity: 0; transition: opacity 0.22s, visibility 0.22s;
+    padding: 1.25rem; overflow-y: auto;
+  }
+  .modal-modern.active { visibility: visible; opacity: 1; }
+  .modal-card {
+    background: linear-gradient(180deg, #0f172a 0%, #0b1120 100%);
+    border: 1px solid var(--glass-edge-bright); border-radius: 1.75rem;
+    width: 100%; max-width: 520px; padding: 1.65rem;
+    box-shadow: var(--shadow-xl); margin: 2vh auto 2rem;
+    max-height: none;
+  }
+  .modal-card.cm-shell {
+    max-width: 1120px; padding: 0;
+    overflow: hidden;
+  }
+  .cm-inner { padding: 1.35rem 1.5rem 1.5rem; }
+  .cm-hero {
+    display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;
+    padding: 1.35rem 1.5rem;
+    background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(139,92,246,0.08));
+    border-bottom: 1px solid var(--glass-edge);
+  }
+  .cm-hero h3 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.35rem; }
+  .cm-hero .sub { font-size: 0.8rem; color: var(--text-muted); max-width: 520px; line-height: 1.45; }
+  .cm-hero code { color: #7dd3fc; font-size: 0.78rem; }
+  .cm-meta { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .cm-pill {
+    background: rgba(0,0,0,0.35); border: 1px solid var(--glass-edge);
+    padding: 0.35rem 0.85rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 600; color: #a5b4fc;
+  }
+  .cm-toolbar {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+    padding: 0.85rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);
+    background: rgba(0,0,0,0.2);
+  }
+  .cm-toolbar .spacer { flex: 1; min-width: 8px; }
+  .cm-radio-row { display: flex; gap: 1rem; font-size: 0.78rem; color: var(--text-muted); align-items: center; }
+  .cm-radio-row label { display: flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+  .cm-paste-panel {
+    display: none; padding: 0.85rem 1.5rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .cm-paste-panel.open { display: block; }
+  .cm-paste-panel textarea {
+    width: 100%; min-height: 110px; background: rgba(0,0,0,0.45);
+    border: 1px solid var(--glass-edge); border-radius: 1rem; padding: 0.75rem 1rem;
+    color: #e2e8f0; font-family: ui-monospace, monospace; font-size: 0.72rem; resize: vertical;
+  }
+  .cm-table-wrap { overflow-x: auto; max-height: min(52vh, 520px); overflow-y: auto; margin: 0 1.5rem; border-radius: 1rem; border: 1px solid var(--glass-edge); }
+  .cm-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+  .cm-table thead th {
+    position: sticky; top: 0; z-index: 1;
+    background: rgba(15,23,42,0.96); backdrop-filter: blur(8px);
+    text-align: left; padding: 0.65rem 0.5rem; color: var(--text-muted);
+    font-weight: 700; text-transform: uppercase; font-size: 0.62rem; letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--glass-edge);
+  }
+  .cm-table tbody td { padding: 0.55rem 0.45rem; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+  .cm-table tbody tr:hover td { background: rgba(59,130,246,0.06); }
+  .cm-table tbody tr.cm-drag-over td { background: rgba(139,92,246,0.18); outline: 1px dashed rgba(167,139,250,0.7); outline-offset: -2px; }
+  .cm-table tbody tr.cm-dragging { opacity: 0.45; }
+  .cm-drag-handle {
+    cursor: grab; color: #64748b; padding: 0.25rem 0.15rem; display: inline-flex;
+    border-radius: 0.35rem; transition: color 0.15s, background 0.15s;
+  }
+  .cm-drag-handle:hover { color: #a78bfa; background: rgba(139,92,246,0.12); }
+  .cm-drag-handle:active { cursor: grabbing; }
+  .cm-url-panel {
+    display: none;
+    padding: 0.85rem 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    background: rgba(59,130,246,0.06);
+  }
+  .cm-url-panel.open { display: block; }
+  .cm-cors-hint { font-size: 0.72rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 0.55rem; }
+  .cm-type { font-size: 0.62rem; padding: 0.15rem 0.45rem; border-radius: 1rem; font-weight: 700; text-transform: uppercase; }
+  .cm-type.live { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+  .cm-type.vod { background: rgba(245,158,11,0.2); color: #fcd34d; }
+  .cm-url-cell { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: ui-monospace, monospace; font-size: 0.68rem; color: #94a3b8; }
+  .cm-mini { padding: 0.2rem 0.45rem; font-size: 0.68rem; border-radius: 0.5rem; }
+  .cm-pagination {
+    display: flex; justify-content: center; align-items: center; gap: 0.75rem;
+    padding: 0.85rem 1.5rem; flex-wrap: wrap;
+  }
+  .cm-editor {
+    margin: 1rem 1.5rem 1.35rem;
+    padding: 1.1rem 1.25rem;
+    border-radius: 1.15rem;
+    border: 1px solid rgba(139,92,246,0.35);
+    background: linear-gradient(165deg, rgba(88,28,135,0.15), rgba(15,23,42,0.9));
+    display: none;
+  }
+  .cm-editor.open { display: block; }
+  .cm-editor h4 { font-size: 0.95rem; margin-bottom: 0.85rem; color: #e9d5ff; }
+  .cm-editor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.65rem; }
+  .cm-field label { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 0.25rem; }
+  .cm-check-row { display: flex; gap: 1.25rem; margin-top: 0.65rem; font-size: 0.82rem; align-items: center; }
+  .cm-check-row label { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; text-transform: none; letter-spacing: 0; }
+  .cm-editor-actions { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+  @media (max-width: 760px) {
+    .dashboard-container { padding: 1rem; }
+    .cm-table-wrap { margin: 0 0.75rem; }
+    .cm-inner, .cm-hero, .cm-toolbar, .cm-pagination { padding-left: 0.85rem; padding-right: 0.85rem; }
+    .cm-editor { margin: 0.75rem; }
+  }
+  .search-input, .login-input, .field-input, select.field-input {
+    background: rgba(0,0,0,0.45); border: 1px solid var(--glass-edge);
+    border-radius: 1rem; padding: 0.65rem 1rem; color: #fff; width: 100%;
+    margin-bottom: 0.65rem; font-size: 0.88rem;
+  }
+  .search-input::placeholder, .login-input::placeholder { color: #64748b; }
+  .profile-head { margin-bottom: 1rem; }
+  .profile-head h3 { font-size: 1.2rem; margin-bottom: 0.35rem; }
+  .profile-head .hint { font-size: 0.78rem; color: var(--text-muted); line-height: 1.45; }
+  .modal-top-row {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem;
+  }
+  .modal-top-row > h3:first-child { margin: 0; flex: 1; min-width: 200px; }
+  .modal-back-btn { flex-shrink: 0; align-self: flex-start; }
+  .tier-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.85rem; }
+  .tier-btn {
+    padding: 0.45rem 1rem; border-radius: 2rem; font-size: 0.78rem; font-weight: 700;
+    border: 1px solid var(--glass-edge); background: rgba(255,255,255,0.04); color: var(--text-muted); cursor: pointer; transition: 0.15s;
+  }
+  .tier-btn:hover { border-color: rgba(59,130,246,0.5); color: #e2e8f0; }
+  .tier-btn.active { background: rgba(59,130,246,0.25); border-color: var(--accent-primary); color: #fff; }
+  .tier-btn.premium.active { background: rgba(139,92,246,0.28); border-color: var(--accent-violet); }
+  .method-seg { display: flex; gap: 0.35rem; margin: 0.85rem 0; flex-wrap: wrap; }
+  .seg-btn {
+    flex: 1; min-width: 100px; padding: 0.55rem 0.75rem; border-radius: 0.85rem;
+    border: 1px solid var(--glass-edge); background: rgba(0,0,0,0.35);
+    color: var(--text-muted); font-weight: 600; font-size: 0.78rem; cursor: pointer; transition: 0.15s;
+  }
+  .seg-btn:hover { color: #e2e8f0; }
+  .seg-btn.active { background: linear-gradient(105deg, #1d4ed8, #3b82f6); border-color: transparent; color: #fff; }
+  select#modalMethod { display: none; }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  .toast-message {
+    position: fixed; bottom: 22px; right: 22px; background: #0f172a;
+    border-left: 4px solid var(--accent-primary); padding: 0.85rem 1.15rem;
+    border-radius: 1rem; font-size: 0.84rem; z-index: 3000; backdrop-filter: blur(10px);
+    max-width: min(420px, 92vw); box-shadow: var(--shadow-xl);
+  }
+  #appRoot { display: none; }
 </style>
 </head>
 <body>
-<div class="bg-glow"></div>
-<div class="portal-container">
-  <div class="portal-card">
-    <div class="header">
-      <div class="logo" id="logoTap" onclick="window._logoTap=(window._logoTap||0)+1;clearTimeout(window._logoTimer);if(window._logoTap>=5){window._logoTap=0;document.getElementById('adminOverlay').style.display='flex';}window._logoTimer=setTimeout(function(){window._logoTap=0;},4000);" style="cursor:pointer;">Yousif <span>Store</span></div>
-      <div class="subtitle">PREMIUM ACTIVATION PORTAL</div>
-    </div>
 
-    <p style="text-align:center; color:var(--text-dim); font-size:0.9rem; line-height:1.8; margin-top:10px;">
-      Download <strong style="color:var(--accent)">YOUSIF STORE</strong> on your TV or phone,<br>
-      then send your 8-Digit Device ID to activate your account.
-    </p>
-
+<div id="loginShell">
+  <div class="login-card">
+    <h2><i class="fas fa-eye" style="color:#60a5fa"></i> Optic Ghost Nexus</h2>
+    <p class="sub">Firebase admin login. Public app uses <code style="color:#60a5fa">sync/global</code>. Premium users get their own sync key + optional device mapping.</p>
+    <input type="email" id="loginEmail" class="login-input" placeholder="Admin email" autocomplete="username">
+    <input type="password" id="loginPass" class="login-input" placeholder="Password" autocomplete="current-password">
+    <button type="button" id="loginBtn" class="action-btn primary" style="width:100%; justify-content:center; margin-top:0.35rem"><i class="fas fa-key"></i> Sign in</button>
   </div>
 </div>
 
-<!-- Admin Login Overlay -->
-<div id="adminOverlay" class="admin-overlay">
-  <div class="portal-card" style="max-width:350px;">
-    <div class="header" style="margin-bottom:20px;">
-      <div class="logo" style="font-size:1.5rem">ADMIN <span>LOGIN</span></div>
+<div class="dashboard-container" id="appRoot">
+  <div class="top-bar">
+    <div class="logo-area">
+      <i class="fas fa-eye logo-icon"></i>
+      <span class="logo-text">OPTIC GHOST</span>
+      <span class="badge-version">NEXUS</span>
     </div>
-    <div class="form-group">
-      <label>Admin Email</label>
-      <input type="email" id="adminUser" placeholder="Email" style="text-align:center;" autocomplete="off">
-    </div>
-    <div class="form-group">
-      <label>Admin Password</label>
-      <input type="password" id="adminPass" placeholder="Password" style="text-align:center;" autocomplete="off">
-    </div>
-    <button class="sync-btn" onclick="(typeof window.checkAdminLogin==='function'?window.checkAdminLogin():alert('Admin is loading... please wait 2 seconds and try again.'))">LOGIN</button>
-    <button class="admin-link" onclick="window.hideAdminLogin()" style="width:100%; border:none; background:none;">CANCEL</button>
+    <button type="button" class="exit-btn" id="exitAdminBtn"><i class="fas fa-sign-out-alt"></i> Sign out</button>
+  </div>
+
+  <div class="stats-row" id="statsContainer">
+    <div class="stat-tile"><div class="stat-title">Total profiles</div><div class="stat-number" id="statTotal">—</div></div>
+    <div class="stat-tile"><div class="stat-title">Xtream / M3U</div><div class="stat-number" id="statMethodSplit">—</div></div>
+    <div class="stat-tile"><div class="stat-title">Device mappings</div><div class="stat-number" id="statDevices">—</div></div>
+    <div class="stat-tile"><div class="stat-title">Expired</div><div class="stat-number" id="statExpired">—</div></div>
+  </div>
+
+  <div class="action-strip">
+    <button type="button" class="action-btn primary" id="addProfileBtn"><i class="fas fa-user-plus"></i> Add user / playlist</button>
+    <button type="button" class="action-btn" id="addGlobalBtn"><i class="fas fa-globe"></i> Edit <strong>global</strong> feed</button>
+    <button type="button" class="action-btn accent-violet" id="openGlobalCmBtn"><i class="fas fa-wand-magic-sparkles"></i> Channel studio — global</button>
+    <button type="button" class="action-btn" id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+    <button type="button" class="action-btn" id="exportCsvBtn"><i class="fas fa-download"></i> CSV</button>
+    <button type="button" class="action-btn danger" id="bulkDeleteBtn"><i class="fas fa-trash"></i> Delete selected</button>
+    <button type="button" class="action-btn" id="deviceAssignBtn"><i class="fas fa-mobile-screen"></i> Device map</button>
+    <input type="search" id="globalSearch" class="search-input" style="width:min(100%,280px); margin-bottom:0" placeholder="Search keys, URLs, servers…" autocomplete="off">
+  </div>
+
+  <div class="table-wrapper">
+    <table class="data-table" id="userTable">
+      <thead>
+        <tr>
+          <th style="width:40px"><input type="checkbox" id="selectAllCheckbox" title="Select all"></th>
+          <th>Sync key</th>
+          <th>Type</th>
+          <th>Connection</th>
+          <th>Expiry</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="userTableBody">
+        <tr><td colspan="6" style="text-align:center">Loading…</td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
-<!-- Admin Dashboard -->
-<div id="adminDashboard" class="admin-dashboard">
-  <div class="header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-    <div class="logo" style="font-size:1.5rem">YOUSIF <span>STORE</span> <span style="font-size:0.55em; color:var(--text-dim); font-weight:700;">ADMIN</span></div>
-    <div style="display:flex; gap:10px; align-items:center">
-      <label style="margin:0; font-size:0.7rem; color:var(--text-dim)">AUTO-REFRESH <input type="checkbox" id="autoRefresh" style="margin-left:5px"></label>
-      <button class="sync-btn" style="width:auto; padding:10px 20px; font-size:0.8rem" onclick="window.hideAdminDashboard()">EXIT ADMIN</button>
+<div id="profileModal" class="modal-modern" aria-hidden="true">
+  <div class="modal-card">
+    <div class="profile-head">
+      <div class="modal-top-row">
+        <div style="flex:1;min-width:200px">
+          <h3 style="margin-bottom:0.35rem"><i class="fas fa-satellite-dish" style="color:#60a5fa"></i> Add or update playlist</h3>
+          <p class="hint" style="margin:0">Choose <b>Global</b> for everyone’s app, or <b>Premium / custom</b> for a private sync key (pair with Device map + user’s Private playlist).</p>
+        </div>
+        <button type="button" id="profileBackBtn" class="action-btn modal-back-btn"><i class="fas fa-arrow-left"></i> Back</button>
+      </div>
+    </div>
+    <div class="tier-row">
+      <button type="button" class="tier-btn active" id="tierGlobalBtn" data-tier="global"><i class="fas fa-globe"></i> Global</button>
+      <button type="button" class="tier-btn premium" id="tierPremiumBtn" data-tier="premium"><i class="fas fa-gem"></i> Premium / custom key</button>
+    </div>
+    <label style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em">Sync key</label>
+    <input type="text" id="modalSyncKey" class="search-input" style="margin-top:0.25rem" placeholder="global" autocomplete="off">
+    <p id="syncKeyHint" style="font-size:0.72rem;color:var(--text-muted);margin:-0.45rem 0 0.5rem">Firebase path: <code style="color:#7dd3fc">sync/global</code></p>
+
+    <label style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em">Source</label>
+    <div class="method-seg" id="methodSeg">
+      <button type="button" class="seg-btn active" data-method="xtream"><i class="fas fa-server"></i> Xtream</button>
+      <button type="button" class="seg-btn" data-method="m3u"><i class="fas fa-link"></i> M3U URL</button>
+      <button type="button" class="seg-btn" data-method="file"><i class="fas fa-file-lines"></i> M3U file</button>
+    </div>
+    <select id="modalMethod"><option value="xtream">xtream</option><option value="m3u">m3u</option><option value="file">file</option></select>
+
+    <div id="dynamicFields"></div>
+
+    <label style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:0.35rem">Subscription</label>
+    <select id="expirySelect" class="field-input" style="margin-bottom:0">
+      <option value="0">Unlimited</option>
+      <option value="1">1 month</option>
+      <option value="3">3 months</option>
+      <option value="6">6 months</option>
+      <option value="12">12 months</option>
+      <option value="24">24 months</option>
+    </select>
+
+    <div style="display:flex; gap:0.65rem; margin-top:1.25rem; flex-wrap:wrap">
+      <button type="button" id="modalSaveBtn" class="action-btn primary" style="flex:1; min-width:140px; justify-content:center">Save to Firebase</button>
+      <button type="button" id="modalCloseBtn" class="action-btn" style="flex:1; min-width:120px; justify-content:center"><i class="fas fa-arrow-left"></i> Back</button>
     </div>
   </div>
+</div>
 
-  <div id="adminPageHome" class="admin-page active">
-    <p class="admin-hub-welcome">Each device uses its own <strong style="color:var(--accent)">8-digit ID</strong> under <code style="color:var(--accent)">sync/&lt;id&gt;</code> in Firebase—the same ID the Yousif Store app shows on the activation screen. Pick a section below to manage subscribers, subscriptions, or managed channel lists.</p>
-    <div class="admin-nav-grid">
-      <div class="admin-nav-card" role="button" tabindex="0" onclick="window.navigateAdmin('users')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.navigateAdmin('users');}">
-        <div class="admin-nav-card-title">All users</div>
-        <div class="admin-nav-card-desc">Search every profile, bulk delete, export CSV, edit credentials, open channel manager per device.</div>
-        <span class="admin-nav-card-badge" id="hub-badge-total">0 profiles</span>
-      </div>
-      <div class="admin-nav-card" role="button" tabindex="0" onclick="window.navigateAdmin('add')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.navigateAdmin('add');}">
-        <div class="admin-nav-card-title">Add / update user</div>
-        <div class="admin-nav-card-desc">Enter the customer’s 8-digit device ID, subscription length, and Xtream, M3U URL, or file.</div>
-        <span class="admin-nav-card-badge">Activate</span>
-      </div>
-      <div class="admin-nav-card" role="button" tabindex="0" onclick="window.navigateAdmin('expired')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.navigateAdmin('expired');}">
-        <div class="admin-nav-card-title">Expired users</div>
-        <div class="admin-nav-card-desc">Profiles past <code>expiryDate</code> (app locks after network time check). Renew or remove.</div>
-        <span class="admin-nav-card-badge" id="hub-badge-expired">0 expired</span>
-      </div>
-      <div class="admin-nav-card" role="button" tabindex="0" onclick="window.navigateAdmin('channels')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.navigateAdmin('channels');}">
-        <div class="admin-nav-card-title">Channel lists</div>
-        <div class="admin-nav-card-desc">See which device IDs have a managed playlist and open the full channel editor.</div>
-        <span class="admin-nav-card-badge">Managed M3U</span>
-      </div>
+<div id="deviceModal" class="modal-modern" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-top-row" style="margin-bottom:0.65rem">
+      <h3><i class="fas fa-microchip"></i> Device → dedicated key</h3>
+      <button type="button" id="deviceBackBtn" class="action-btn modal-back-btn"><i class="fas fa-arrow-left"></i> Back</button>
     </div>
+    <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:1rem; line-height:1.45">User enables <b>Private playlist</b> in the app. Map their 8-digit code to a sync key (not <code>global</code>).</p>
+    <input type="text" id="deviceCode" placeholder="8-digit code" class="search-input" inputmode="numeric" autocomplete="off">
+    <input type="text" id="deviceSyncKey" placeholder="Dedicated sync key" class="search-input">
+    <div style="margin:0.85rem 0"><label style="cursor:pointer"><input type="checkbox" id="deviceActive" checked> Active</label></div>
+    <button type="button" id="deviceSaveBtn" class="action-btn primary" style="width:100%">Save mapping</button>
+    <hr style="margin:1rem 0; border-color:#1e293b">
+    <div id="deviceListPreview" style="max-height:220px; overflow-y:auto; font-size:0.8rem"></div>
   </div>
+</div>
 
-  <div id="adminPageUsers" class="admin-page">
-    <div style="margin-bottom:18px; display:flex; align-items:center; flex-wrap:wrap; gap:10px;">
-      <button type="button" class="admin-back-btn" onclick="window.navigateAdmin('home')">← Home</button>
-      <span class="admin-note" style="margin:0;">All Firebase <b>sync/*</b> keys</span>
-    </div>
-    <div class="admin-hero">
+<div id="channelManagerModal" class="modal-modern" aria-hidden="true">
+  <div class="modal-card cm-shell">
+    <div class="cm-hero">
       <div>
-        <div style="font-weight:800; margin-bottom:4px;">SUBSCRIBER PROFILES</div>
-        <div class="admin-note">Rows are keyed by the app’s <b>8-digit device ID</b>. The app reads <b>sync/&lt;id&gt;</b> and enforces <b>expiryDate</b> using network time when possible.</div>
+        <h3><i class="fas fa-layer-group" style="color:#a78bfa"></i> Channel studio</h3>
+        <p class="sub">Managed list for <strong id="cmSyncLabel" style="color:#e2e8f0">—</strong> · <code id="cmFirebasePath">sync/—</code></p>
       </div>
-      <span class="admin-chip">RTDB</span>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <span class="stat-val" id="stat-total">0</span>
-        <span class="stat-label">Total Profiles</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-val" id="stat-xtream">0</span>
-        <span class="stat-label">Xtream Profiles</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-val" id="stat-m3u">0</span>
-        <span class="stat-label">M3U/M3U8 Profiles</span>
+      <div class="cm-meta">
+        <span class="cm-pill" id="cmStatLine">0 channels</span>
+        <button type="button" id="closeCmBtn" class="action-btn"><i class="fas fa-arrow-left"></i> Back</button>
       </div>
     </div>
-    <div class="admin-toolbar">
-      <input type="text" id="adminSearch" class="search-bar" style="margin-bottom:0; flex:1" placeholder="Search device ID, method, URL, server…" onkeyup="window.filterUsers()">
-      <div class="toolbar-group">
-        <button type="button" class="tool-btn accent" onclick="window.openAddManual()">+ ADD / UPDATE</button>
-        <button type="button" class="tool-btn danger" onclick="window.bulkDelete()">BULK DELETE</button>
-        <button type="button" class="tool-btn" onclick="window.exportData()">EXPORT CSV</button>
+    <div class="cm-toolbar">
+      <button type="button" id="cmNewChBtn" class="action-btn primary cm-mini"><i class="fas fa-plus"></i> New channel</button>
+      <button type="button" id="cmImportM3uBtn" class="action-btn cm-mini"><i class="fas fa-file-import"></i> Import file</button>
+      <button type="button" id="cmTogglePasteBtn" class="action-btn cm-mini"><i class="fas fa-paste"></i> Paste M3U</button>
+      <button type="button" id="cmToggleUrlBtn" class="action-btn cm-mini"><i class="fas fa-cloud-arrow-down"></i> From URL</button>
+      <button type="button" id="cmBulkHideBtn" class="action-btn cm-mini"><i class="fas fa-eye-slash"></i> Hide selected</button>
+      <button type="button" id="cmBulkDelBtn" class="action-btn danger cm-mini"><i class="fas fa-trash"></i> Delete selected</button>
+      <span class="spacer"></span>
+      <div class="cm-radio-row">
+        <label><input type="radio" name="cmImportMode" value="merge" checked> Merge import</label>
+        <label><input type="radio" name="cmImportMode" value="replace"> Replace all</label>
+      </div>
+      <input type="file" id="cmFileInput" accept=".m3u,.m3u8,.txt" style="display:none">
+    </div>
+    <div class="cm-paste-panel" id="cmPastePanel">
+      <textarea id="cmPasteTa" placeholder="#EXTINF:-1,Channel name&#10;https://…"></textarea>
+      <button type="button" id="cmParsePasteBtn" class="action-btn primary cm-mini" style="margin-bottom:0.75rem"><i class="fas fa-code"></i> Parse pasted M3U</button>
+    </div>
+    <div class="cm-url-panel" id="cmUrlPanel">
+      <p class="cm-cors-hint"><i class="fas fa-circle-info" style="color:#60a5fa"></i> Fetches the playlist in <strong>your browser</strong>. Many hosts block cross-origin requests (CORS) — if it fails, use <b>Import file</b> or <b>Paste M3U</b> instead.</p>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
+        <input type="url" id="cmImportUrl" class="search-input" style="flex:1;min-width:220px;margin-bottom:0" placeholder="https://example.com/playlist.m3u" autocomplete="off">
+        <button type="button" id="cmFetchUrlBtn" class="action-btn primary cm-mini"><i class="fas fa-download"></i> Fetch &amp; import</button>
       </div>
     </div>
-    <div class="admin-table-wrapper">
-      <table id="userTable">
+    <div class="cm-inner" style="padding-top:0.75rem">
+      <input type="search" id="cmSearch" class="search-input" placeholder="Filter name, group, URL…" autocomplete="off" style="margin-bottom:0.65rem">
+    </div>
+    <div class="cm-table-wrap">
+      <table class="cm-table">
         <thead>
           <tr>
-            <th class="checkbox-col"><input type="checkbox" onclick="window.selectAll(this)"></th>
-            <th>DEVICE ID</th>
-            <th>METHOD</th>
-            <th>INFO</th>
-            <th>EXPIRES</th>
-            <th>ACTIONS</th>
+            <th style="width:32px" title="Drag to reorder"><i class="fas fa-grip-vertical" style="color:#64748b;font-size:0.75rem"></i></th>
+            <th style="width:36px"><input type="checkbox" id="cmSelectAll" title="Page"></th>
+            <th style="width:36px">#</th>
+            <th>Name / group</th>
+            <th style="width:52px">Type</th>
+            <th>Stream URL</th>
+            <th style="width:70px">Flags</th>
+            <th style="width:120px">Order</th>
+            <th style="width:100px">Edit</th>
           </tr>
         </thead>
-        <tbody id="userList"></tbody>
+        <tbody id="cmTbody"></tbody>
       </table>
     </div>
-  </div>
-
-  <div id="adminPageAdd" class="admin-page">
-    <div style="margin-bottom:18px;">
-      <button type="button" class="admin-back-btn" onclick="window.navigateAdmin('home')">← Home</button>
+    <div class="cm-pagination">
+      <button type="button" class="action-btn cm-mini" id="cmPrevPage"><i class="fas fa-chevron-left"></i></button>
+      <span id="cmPageInfo" style="font-size:0.8rem;color:var(--text-muted)">—</span>
+      <button type="button" class="action-btn cm-mini" id="cmNextPage"><i class="fas fa-chevron-right"></i></button>
     </div>
-    <h3 style="margin-bottom:8px; font-size:1.1rem;">Add / update subscriber</h3>
-    <p class="admin-note" style="margin-bottom:16px;">Use the exact <b>8-digit</b> code from the user’s app (spaces are OK—they are removed on save).</p>
-    <div class="add-page-panel">
-      <div class="form-group"><label>8-digit device ID</label><input type="text" id="add-code" inputmode="numeric" autocomplete="off" placeholder="e.g. 12345678 or 1234 5678"></div>
-      <div class="form-group">
-        <label>Subscription duration</label>
-        <select id="add-duration" style="width:100%; padding:14px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:12px; color:white;">
-          <option value="1">1 Month</option>
-          <option value="3">3 Months</option>
-          <option value="6">6 Months</option>
-          <option value="12">1 Year</option>
-          <option value="24">2 Years</option>
-          <option value="0" selected>Unlimited</option>
-        </select>
-      </div>
-      <div class="tabs" style="margin-bottom:15px">
-        <div class="tab active" id="add-tab-xtream" onclick="window.setAddMethod('xtream')">XTREAM</div>
-        <div class="tab" id="add-tab-m3u" onclick="window.setAddMethod('m3u')">URL</div>
-        <div class="tab" id="add-tab-file" onclick="window.setAddMethod('file')">FILE</div>
-      </div>
-      <div id="add-fields">
-        <div class="form-group"><label>Server</label><input type="text" id="add-server"></div>
-        <div class="row">
-          <div class="form-group"><label>User</label><input type="text" id="add-user"></div>
-          <div class="form-group"><label>Pass</label><input type="text" id="add-pass"></div>
-        </div>
-      </div>
-      <div style="display:flex; gap:10px; margin-top:20px;">
-        <button type="button" class="sync-btn" style="flex:1" onclick="window.saveAddManual()">SAVE PROFILE</button>
-        <button type="button" class="sync-btn" style="flex:1; background:rgba(255,255,255,0.1); color:white;" onclick="window.navigateAdmin('home')">CANCEL</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="adminPageExpired" class="admin-page">
-    <div style="margin-bottom:18px; display:flex; align-items:center; flex-wrap:wrap; gap:10px;">
-      <button type="button" class="admin-back-btn" onclick="window.navigateAdmin('home')">← Home</button>
-      <span class="admin-note" style="margin:0;">Subscription end date is before now (limited plans only)</span>
-    </div>
-    <div class="admin-toolbar">
-      <input type="text" id="adminSearchExpired" class="search-bar" style="margin-bottom:0; flex:1" placeholder="Search expired profiles…" onkeyup="window.filterUsersExpired()">
-      <div class="toolbar-group">
-        <button type="button" class="tool-btn danger" onclick="window.bulkDelete()">BULK DELETE</button>
-      </div>
-    </div>
-    <div class="admin-table-wrapper">
-      <table id="userTableExpired">
-        <thead>
-          <tr>
-            <th class="checkbox-col"><input type="checkbox" onclick="window.selectAll(this)"></th>
-            <th>DEVICE ID</th>
-            <th>METHOD</th>
-            <th>INFO</th>
-            <th>EXPIRES</th>
-            <th>ACTIONS</th>
-          </tr>
-        </thead>
-        <tbody id="userListExpired"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div id="adminPageChannels" class="admin-page">
-    <div style="margin-bottom:18px;">
-      <button type="button" class="admin-back-btn" onclick="window.navigateAdmin('home')">← Home</button>
-    </div>
-    <p class="admin-note" style="margin-bottom:16px;">Managed playlists live on each device’s sync node. <b>Manage</b> opens the existing channel editor modal.</p>
-    <input type="text" id="channelOverviewSearch" class="search-bar" placeholder="Filter by device ID…" onkeyup="window.renderChannelOverview()">
-    <div class="admin-table-wrapper" style="margin-top:0;">
-      <table>
-        <thead>
-          <tr>
-            <th>DEVICE ID</th>
-            <th>METHOD</th>
-            <th>MANAGED CHANNELS</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="channelOverviewBody"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- Edit Modal -->
-<div id="editModal" class="modal">
-  <div class="modal-content">
-    <h3 style="margin-bottom:20px;">EDIT PROFILE</h3>
-    <div id="editFields"></div>
-    <div style="display:flex; gap:10px; margin-top:20px;">
-      <button class="sync-btn" style="flex:1" onclick="window.saveEdit()">SAVE</button>
-      <button class="sync-btn" style="flex:1; background:rgba(255,255,255,0.1); color:white;" onclick="window.closeModal()">CANCEL</button>
-    </div>
-  </div>
-</div>
-
-<!-- Channel manager (managed playlist) -->
-<div id="channelManagerModal" class="modal" style="align-items: flex-start; padding: 24px 12px; overflow-y: auto;">
-  <div class="modal-content" style="max-width: 1080px; width: 100%; max-height: none;">
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
-      <div>
-        <h3 style="margin-bottom:8px;">MANAGE CHANNELS</h3>
-        <div class="mgr-note" id="channelMgrSyncKeyLabel">Device ID: —</div>
-        <div class="mgr-note">Import from your M3U (profile URL, embedded file on this device ID, paste, or local file), or use <b>ADD ONE CHANNEL</b> for a single name + stream URL + optional local icon. Use <b>DELETE</b> on a row to remove a channel. Remote URL fetch may fail in-browser due to CORS — then use Paste or a profile with embedded <b>content</b>. Saves to <b>managedPlaylist</b> under this device’s sync node. After editing logos/names, click <b>SAVE MANAGED PLAYLIST TO FIREBASE</b>, then users must <b>open the app again</b> (same 8-digit ID) so icons appear. The <b>Logo</b> column below shows a thumbnail when the URL or embedded image loads.</div>
-      </div>
-      <button type="button" class="btn-small" onclick="window.closeChannelManager()">CLOSE</button>
-    </div>
-    <div class="channel-mgr-toolbar">
-      <button type="button" class="tool-btn accent" onclick="window.channelMgrImportFromProfile()">IMPORT FROM PROFILE</button>
-      <button type="button" class="tool-btn" onclick="window.channelMgrPickFile()">LOAD .M3U FILE</button>
-      <input type="file" id="channelMgrFile" accept=".m3u,.m3u8,.txt,application/vnd.apple.mpegurl,text/plain" style="display:none" onchange="window.channelMgrOnFile(this)">
-      <button type="button" class="tool-btn" onclick="document.getElementById('channelMgrPaste').style.display=document.getElementById('channelMgrPaste').style.display==='none'?'block':'none'">PASTE M3U</button>
-      <button type="button" class="tool-btn accent" onclick="window.channelMgrToggleAddSingle()">+ ADD ONE CHANNEL</button>
-    </div>
-    <div id="channelMgrPaste" style="display:none; margin-bottom:12px;">
-      <label class="admin-note">Paste M3U text</label>
-      <textarea id="channelMgrPasteTa" style="width:100%; min-height:120px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:12px; color:white; padding:12px; font-family:monospace; font-size:0.72rem;"></textarea>
-      <button type="button" class="tool-btn accent" style="margin-top:8px" onclick="window.channelMgrParsePasted()">PARSE PASTED</button>
-    </div>
-    <div id="channelMgrAddSinglePanel" style="display:none; margin-bottom:16px; padding:14px; border:1px solid var(--glass-border); border-radius:12px; background:rgba(0,0,0,0.2);">
-      <div class="mgr-note" style="margin-bottom:10px;">Add a single stream without replacing the whole list. URL can be <b>.m3u8</b>, <b>.ts</b>, <b>.m3u</b> playlist link, or other stream URL. Logo is optional (local image or leave empty).</div>
-      <div class="row" style="display:flex; flex-wrap:wrap; gap:12px;">
-        <div class="form-group" style="flex:1; min-width:160px;">
-          <label>Channel name</label>
-          <input type="text" id="channelMgrAddName" placeholder="e.g. Kurdistan TV" autocomplete="off">
-        </div>
-        <div class="form-group" style="flex:1; min-width:160px;">
-          <label>Group</label>
-          <input type="text" id="channelMgrAddGroup" value="General" placeholder="General" autocomplete="off">
-        </div>
-      </div>
-      <div class="form-group" style="margin-top:8px;">
-        <label>Stream URL</label>
-        <input type="text" id="channelMgrAddUrl" placeholder="https://…/stream.m3u8 or .ts or .m3u" spellcheck="false" autocomplete="off" style="width:100%;">
-      </div>
-      <div class="row" style="display:flex; flex-wrap:wrap; gap:12px; margin-top:8px; align-items:flex-end;">
-        <div class="form-group" style="flex:1; min-width:140px;">
-          <label>Type</label>
-          <select id="channelMgrAddType" style="width:100%; padding:10px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:10px; color:white;">
-            <option value="auto">Auto (from URL)</option>
-            <option value="live">live</option>
-            <option value="vod">vod</option>
-            <option value="series">series</option>
+    <div class="cm-editor" id="cmEditor">
+      <h4 id="cmEditorTitle"><i class="fas fa-pen-to-square"></i> Edit channel</h4>
+      <input type="hidden" id="cmEdId">
+      <div class="cm-editor-grid">
+        <div class="cm-field"><label>Name</label><input type="text" id="cmEdName" class="field-input" style="margin-bottom:0"></div>
+        <div class="cm-field"><label>Group</label><input type="text" id="cmEdGroup" class="field-input" style="margin-bottom:0"></div>
+        <div class="cm-field" style="grid-column:1/-1"><label>Stream URL</label><input type="text" id="cmEdUrl" class="field-input" style="margin-bottom:0"></div>
+        <div class="cm-field"><label>Logo URL (optional)</label><input type="text" id="cmEdLogo" class="field-input" style="margin-bottom:0" placeholder="https://…"></div>
+        <div class="cm-field"><label>Type</label>
+          <select id="cmEdType" class="field-input" style="margin-bottom:0">
+            <option value="live">Live</option>
+            <option value="vod">VOD</option>
+            <option value="series">Series</option>
           </select>
         </div>
-        <div class="form-group" style="flex:2; min-width:200px;">
-          <label>Logo (optional)</label>
-          <div class="file-upload-wrapper">
-            <label for="channelMgrAddLogoFile" class="file-upload-label" style="padding:12px 16px;">
-              <span>CHOOSE ICON FILE</span>
-              <small>PNG / JPG — auto-resized like EDIT</small>
-            </label>
-            <input type="file" id="channelMgrAddLogoFile" class="file-upload-input" accept="image/*">
-          </div>
-        </div>
       </div>
-      <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
-        <button type="button" class="sync-btn" style="width:auto; padding:10px 20px;" onclick="window.channelMgrAddSingleChannel()">ADD TO LIST</button>
-        <button type="button" class="sync-btn" style="width:auto; padding:10px 20px; background:rgba(255,255,255,0.1); color:white;" onclick="window.channelMgrClearAddSingleForm()">CLEAR FORM</button>
+      <div class="cm-check-row">
+        <label><input type="checkbox" id="cmEdHidden"> Hidden in app</label>
+        <label><input type="checkbox" id="cmEdAdult"> Adult</label>
+      </div>
+      <div class="cm-editor-actions">
+        <button type="button" id="cmEdApply" class="action-btn primary cm-mini">Apply</button>
+        <button type="button" id="cmEdCancel" class="action-btn cm-mini"><i class="fas fa-arrow-left"></i> Back</button>
       </div>
     </div>
-    <input type="text" id="channelMgrFilter" class="search-bar" placeholder="FILTER BY NAME, GROUP, URL..." onkeyup="window.channelMgrRender()" style="margin-bottom:12px;">
-    <div id="channelMgrValidation" class="channel-mgr-validation" style="display:none;"></div>
-    <div class="channel-mgr-bulk-bar">
-      <span class="admin-note" style="margin:0;">Bulk (checked rows):</span>
-      <button type="button" class="btn-small" onclick="window.channelMgrSelectPage()">SELECT PAGE</button>
-      <button type="button" class="btn-small" onclick="window.channelMgrClearSelection()">CLEAR</button>
-      <button type="button" class="btn-small" onclick="window.channelMgrBulkHide()">HIDE</button>
-      <button type="button" class="btn-small" style="color:var(--error);border-color:var(--error);" onclick="window.channelMgrBulkDelete()">DELETE</button>
-      <button type="button" class="btn-small" onclick="window.channelMgrBulkMoveGroup()">MOVE GROUP…</button>
-      <button type="button" class="btn-small" style="background:var(--accent);color:#000;border-color:var(--accent);font-weight:700;" onclick="window.channelMgrBulkExportM3u()">EXPORT M3U SNIPPET</button>
-    </div>
-    <div class="channel-mgr-table-wrap">
-      <table class="channel-mgr-table">
-        <thead>
-          <tr>
-            <th class="checkbox-col"><input type="checkbox" id="channelMgrCbAllPage" title="Select visible page"></th>
-            <th style="width:72px;">⇅</th>
-            <th>#</th>
-            <th>Logo</th>
-            <th>Name</th>
-            <th>Group</th>
-            <th>Type</th>
-            <th>Flags</th>
-            <th>URL</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="channelMgrTbody"></tbody>
-      </table>
-    </div>
-    <div class="channel-mgr-pager">
-      <button type="button" class="btn-small" onclick="window.channelMgrPrevPage()">PREV</button>
-      <span id="channelMgrPageInfo" style="font-size:0.8rem; color:var(--text-dim)">—</span>
-      <button type="button" class="btn-small" onclick="window.channelMgrNextPage()">NEXT</button>
-    </div>
-    <div style="display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;">
-      <button type="button" class="sync-btn" style="width:auto; padding:12px 24px;" onclick="window.channelMgrSaveToFirebase()">SAVE MANAGED PLAYLIST TO FIREBASE</button>
-      <span id="channelMgrStatus" class="admin-note" style="align-self:center;"></span>
+    <div class="cm-inner" style="padding-top:0">
+      <div class="flex-between" style="margin:0">
+        <span style="font-size:0.72rem;color:var(--text-muted)">Saves <code>managedPlaylist</code> on this sync node. App reload required for logos.</span>
+        <button type="button" id="cmSaveToFirebaseBtn" class="action-btn primary"><i class="fas fa-cloud-arrow-up"></i> Save to Firebase</button>
+      </div>
     </div>
   </div>
 </div>
 
-<div id="channelMgrEditModal" class="modal" style="align-items:flex-start;padding:20px 12px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
-  <div class="modal-content" style="max-width:480px;margin:24px auto;flex-shrink:0;">
-    <h3 style="margin-bottom:16px;">CHANNEL SETTINGS</h3>
-    <div id="channelMgrEditFields"></div>
-    <div style="display:flex; gap:10px; margin-top:18px;">
-      <button type="button" class="sync-btn" style="flex:1" onclick="window.channelMgrSaveEditRow()">APPLY</button>
-      <button type="button" class="sync-btn" style="flex:1; background:rgba(255,255,255,0.1); color:white;" onclick="window.closeChannelMgrEdit()">CANCEL</button>
-    </div>
-  </div>
-</div>
-
-<script>
-  // Fallback so inline onclick never throws before module initializes.
-  window.checkAdminLogin = window.checkAdminLogin || function () {
-    alert('Admin is loading... please wait 2 seconds and try again.');
-  };
-</script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getDatabase, ref, set, get, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getDatabase, ref, get, set, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCUery4JLA3iASd_baCLvJX4fus2-y3fsc",
@@ -875,1581 +532,766 @@ input[type="checkbox"] { transform: scale(1.2); cursor: pointer; accent-color: v
 
   const _ae = [109,107,111,121,101,52,54,49,64,103,109,97,105,108,46,99,111,109];
   const _ap = [72,97,109,97,107,111,121,101,57,57];
-  const _d = a => a.map(c => String.fromCharCode(c)).join('');
-  let currentMethod = 'xtream';
-  let addMethod = 'xtream';
-  let editingCode = null;
-  let refreshTimer = null;
+  const _d = (a) => a.map((c) => String.fromCharCode(c)).join('');
 
-  function normalizeDeviceId(s) {
-    return String(s || '').replace(/\s+/g, '');
+  let currentUserData = {};
+  let currentChannelSyncKey = null;
+  let currentChannels = [];
+  let editingProfileKey = null;
+  let profileTier = 'global';
+  let cmPage = 1;
+  const CM_PAGE_SIZE = 40;
+
+  function normalizeSyncKeyInput(s) {
+    const raw = String(s || '').trim();
+    if (!raw) return '';
+    const compact = raw.replace(/\s+/g, '');
+    if (/^\d{8}$/.test(compact)) return compact;
+    return compact.toLowerCase();
   }
-  function isValidDeviceId8(s) {
-    return /^\d{8}$/.test(normalizeDeviceId(s));
+  function isValidSyncKey(code) {
+    if (!code || code.length > 64) return false;
+    if (/[.#$\[\]\/]/.test(code)) return false;
+    return /^[a-z0-9_-]+$/.test(code);
+  }
+  function normalizeDeviceCodeStrict(s) {
+    const d = String(s || '').replace(/\D/g, '');
+    return d.length === 8 ? d : '';
+  }
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+  function csvEscape(s) {
+    return '"' + String(s ?? '').replace(/"/g, '""') + '"';
+  }
+  function newChannelId() {
+    return 'ch_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
   }
 
-  const ADMIN_PAGE_IDS = {
-    home: 'adminPageHome',
-    users: 'adminPageUsers',
-    add: 'adminPageAdd',
-    expired: 'adminPageExpired',
-    channels: 'adminPageChannels'
-  };
-
-  function parseAdminHash() {
-    const raw = (location.hash || '#admin').replace(/^#/, '').trim();
-    if (!raw.startsWith('admin')) return 'home';
-    const sub = raw.slice('admin'.length).replace(/^\//, '');
-    if (!sub) return 'home';
-    if (['users', 'add', 'expired', 'channels'].includes(sub)) return sub;
-    return 'home';
+  function showToast(msg, isError = false) {
+    document.querySelectorAll('.toast-message').forEach((t) => t.remove());
+    const div = document.createElement('div');
+    div.className = 'toast-message';
+    div.innerHTML = `<i class="fas ${isError ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i> ${escapeHtml(msg)}`;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3400);
   }
 
-  function resetAddForm() {
-    const codeEl = document.getElementById('add-code');
-    const durEl = document.getElementById('add-duration');
-    if (codeEl) codeEl.value = '';
-    if (durEl) durEl.value = '0';
-    window.setAddMethod('xtream');
+  function setModal(el, open) {
+    el.classList.toggle('active', open);
+    el.setAttribute('aria-hidden', open ? 'false' : 'true');
   }
 
-  window.navigateAdmin = (section, skipHash) => {
-    const allowed = ['home', 'users', 'add', 'expired', 'channels'];
-    if (!allowed.includes(section)) section = 'home';
-    Object.entries(ADMIN_PAGE_IDS).forEach(([key, id]) => {
-      const el = document.getElementById(id);
-      if (el) el.classList.toggle('active', key === section);
-    });
-    if (section === 'add') resetAddForm();
-    if (section === 'channels') window.renderChannelOverview();
-    if (!skipHash) {
-      const h = section === 'home' ? '#admin' : '#admin/' + section;
-      if (location.hash !== h) history.replaceState(null, '', h);
-    }
-  };
+  function closeProfileModal() {
+    setModal(document.getElementById('profileModal'), false);
+    document.getElementById('modalSyncKey').readOnly = false;
+  }
 
-  window.addEventListener('hashchange', () => {
-    const dash = document.getElementById('adminDashboard');
-    if (dash && dash.style.display === 'block') {
-      window.navigateAdmin(parseAdminHash(), true);
-    }
-  });
+  function closeDeviceModal() {
+    setModal(document.getElementById('deviceModal'), false);
+  }
 
-  window.setMethod = (method) => {
-    currentMethod = method;
-    const tx = document.getElementById('tab-xtream');
-    if (!tx) return;
-    document.getElementById('tab-xtream').className = 'tab ' + (method === 'xtream' ? 'active' : '');
-    document.getElementById('tab-m3u').className = 'tab ' + (method === 'm3u' ? 'active' : '');
-    document.getElementById('tab-file').className = 'tab ' + (method === 'file' ? 'active' : '');
-    const fx = document.getElementById('fields-xtream');
-    if (fx) fx.style.display = (method === 'xtream' ? 'block' : 'none');
-    const fm = document.getElementById('fields-m3u');
-    if (fm) fm.style.display = (method === 'm3u' ? 'block' : 'none');
-    const ff = document.getElementById('fields-file');
-    if (ff) ff.style.display = (method === 'file' ? 'block' : 'none');
-  };
-
-  window.setAddMethod = (method) => {
-    addMethod = method;
-    document.getElementById('add-tab-xtream').className = 'tab ' + (method === 'xtream' ? 'active' : '');
-    document.getElementById('add-tab-m3u').className = 'tab ' + (method === 'm3u' ? 'active' : '');
-    document.getElementById('add-tab-file').className = 'tab ' + (method === 'file' ? 'active' : '');
-    const fields = document.getElementById('add-fields');
-    if (method === 'xtream') {
-      fields.innerHTML = `<div class="form-group"><label>Server</label><input type="text" id="add-server"></div>
-      <div class="row">
-        <div class="form-group"><label>User</label><input type="text" id="add-user"></div>
-        <div class="form-group"><label>Pass</label><input type="text" id="add-pass"></div>
-      </div>`;
-    } else if (method === 'm3u') {
-      fields.innerHTML = `<div class="form-group"><label>M3U URL</label><input type="text" id="add-url"></div>`;
+  function setProfileTier(tier) {
+    profileTier = tier;
+    document.getElementById('tierGlobalBtn').classList.toggle('active', tier === 'global');
+    document.getElementById('tierPremiumBtn').classList.toggle('active', tier === 'premium');
+    const input = document.getElementById('modalSyncKey');
+    const hint = document.getElementById('syncKeyHint');
+    if (tier === 'global') {
+      input.value = 'global';
+      input.readOnly = true;
+      hint.innerHTML = 'Firebase: <code style="color:#7dd3fc">sync/global</code> — public app feed';
     } else {
-      fields.innerHTML = `
-        <div class="form-group"><label>Upload M3U File</label>
-          <div class="file-upload-wrapper">
-            <label for="add-file" class="file-upload-label" style="padding:15px">
-              <span>CHOOSE M3U FILE</span>
-              <div id="addFileName" class="file-selected-name">No file selected</div>
-            </label>
-            <input type="file" id="add-file" class="file-upload-input" accept=".m3u,.m3u8,.txt,application/vnd.apple.mpegurl,text/plain" onchange="updateFileName(this, 'addFileName')">
-          </div>
-        </div>
-      `;
+      if (input.value === 'global' || !editingProfileKey) input.value = '';
+      input.readOnly = false;
+      hint.innerHTML = 'Examples: <code style="color:#7dd3fc">vip_ali</code>, <code style="color:#7dd3fc">premium_01</code>, or an 8-digit legacy key';
     }
-  };
+  }
 
-  const readFileContent = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target.result);
-      reader.onerror = (e) => reject(new Error("Failed to read file"));
-      reader.readAsText(file);
+  function setMethodSeg(method) {
+    document.getElementById('modalMethod').value = method;
+    document.querySelectorAll('#methodSeg .seg-btn').forEach((b) => {
+      b.classList.toggle('active', b.getAttribute('data-method') === method);
     });
-  };
-
-  /** Firebase RTDB rejects `undefined` anywhere in the tree (common when merging `managedPlaylist`). */
-  function stripUndefinedDeep(value) {
-    if (value === undefined) return undefined;
-    if (value === null) return null;
-    if (typeof value !== 'object') return value;
-    if (Array.isArray(value)) {
-      return value.map(stripUndefinedDeep).filter((x) => x !== undefined);
-    }
-    const o = {};
-    for (const k of Object.keys(value)) {
-      const v = stripUndefinedDeep(value[k]);
-      if (v !== undefined) o[k] = v;
-    }
-    return o;
   }
 
-  /** Full document replace at sync/<code>: keep existing managedPlaylist only if present; never write undefined. */
-  function buildSyncNodeForSet(payload, prev) {
-    const next = stripUndefinedDeep({ ...payload });
-    if (prev && prev.managedPlaylist != null) {
-      next.managedPlaylist = stripUndefinedDeep(prev.managedPlaylist);
-    }
-    return next;
-  }
-
-  window.updateFileName = (input, displayId) => {
-    const file = input.files[0];
-    const el = document.getElementById(displayId);
-    if (el) el.innerText = file ? file.name : "No file selected";
-  };
-
-  const syncBtnEl = document.getElementById('syncBtn');
-  if (syncBtnEl) syncBtnEl.onclick = async () => {
-    const code = (document.getElementById('linkCode').value || 'global').trim();
-    const status = document.getElementById('status');
-    const btn = syncBtnEl;
-
-    if (!code) {
-      status.innerText = "Invalid sync key";
-      status.className = "status-msg error";
-      return;
-    }
-
-    btn.disabled = true;
-    btn.innerText = "SENDING TO CLOUD...";
-    status.innerText = "";
-
+  async function fetchAllSync() {
+    const tbody = document.getElementById('userTableBody');
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Loading…</td></tr>';
     try {
-      const dbRef = ref(db, 'sync/' + code);
-      let payload = { method: currentMethod, timestamp: Date.now() };
-
-      if (currentMethod === 'xtream') {
-        payload.server = document.getElementById('server').value;
-        payload.user = document.getElementById('user').value;
-        payload.pass = document.getElementById('pass').value;
-      } else if (currentMethod === 'm3u') {
-        payload.url = document.getElementById('m3uUrl').value;
-      } else if (currentMethod === 'file') {
-        const file = document.getElementById('m3uFile').files[0];
-        if (!file) throw new Error("Please select an M3U file");
-        payload.method = 'm3u_file';
-        payload.content = await readFileContent(file);
-        payload.filename = file.name;
-      }
-
-      const prevSnap = await get(dbRef);
-      const prev = prevSnap.exists() ? prevSnap.val() : {};
-      await set(dbRef, buildSyncNodeForSet(payload, prev));
-
-      status.innerText = "✅ DATA SENT — users can tap START in the app";
-      status.className = "status-msg success";
-      btn.innerText = "SEND AGAIN";
-      btn.disabled = false;
+      const snap = await get(ref(db, 'sync'));
+      currentUserData = snap.exists() ? snap.val() : {};
     } catch (e) {
-      status.innerText = "ERROR: " + e.message;
-      status.className = "status-msg error";
-      btn.disabled = false;
-      btn.innerText = "RETRY";
+      currentUserData = {};
+      showToast('Load failed: ' + e.message, true);
     }
-  };
-
-  /* ADMIN LOGIC */
-  window.handleAdminTap = () => {
-    window.showAdminLogin();
-  };
-
-  // Admin overlay opening is handled by logo inline tap-counter logic.
-
-  window.showAdminLogin = () => {
-    document.getElementById('adminUser').value = '';
-    document.getElementById('adminPass').value = '';
-    document.getElementById('adminOverlay').style.display = 'flex';
-  };
-  window.hideAdminLogin = () => document.getElementById('adminOverlay').style.display = 'none';
-  
-  window.checkAdminLogin = async () => {
-    const email = document.getElementById('adminUser').value.trim();
-    const pass = document.getElementById('adminPass').value;
-    if (!email || !pass) { alert("Enter email and password."); return; }
-    try {
-      await signInWithEmailAndPassword(auth, email, pass);
-      window.hideAdminLogin();
-      window.showAdminDashboard();
-    } catch (error) {
-      if (email === _d(_ae) && pass === _d(_ap)) {
-        try {
-          await createUserWithEmailAndPassword(auth, _d(_ae), _d(_ap));
-          window.hideAdminLogin();
-          window.showAdminDashboard();
-          return;
-        } catch (_) {}
-      }
-      alert("Invalid credentials.");
-      document.getElementById('adminPass').value = '';
-    } 
-  };
-
-  window.showAdminDashboard = async () => {
-    document.body.classList.add('admin-open');
-    document.querySelector('.portal-container').style.display = 'none';
-    document.getElementById('adminDashboard').style.display = 'block';
-    window.navigateAdmin(parseAdminHash(), true);
-    await loadUsers();
-    refreshTimer = setInterval(() => { if (document.getElementById('autoRefresh').checked) loadUsers(); }, 30000);
-  };
-
-  window.hideAdminDashboard = () => {
-    signOut(auth).catch(e => console.error("Sign out error", e));
-    document.body.classList.remove('admin-open');
-    document.querySelector('.portal-container').style.display = 'block';
-    document.getElementById('adminDashboard').style.display = 'none';
-    if (refreshTimer) clearInterval(refreshTimer);
-    if (location.hash.startsWith('#admin')) history.replaceState(null, '', location.pathname + location.search);
-  };
-
-  function createUserRow(code, u) {
-    const tr = document.createElement('tr');
-    tr.setAttribute('data-code', code);
-    const expiryStr = formatExpiry(u.expiryDate);
-    let info = '';
-    if (u.method === 'xtream') {
-      const clip = JSON.stringify((u.user || '') + ':' + (u.pass || ''));
-      info = `URL: ${u.server}<br>
-              <span style="font-size:0.8rem">U: ${u.user} | P: <span class="pass-hidden">${u.pass}</span></span>
-              <span class="copy-icon" onclick='window.copyData(${clip})'>📋</span>`;
-    } else if (u.method === 'm3u') {
-      const clip = JSON.stringify(u.url || '');
-      info = `<span style="font-size:0.8rem">${u.url}</span> <span class="copy-icon" onclick='window.copyData(${clip})'>📋</span>`;
-    } else if (u.method === 'm3u_file') {
-      info = `<b>FILE:</b> ${u.filename || 'Upload'}`;
-    }
-    tr.innerHTML = `
-      <td class="checkbox-col"><input type="checkbox" class="user-check" data-code="${code}"></td>
-      <td style="font-weight:900; color:var(--accent)">${code}</td>
-      <td><span class="badge ${u.method === 'm3u_file' ? 'file' : u.method}">${(u.method || '').toUpperCase()}</span></td>
-      <td style="max-width:350px; overflow:hidden;">${info}</td>
-      <td style="font-size:0.75rem">${expiryStr}</td>
-      <td>
-        <button type="button" class="action-btn btn-edit" onclick="window.openChannelManager('${code}')">CHANNELS</button>
-        <button type="button" class="action-btn btn-edit" onclick="window.openEdit('${code}')">EDIT</button>
-        <button type="button" class="action-btn btn-delete" onclick="window.deleteAccount('${code}')">DEL</button>
-      </td>
-    `;
-    return tr;
+    renderUserTable();
+    updateStats();
   }
 
-  window.renderChannelOverview = () => {
-    const tb = document.getElementById('channelOverviewBody');
-    if (!tb) return;
-    if (!window.allUsers) {
-      tb.innerHTML = '<tr><td colspan="4" style="text-align:center">Loading…</td></tr>';
+  function updateStats() {
+    const total = Object.keys(currentUserData).length;
+    let xt = 0, mu = 0, ex = 0;
+    const now = Date.now();
+    Object.values(currentUserData).forEach((u) => {
+      if (!u) return;
+      if (u.method === 'xtream') xt++; else mu++;
+      const e = u.expiryDate;
+      if (e > 0 && e < now) ex++;
+    });
+    document.getElementById('statTotal').textContent = String(total);
+    document.getElementById('statMethodSplit').textContent = `Xtream ${xt} / M3U ${mu}`;
+    document.getElementById('statExpired').textContent = String(ex);
+    get(ref(db, 'device_assignments')).then((s) => {
+      document.getElementById('statDevices').textContent = s.exists() ? String(Object.keys(s.val()).length) : '0';
+    }).catch(() => { document.getElementById('statDevices').textContent = '—'; });
+  }
+
+  function formatExpiry(ts) {
+    if (!ts || ts === 0) return '<span style="color:#10b981">Unlimited</span>';
+    if (ts < Date.now()) return '<span style="color:#f43f5e">Expired</span>';
+    return escapeHtml(new Date(ts).toLocaleDateString());
+  }
+
+  function rowMatchesSearch(code, val, term) {
+    if (!term) return true;
+    const t = term.toLowerCase();
+    return JSON.stringify({ code, ...val }).toLowerCase().includes(t);
+  }
+
+  function renderUserTable() {
+    const tbody = document.getElementById('userTableBody');
+    const term = (document.getElementById('globalSearch').value || '').trim();
+    const entries = Object.entries(currentUserData).filter(([k, v]) => rowMatchesSearch(k, v, term));
+    tbody.innerHTML = '';
+    if (!entries.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">No profiles.</td></tr>';
       return;
     }
-    const q = (document.getElementById('channelOverviewSearch') && document.getElementById('channelOverviewSearch').value || '').trim().toUpperCase();
-    tb.innerHTML = '';
-    const data = window.allUsers;
-    const sorted = Object.keys(data).sort((a, b) => (data[b].timestamp || 0) - (data[a].timestamp || 0));
-    sorted.forEach((code) => {
-      if (q && String(code).toUpperCase().indexOf(q) < 0) return;
-      const u = data[code];
-      const items = u.managedPlaylist && u.managedPlaylist.items;
-      const n = items && typeof items === 'object' ? Object.keys(items).length : 0;
+    entries.forEach(([code, val]) => {
+      let infoHtml = '';
+      if (val.method === 'xtream') {
+        const cred = `${val.user || ''}:${val.pass || ''}`;
+        infoHtml = `<span>${escapeHtml(val.server || '')}</span> <span class="copy-badge" data-copy="${escapeHtml(cred)}"><i class="fas fa-copy"></i></span>`;
+      } else if (val.method === 'm3u') {
+        const u = val.url || '';
+        infoHtml = `<span style="max-width:220px;display:inline-block;overflow:hidden;text-overflow:ellipsis">${escapeHtml(u)}</span> <span class="copy-badge" data-copy="${escapeHtml(u)}"><i class="fas fa-copy"></i></span>`;
+      } else {
+        infoHtml = `<i class="fas fa-file-lines"></i> ${escapeHtml(val.filename || 'Embedded')}`;
+      }
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td style="font-weight:900; color:var(--accent)">${code}</td>
-        <td><span class="badge ${u.method === 'm3u_file' ? 'file' : u.method}">${(u.method || '').toUpperCase()}</span></td>
-        <td>${n}</td>
-        <td><button type="button" class="action-btn btn-edit" onclick="window.openChannelManager('${code}')">MANAGE</button></td>
-      `;
-      tb.appendChild(tr);
+        <td><input type="checkbox" class="rowSelect" data-key="${escapeHtml(code)}"></td>
+        <td style="font-weight:700;color:#60a5fa">${escapeHtml(code)}</td>
+        <td><span class="badge-method">${val.method === 'm3u_file' ? 'FILE' : String(val.method || '').toUpperCase()}</span></td>
+        <td>${infoHtml}</td>
+        <td>${formatExpiry(val.expiryDate)}</td>
+        <td class="action-icons">
+          <button type="button" data-action="channels" data-code="${escapeHtml(code)}" title="Channel studio"><i class="fas fa-layer-group"></i></button>
+          <button type="button" data-action="edit" data-code="${escapeHtml(code)}"><i class="fas fa-pen"></i></button>
+          <button type="button" data-action="delete" data-code="${escapeHtml(code)}"><i class="fas fa-trash-can"></i></button>
+        </td>`;
+      tbody.appendChild(tr);
     });
-    if (!tb.children.length) {
-      tb.innerHTML = '<tr><td colspan="4" style="text-align:center">No profiles match.</td></tr>';
-    }
-  };
+    tbody.querySelectorAll('.copy-badge').forEach((el) => {
+      el.addEventListener('click', () => {
+        const t = el.getAttribute('data-copy') || '';
+        navigator.clipboard.writeText(t).then(() => showToast('Copied')).catch(() => showToast('Copy failed', true));
+      });
+    });
+    tbody.querySelectorAll('.action-icons button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const a = btn.getAttribute('data-action');
+        const c = btn.getAttribute('data-code');
+        if (a === 'channels') openChannelManager(c);
+        if (a === 'edit') openEditProfile(c);
+        if (a === 'delete') deleteProfile(c);
+      });
+    });
+  }
 
-  window.loadUsers = async () => {
-    const list = document.getElementById('userList');
-    const listExp = document.getElementById('userListExpired');
-    const emptyMsg = '<tr><td colspan="6" style="text-align:center">No sync profiles found.</td></tr>';
-    const errColspan = (msg) => '<tr><td colspan="6" style="text-align:center; color:red">' + msg + '</td></tr>';
-    try {
-      const snapshot = await get(ref(db, 'sync'));
-      list.innerHTML = '';
-      listExp.innerHTML = '';
-
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        window.allUsers = data;
-        let stats = { total: 0, xtream: 0, m3u: 0 };
-        let expiredCount = 0;
-        const sorted = Object.keys(data).sort((a, b) => (data[b].timestamp || 0) - (data[a].timestamp || 0));
-        sorted.forEach((code) => {
-          const u = data[code];
-          stats.total++;
-          if (u.method === 'xtream') stats.xtream++;
-          else stats.m3u++;
-          const exp = u.expiryDate;
-          const isExpired = exp > 0 && exp < Date.now();
-          if (isExpired) expiredCount++;
-          list.appendChild(createUserRow(code, u));
-          if (isExpired) listExp.appendChild(createUserRow(code, u));
-        });
-        document.getElementById('stat-total').innerText = stats.total;
-        document.getElementById('stat-xtream').innerText = stats.xtream;
-        document.getElementById('stat-m3u').innerText = stats.m3u;
-        const hubT = document.getElementById('hub-badge-total');
-        const hubE = document.getElementById('hub-badge-expired');
-        if (hubT) hubT.textContent = stats.total + ' profile' + (stats.total === 1 ? '' : 's');
-        if (hubE) hubE.textContent = expiredCount + ' expired';
-        if (!listExp.children.length) listExp.innerHTML = '<tr><td colspan="6" style="text-align:center">No expired subscriptions.</td></tr>';
-        window.renderChannelOverview();
-      } else {
-        window.allUsers = {};
-        list.innerHTML = emptyMsg;
-        listExp.innerHTML = '<tr><td colspan="6" style="text-align:center">No expired subscriptions.</td></tr>';
-        document.getElementById('stat-total').innerText = '0';
-        document.getElementById('stat-xtream').innerText = '0';
-        document.getElementById('stat-m3u').innerText = '0';
-        const hubT = document.getElementById('hub-badge-total');
-        const hubE = document.getElementById('hub-badge-expired');
-        if (hubT) hubT.textContent = '0 profiles';
-        if (hubE) hubE.textContent = '0 expired';
-        window.renderChannelOverview();
-      }
-    } catch (e) {
-      list.innerHTML = errColspan('Error: ' + e.message);
-      if (listExp) listExp.innerHTML = errColspan('Error: ' + e.message);
-    }
-  };
-
-  const formatTimeAgo = (timestamp) => {
-    if (!timestamp) return 'Unknown';
-    const seconds = Math.floor((Date.now() - timestamp) / 1000);
-    if (seconds < 60) return 'Just now';
-    if (seconds < 3600) return Math.floor(seconds/60) + 'm ago';
-    if (seconds < 86400) return Math.floor(seconds/3600) + 'h ago';
-    return Math.floor(seconds/86400) + 'd ago';
-  };
-
-  const formatExpiry = (timestamp) => {
-    if (!timestamp || timestamp === 0) return '<span style="color:#8bc34a">Unlimited</span>';
-    const diff = timestamp - Date.now();
-    if (diff < 0) return '<span style="color:#ff4b2b">EXPIRED</span>';
-    const d = new Date(timestamp);
-    return `<span style="color:#00d4ff">${d.toLocaleDateString()}</span>`;
-  };
-
-  window.copyData = (text) => {
-    navigator.clipboard.writeText(text);
-    alert('Copied to clipboard');
-  };
-
-  window.selectAll = (master) => {
-    const scope = document.querySelector('#adminDashboard .admin-page.active');
-    if (!scope) return;
-    scope.querySelectorAll('.user-check').forEach((c) => { c.checked = master.checked; });
-  };
-
-  window.bulkDelete = async () => {
-    const scope = document.querySelector('#adminDashboard .admin-page.active');
-    const selected = scope
-      ? Array.from(scope.querySelectorAll('.user-check:checked')).map((c) => c.getAttribute('data-code'))
-      : [];
-    if (selected.length === 0) return alert('Select users first');
-    if (!confirm(`Delete ${selected.length} selected accounts?`)) return;
-    for (const code of selected) {
-      await remove(ref(db, 'sync/' + code));
-    }
-    window.loadUsers();
-  };
-
-  window.deleteAccount = async (code) => {
-    if (!confirm(`Are you sure you want to delete the sync data for code ${code}?`)) return;
+  async function deleteProfile(code) {
+    if (!confirm(`Delete "${code}"?`)) return;
     try {
       await remove(ref(db, 'sync/' + code));
-      window.loadUsers();
-    } catch (e) {
-      alert('Error deleting account: ' + e.message);
-    }
-  };
-
-  window.filterUsers = () => {
-    const el = document.getElementById('adminSearch');
-    if (!el) return;
-    const filter = el.value.toUpperCase();
-    const rows = document.getElementById('userList').getElementsByTagName('tr');
-    for (let i = 0; i < rows.length; i++) {
-      if (rows[i].cells.length === 1) continue;
-      const textData = rows[i].textContent || rows[i].innerText;
-      rows[i].style.display = textData.toUpperCase().indexOf(filter) > -1 ? '' : 'none';
-    }
-  };
-
-  window.filterUsersExpired = () => {
-    const el = document.getElementById('adminSearchExpired');
-    if (!el) return;
-    const filter = el.value.toUpperCase();
-    const rows = document.getElementById('userListExpired').getElementsByTagName('tr');
-    for (let i = 0; i < rows.length; i++) {
-      if (rows[i].cells.length === 1) continue;
-      const textData = rows[i].textContent || rows[i].innerText;
-      rows[i].style.display = textData.toUpperCase().indexOf(filter) > -1 ? '' : 'none';
-    }
-  };
-
-  window.openAddManual = () => {
-    window.navigateAdmin('add');
-  };
-  window.closeAddModal = () => window.navigateAdmin('home');
-
-  window.saveAddManual = async () => {
-    const code = normalizeDeviceId(document.getElementById('add-code').value);
-    if (!isValidDeviceId8(code)) {
-      alert('Enter exactly 8 digits (0–9). You can paste with a space (e.g. 1234 5678); spaces are removed automatically.');
-      return;
-    }
-
-    const addBtn = document.querySelector('#adminPageAdd .sync-btn');
-    const prevBtnText = addBtn ? addBtn.innerText : '';
-
-    let payload = { method: addMethod, timestamp: Date.now() };
-    
-    // Handle Expiry
-    const duration = parseInt(document.getElementById('add-duration').value || '0');
-    if (duration > 0) {
-      payload.expiryDate = Date.now() + (duration * 30 * 24 * 60 * 60 * 1000);
-    } else {
-      payload.expiryDate = 0; // Unlimited
-    }
-
-    try {
-      if (addMethod === 'xtream') {
-        const s = document.getElementById('add-server');
-        const u = document.getElementById('add-user');
-        const p = document.getElementById('add-pass');
-        if (!s || !u || !p) {
-          alert('Form not ready: choose XTREAM tab and fill Server / User / Pass.');
-          return;
-        }
-        payload.server = s.value;
-        payload.user = u.value;
-        payload.pass = p.value;
-      } else if (addMethod === 'm3u') {
-        const urlEl = document.getElementById('add-url');
-        if (!urlEl) {
-          alert('Form not ready: choose URL tab and enter an M3U address.');
-          return;
-        }
-        payload.url = urlEl.value;
-      } else if (addMethod === 'file') {
-        const fi = document.getElementById('add-file');
-        if (!fi) {
-          alert('Click the FILE tab, then choose your .m3u / .m3u8 again.');
-          return;
-        }
-        const file = fi.files[0];
-        if (!file) return alert('Select an M3U file first (FILE tab → CHOOSE M3U FILE).');
-        const maxEmb = 12 * 1024 * 1024;
-        if (file.size > maxEmb) {
-          alert(
-            'This file is ' + Math.round(file.size / (1024 * 1024)) + ' MB. Firebase stores the whole playlist in one place; try a smaller list or use the URL tab with a hosted link instead.'
-          );
-          return;
-        }
-        if (addBtn) {
-          addBtn.disabled = true;
-          addBtn.innerText = 'READING FILE…';
-        }
-        payload.method = 'm3u_file';
-        payload.content = await readFileContent(file);
-        payload.filename = file.name;
-        if (addBtn) {
-          addBtn.innerText = 'SAVING…';
-        }
-      }
-
-      const prevSnap = await get(ref(db, 'sync/' + code));
-      const prev = prevSnap.exists() ? prevSnap.val() : {};
-      await set(ref(db, 'sync/' + code), buildSyncNodeForSet(payload, prev));
-      window.closeAddModal();
-      await window.loadUsers();
-    } catch (e) {
-      const msg = (e && e.message) ? e.message : String(e);
-      const codeFirebase = e && e.code ? '\n(' + e.code + ')' : '';
-      alert(
-        'Could not save profile: ' + msg + codeFirebase +
-          '\n\nCommon causes: playlist file too large for Firebase, network lost, or editor rules blocked the write. Check the browser console (F12) for details.'
-      );
-    } finally {
-      if (addBtn) {
-        addBtn.disabled = false;
-        addBtn.innerText = prevBtnText || 'ADD USER';
-      }
-    }
-  };
-
-  window.exportData = () => {
-    if (!window.allUsers) return;
-    let csv = "Code,Method,Info,Time\n";
-    Object.keys(window.allUsers).forEach(code => {
-      const u = window.allUsers[code];
-      const info = u.method === 'xtream' ? `${u.server}` : u.url || 'FILE';
-      csv += `${code},${u.method},"${info}",${new Date(u.timestamp).toLocaleString()}\n`;
-    });
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `hama_elite_sync_${Date.now()}.csv`;
-    a.click();
-  };
-
-  window.openEdit = async (code) => {
-    editingCode = code;
-    const dbRef = ref(db, 'sync/' + code);
-    const snap = await get(dbRef);
-    const u = snap.val();
-    
-    const fields = document.getElementById('editFields');
-    if (u.method === 'xtream') {
-      fields.innerHTML = `
-        <div class="form-group"><label>Server</label><input type="text" id="edit-server" value="${u.server}"></div>
-        <div class="form-group"><label>User</label><input type="text" id="edit-user" value="${u.user}"></div>
-        <div class="form-group"><label>Pass</label><input type="text" id="edit-pass" value="${u.pass}"></div>
-      `;
-    } else if (u.method === 'm3u') {
-      fields.innerHTML = `
-        <div class="form-group"><label>M3U URL</label><input type="text" id="edit-url" value="${u.url}"></div>
-      `;
-    } else {
-      fields.innerHTML = `
-        <div class="form-group"><label>M3U FILE (Previously: ${u.filename || 'Uploaded'})</label>
-          <div class="file-upload-wrapper">
-            <label for="edit-file" class="file-upload-label" style="padding:15px">
-              <span>REPLACE M3U FILE</span>
-              <div id="editFileName" class="file-selected-name">No file selected</div>
-            </label>
-            <input type="file" id="edit-file" class="file-upload-input" accept=".m3u,.m3u8,.txt,application/vnd.apple.mpegurl,text/plain" onchange="updateFileName(this, 'editFileName')">
-          </div>
-        </div>
-      `;
-    }
-    document.getElementById('editModal').style.display = 'flex';
-  };
-
-  window.closeModal = () => document.getElementById('editModal').style.display = 'none';
-
-  window.saveEdit = async () => {
-    try {
-      const dbRef = ref(db, 'sync/' + editingCode);
-      const snap = await get(dbRef);
-      const u = snap.val();
-      
-      let payload = { method: u.method, timestamp: Date.now() };
-      if (u.method === 'xtream') {
-        payload.server = document.getElementById('edit-server').value;
-        payload.user = document.getElementById('edit-user').value;
-        payload.pass = document.getElementById('edit-pass').value;
-      } else if (u.method === 'm3u') {
-        payload.url = document.getElementById('edit-url').value;
-      } else if (u.method === 'm3u_file') {
-        const file = document.getElementById('edit-file').files[0];
-        if (file) {
-          payload.content = await readFileContent(file);
-          payload.filename = file.name;
-        } else {
-          payload.content = u.content;
-          payload.filename = u.filename;
-        }
-      }
-      if (u.managedPlaylist != null) payload.managedPlaylist = u.managedPlaylist;
-      if (u.expiryDate != null) payload.expiryDate = u.expiryDate;
-
-      await set(dbRef, stripUndefinedDeep(payload));
-      window.closeModal();
-      window.loadUsers();
-    } catch (e) { alert(e.message); }
-  };
-
-  /* --- Channel manager (managed playlist) --- */
-  window.channelMgrCode = null;
-  window.channelMgrRows = [];
-  window.channelMgrPage = 1;
-  window.channelMgrPageSize = 75;
-  window.channelMgrEditingId = null;
-  window.channelMgrProfile = null;
-  /** @type {Record<string, boolean>} */
-  window.channelMgrSelected = {};
-  window.channelMgrDraggedRowId = null;
-
-  function channelMgrNormalizeOrders() {
-    window.channelMgrRows.forEach((r, i) => { r.order = i; });
+      showToast('Deleted');
+      await fetchAllSync();
+    } catch (e) { showToast(e.message, true); }
   }
 
-  /** Firebase may store order as number, string, or (rarely) double. */
-  function channelMgrCoerceOrder(v) {
-    if (v == null) return null;
-    if (typeof v === 'number' && !Number.isNaN(v)) return Math.floor(v);
-    if (typeof v === 'string' && v.trim() !== '') {
-      const n = parseInt(v.trim(), 10);
-      return Number.isNaN(n) ? null : n;
-    }
-    return null;
+  async function bulkDeleteSelected() {
+    const keys = [...document.querySelectorAll('.rowSelect:checked')].map((cb) => cb.getAttribute('data-key')).filter(Boolean);
+    if (!keys.length) return showToast('Select rows first', true);
+    if (!confirm(`Delete ${keys.length} profile(s)?`)) return;
+    for (const k of keys) await remove(ref(db, 'sync/' + k));
+    document.getElementById('selectAllCheckbox').checked = false;
+    showToast('Removed ' + keys.length);
+    await fetchAllSync();
   }
-
-  function stableChannelId(url, name) {
-    const s = (url || '') + '\0' + (name || '');
-    let h = 5381;
-    for (let i = 0; i < s.length; i++) {
-      h = Math.imul(33, h) + s.charCodeAt(i);
-    }
-    return 'ch_' + ((h >>> 0).toString(16));
-  }
-
-  function extractAttrM3u(line, attr) {
-    const re = new RegExp(attr + '="([^"]*)"');
-    const m = line.match(re);
-    return m && m[1] ? m[1] : null;
-  }
-
-  function detectTypeFromUrlJs(url) {
-    const lower = (url || '').toLowerCase();
-    if (lower.includes('/movie/') || lower.includes('/movies/')) return 'vod';
-    if (lower.includes('/series/') || lower.includes('/episode/')) return 'series';
-    if (lower.includes('/live/') || lower.includes('/stream/')) return 'live';
-    if (lower.includes('output=mpegts') || lower.includes('output=ts') || lower.includes('type=m3u_plus')) return 'live';
-    if (/\.(mp4|mkv|avi|mov|wmv|flv|ts|m4v)$/i.test(lower)) return 'vod';
-    if (lower.endsWith('.m3u8') || lower.endsWith('.m3u')) return 'live';
-    return 'live';
-  }
-
-  function channelMgrIsValidStreamUrl(u) {
-    const t = (u || '').trim();
-    if (!t) return false;
-    return (
-      /^https?:\/\//i.test(t) ||
-      /^rtsp:\/\//i.test(t) ||
-      /^rtmp:\/\//i.test(t) ||
-      /^udp:\/\//i.test(t) ||
-      /^rtp:\/\//i.test(t) ||
-      /^mmsh:\/\//i.test(t) ||
-      /^mmst:\/\//i.test(t)
-    );
-  }
-
-  function channelMgrUniqueChannelId(url, name) {
-    let id = stableChannelId(url, name);
-    let n = 0;
-    while (window.channelMgrRows.some(r => r.id === id)) {
-      n++;
-      id = stableChannelId(url, (name || '') + ' #' + n);
-    }
-    return id;
-  }
-
-  window.channelMgrToggleAddSingle = () => {
-    const p = document.getElementById('channelMgrAddSinglePanel');
-    if (!p) return;
-    const open = p.style.display === 'none' || p.style.display === '';
-    p.style.display = open ? 'block' : 'none';
-    if (open) {
-      const n = document.getElementById('channelMgrAddName');
-      if (n) n.focus();
-    }
-  };
-
-  window.channelMgrClearAddSingleForm = () => {
-    const name = document.getElementById('channelMgrAddName');
-    const group = document.getElementById('channelMgrAddGroup');
-    const url = document.getElementById('channelMgrAddUrl');
-    const type = document.getElementById('channelMgrAddType');
-    const f = document.getElementById('channelMgrAddLogoFile');
-    if (name) name.value = '';
-    if (group) group.value = 'General';
-    if (url) url.value = '';
-    if (type) type.value = 'auto';
-    if (f) f.value = '';
-  };
-
-  window.channelMgrDeleteRow = (id) => {
-    if (!confirm('Remove this channel from the list? Click SAVE MANAGED PLAYLIST TO FIREBASE when you are done.')) return;
-    window.channelMgrRows = window.channelMgrRows.filter(r => r.id !== id);
-    delete window.channelMgrSelected[id];
-    channelMgrNormalizeOrders();
-    const st = document.getElementById('channelMgrStatus');
-    if (st) st.innerText = 'List updated — unsaved until you save to Firebase.';
-    window.channelMgrRender();
-  };
-
-  function channelMgrComputeValidation() {
-    const rows = window.channelMgrRows;
-    const emptyUrl = rows.filter(r => !(r.url || '').trim());
-    const byNorm = {};
-    rows.forEach(r => {
-      const u = (r.url || '').trim().toLowerCase();
-      if (!u) return;
-      (byNorm[u] = byNorm[u] || []).push(r);
-    });
-    const dupGroups = Object.values(byNorm).filter(a => a.length > 1);
-    const dupSeen = new Set();
-    dupGroups.forEach(list => list.forEach(r => dupSeen.add(r)));
-    const dupUrlRows = Array.from(dupSeen);
-    const badLogo = rows.filter(r => r.logoHttpBroken);
-    return { emptyUrl, dupUrlRows, dupGroupCount: dupGroups.length, badLogo };
-  }
-
-  function channelMgrUpdateValidationStrip() {
-    const el = document.getElementById('channelMgrValidation');
-    if (!el) return;
-    if (!window.channelMgrRows.length) {
-      el.style.display = 'none';
-      el.innerHTML = '';
-      return;
-    }
-    el.style.display = 'block';
-    const v = channelMgrComputeValidation();
-    const parts = [];
-    if (v.emptyUrl.length) parts.push('<span class="val-err">' + v.emptyUrl.length + ' empty stream URL</span>');
-    if (v.dupUrlRows.length) {
-      parts.push('<span class="val-warn">' + v.dupGroupCount + ' duplicate URL group(s), ' + v.dupUrlRows.length + ' row(s)</span>');
-    }
-    if (v.badLogo.length) parts.push('<span class="val-warn">' + v.badLogo.length + ' broken http(s) logo (thumbnail failed)</span>');
-    el.innerHTML = parts.length
-      ? '<strong>Pre-save checks:</strong> ' + parts.join(' · ') + ' — fix in EDIT or confirm on save.'
-      : '<strong>Pre-save checks:</strong> <span class="val-ok">OK</span>';
-  }
-
-  function channelMgrM3uEscapeAttr(s) {
-    return String(s || '').replace(/"/g, '\\"').replace(/\r|\n/g, ' ').trim();
-  }
-
-  function channelMgrRowsInSaveOrder() {
-    return window.channelMgrRows.slice();
-  }
-
-  window.channelMgrSelectPage = () => {
-    const filtered = channelMgrFiltered();
-    const size = window.channelMgrPageSize;
-    const start = (window.channelMgrPage - 1) * size;
-    filtered.slice(start, start + size).forEach(r => { window.channelMgrSelected[r.id] = true; });
-    window.channelMgrRender();
-  };
-
-  window.channelMgrClearSelection = () => {
-    window.channelMgrSelected = {};
-    window.channelMgrRender();
-  };
-
-  window.channelMgrBulkHide = () => {
-    const ids = Object.keys(window.channelMgrSelected).filter(id => window.channelMgrSelected[id]);
-    if (!ids.length) {
-      alert('Check one or more rows first (or use SELECT PAGE).');
-      return;
-    }
-    ids.forEach(id => {
-      const row = window.channelMgrRows.find(r => r.id === id);
-      if (row) row.hidden = true;
-    });
-    document.getElementById('channelMgrStatus').innerText = 'Marked ' + ids.length + ' hidden — unsaved until Firebase save.';
-    window.channelMgrRender();
-  };
-
-  window.channelMgrBulkDelete = () => {
-    const ids = Object.keys(window.channelMgrSelected).filter(id => window.channelMgrSelected[id]);
-    if (!ids.length) {
-      alert('Check one or more rows first.');
-      return;
-    }
-    if (!confirm('Delete ' + ids.length + ' channel(s) from this list? Save to Firebase when done.')) return;
-    const idSet = new Set(ids);
-    window.channelMgrRows = window.channelMgrRows.filter(r => !idSet.has(r.id));
-    window.channelMgrSelected = {};
-    channelMgrNormalizeOrders();
-    document.getElementById('channelMgrStatus').innerText = 'Removed ' + ids.length + ' row(s) — unsaved until save.';
-    window.channelMgrRender();
-  };
-
-  window.channelMgrBulkMoveGroup = () => {
-    const ids = Object.keys(window.channelMgrSelected).filter(id => window.channelMgrSelected[id]);
-    if (!ids.length) {
-      alert('Check one or more rows first.');
-      return;
-    }
-    const g = prompt('New group title for ' + ids.length + ' channel(s):', 'General');
-    if (g == null) return;
-    const group = String(g).trim() || 'General';
-    ids.forEach(id => {
-      const row = window.channelMgrRows.find(r => r.id === id);
-      if (row) row.group = group;
-    });
-    document.getElementById('channelMgrStatus').innerText = 'Moved ' + ids.length + ' to group “' + group + '” — unsaved until save.';
-    window.channelMgrRender();
-  };
-
-  window.channelMgrBulkExportM3u = () => {
-    const ids = Object.keys(window.channelMgrSelected).filter(id => window.channelMgrSelected[id]);
-    if (!ids.length) {
-      alert('Check one or more rows to export as M3U.');
-      return;
-    }
-    const idOrder = new Map();
-    channelMgrRowsInSaveOrder().forEach((r, i) => idOrder.set(r.id, i));
-    const picked = window.channelMgrRows.filter(r => ids.includes(r.id))
-      .sort((a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0));
-    const lines = ['#EXTM3U'];
-    picked.forEach(r => {
-      const logo = channelMgrM3uEscapeAttr(r.logo || '');
-      const grp = channelMgrM3uEscapeAttr(r.group || 'General');
-      const nm = channelMgrM3uEscapeAttr(r.name || 'Channel');
-      lines.push('#EXTINF:-1 tvg-logo="' + logo + '" group-title="' + grp + '",' + nm);
-      lines.push((r.url || '').trim());
-    });
-    const blob = new Blob([lines.join('\n')], { type: 'audio/x-mpegurl;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'channels-snippet.m3u';
-    a.click();
-    URL.revokeObjectURL(a.href);
-  };
-
-  window.channelMgrMoveRowUp = (id) => {
-    const arr = window.channelMgrRows;
-    const i = arr.findIndex(r => r.id === id);
-    if (i <= 0) return;
-    const t = arr[i - 1];
-    arr[i - 1] = arr[i];
-    arr[i] = t;
-    channelMgrNormalizeOrders();
-    window.channelMgrRender();
-  };
-
-  window.channelMgrMoveRowDown = (id) => {
-    const arr = window.channelMgrRows;
-    const i = arr.findIndex(r => r.id === id);
-    if (i < 0 || i >= arr.length - 1) return;
-    const t = arr[i + 1];
-    arr[i + 1] = arr[i];
-    arr[i] = t;
-    channelMgrNormalizeOrders();
-    window.channelMgrRender();
-  };
-
-  window.channelMgrCloneRow = (id) => {
-    const row = window.channelMgrRows.find(r => r.id === id);
-    if (!row) return;
-    const baseName = (row.name || 'Channel').trim() || 'Channel';
-    const newName = baseName + ' (copy)';
-    const newId = channelMgrUniqueChannelId(row.url, newName);
-    const idx = window.channelMgrRows.findIndex(r => r.id === id);
-    const clone = {
-      id: newId,
-      name: newName,
-      url: row.url,
-      group: row.group || 'General',
-      logo: row.logo || '',
-      hidden: !!row.hidden,
-      adult: !!row.adult,
-      type: row.type || 'live',
-      logoHttpBroken: false
-    };
-    window.channelMgrRows.splice(idx + 1, 0, clone);
-    channelMgrNormalizeOrders();
-    document.getElementById('channelMgrStatus').innerText = 'Cloned row — unsaved until save.';
-    window.channelMgrRender();
-  };
-
-  window.channelMgrDropRowOn = (dragId, targetId) => {
-    if (!dragId || !targetId || dragId === targetId) return;
-    const arr = window.channelMgrRows;
-    let from = arr.findIndex(r => r.id === dragId);
-    let to = arr.findIndex(r => r.id === targetId);
-    if (from < 0 || to < 0) return;
-    const [item] = arr.splice(from, 1);
-    if (from < to) to--;
-    arr.splice(to, 0, item);
-    channelMgrNormalizeOrders();
-    window.channelMgrRender();
-  };
-
-  window.channelMgrAddSingleChannel = async () => {
-    const nameEl = document.getElementById('channelMgrAddName');
-    const groupEl = document.getElementById('channelMgrAddGroup');
-    const urlEl = document.getElementById('channelMgrAddUrl');
-    const typeEl = document.getElementById('channelMgrAddType');
-    const fileEl = document.getElementById('channelMgrAddLogoFile');
-    const name = (nameEl && nameEl.value || '').trim();
-    const streamUrl = (urlEl && urlEl.value || '').trim();
-    const group = (groupEl && groupEl.value || '').trim() || 'General';
-    const typeMode = (typeEl && typeEl.value) || 'auto';
-    if (!name) {
-      alert('Enter a channel name.');
-      return;
-    }
-    if (!channelMgrIsValidStreamUrl(streamUrl)) {
-      alert('Enter a valid stream URL (http(s), rtsp, rtmp, udp, etc.) ending with or containing your stream path (.m3u8, .ts, .m3u, …).');
-      return;
-    }
-    let logo = '';
-    const file = fileEl && fileEl.files && fileEl.files[0];
-    const maxBytes = 18 * 1024 * 1024;
-    if (file) {
-      if (file.type && !/^image\//i.test(file.type)) {
-        alert('Logo must be an image file.');
-        return;
-      }
-      if (file.size > maxBytes) {
-        alert('Logo file is too large (max ~18 MB).');
-        return;
-      }
-      try {
-        logo = await channelMgrDownscaleImageFile(file);
-      } catch (e) {
-        alert((e && e.message) ? e.message : 'Could not process logo image.');
-        return;
-      }
-    }
-    const t = typeMode === 'auto' ? detectTypeFromUrlJs(streamUrl) : typeMode;
-    const id = channelMgrUniqueChannelId(streamUrl, name);
-    window.channelMgrRows.push({
-      id,
-      name,
-      url: streamUrl,
-      group,
-      logo,
-      hidden: false,
-      adult: false,
-      type: t,
-      logoHttpBroken: false
-    });
-    channelMgrNormalizeOrders();
-    const filtered = channelMgrFiltered();
-    const idx = filtered.findIndex(r => r.id === id);
-    const size = window.channelMgrPageSize;
-    if (idx >= 0) {
-      window.channelMgrPage = Math.max(1, Math.floor(idx / size) + 1);
-    } else {
-      window.channelMgrPage = Math.max(1, Math.ceil(filtered.length / size));
-    }
-    const st = document.getElementById('channelMgrStatus');
-    if (st) {
-      st.innerText = 'Added “' + name + '” — unsaved until you save to Firebase.';
-      if (idx < 0) st.innerText += ' Clear the filter box if you do not see the new row.';
-    }
-    window.channelMgrClearAddSingleForm();
-    window.channelMgrRender();
-  };
 
   function parseM3UText(text) {
     const lines = String(text).split(/\r?\n/);
     const out = [];
-    let curName = '';
-    let curLogo = '';
-    let curGroup = 'General';
+    let pendingName = null;
     for (let i = 0; i < lines.length; i++) {
-      const trimmed = lines[i].trim();
-      if (trimmed.startsWith('#EXTINF')) {
-        curName = '';
-        curLogo = '';
-        curGroup = extractAttrM3u(trimmed, 'group-title') || 'General';
-        curLogo = extractAttrM3u(trimmed, 'tvg-logo') || '';
-        const comma = trimmed.lastIndexOf(',');
-        if (comma >= 0) curName = trimmed.slice(comma + 1).trim();
-      } else if (
-        /^https?:\/\//i.test(trimmed) ||
-        trimmed.startsWith('rtsp://') ||
-        trimmed.startsWith('rtmp://') ||
-        trimmed.startsWith('udp://') ||
-        trimmed.startsWith('rtp://') ||
-        trimmed.startsWith('mmsh://') ||
-        trimmed.startsWith('mmst://')
-      ) {
-        if (curName) {
-          const url = trimmed;
-          const type = detectTypeFromUrlJs(url);
-          out.push({
-            id: stableChannelId(url, curName),
-            name: curName,
-            url,
-            group: curGroup,
-            logo: curLogo,
-            hidden: false,
-            adult: false,
-            type,
-            logoHttpBroken: false
-          });
-          curName = '';
-        }
+      const line = lines[i].trim();
+      if (line.startsWith('#EXTINF')) {
+        const comma = line.lastIndexOf(',');
+        pendingName = comma >= 0 ? line.slice(comma + 1).trim() : 'Channel';
+      } else if (pendingName && /^https?:\/\//i.test(line)) {
+        out.push({ name: pendingName, url: line, group: 'Imported', type: 'live' });
+        pendingName = null;
       }
     }
     return out;
   }
 
-  function mergeRowsFromManaged(parsed, managedItems) {
-    const merged = parsed.map((row, parsedIdx) => {
-      const old = managedItems && managedItems[row.id];
-      const oldLogo = old && old.logo != null ? String(old.logo).trim() : '';
-      const ord = old ? channelMgrCoerceOrder(old.order) : null;
-      const sortKey = ord != null ? ord : 1000000 + parsedIdx;
-      return {
-        id: row.id,
-        name: old && old.name != null ? old.name : row.name,
-        url: row.url,
-        group: old && old.group != null ? old.group : row.group,
-        logo: oldLogo !== '' ? oldLogo : row.logo,
-        hidden: !!(old && old.hidden),
-        adult: !!(old && old.adult),
-        type: (old && old.type) || row.type,
-        logoHttpBroken: false,
-        _sortKey: sortKey
-      };
-    });
-    merged.sort((a, b) => a._sortKey - b._sortKey);
-    return merged.map((r, i) => {
-      const { _sortKey, ...rest } = r;
-      return { ...rest, order: i };
-    });
-  }
-
-  function channelMgrEscapeAttr(s) {
-    if (!s) return '';
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  function channelMgrSyncLogoPreview(logoEl, previewEl) {
-    const v = (logoEl && logoEl.value || '').trim();
-    if (!v) {
-      previewEl.style.display = 'none';
-      previewEl.removeAttribute('src');
-      return;
-    }
-    if (v.startsWith('data:image/') || /^https?:\/\//i.test(v)) {
-      previewEl.src = v;
-      previewEl.style.display = 'block';
+  function applyChannelImport(parsed, replace) {
+    const newRows = parsed.map((p) => ({
+      id: newChannelId(),
+      name: p.name,
+      url: p.url,
+      group: p.group || 'Imported',
+      type: p.type || 'live',
+      logo: p.logo || '',
+      hidden: false,
+      adult: false,
+    }));
+    if (replace) {
+      currentChannels = newRows;
+      showToast(`Replaced with ${newRows.length} channel(s)`);
     } else {
-      previewEl.style.display = 'none';
-      previewEl.removeAttribute('src');
+      currentChannels.push(...newRows);
+      showToast(`Merged +${newRows.length} channel(s)`);
+    }
+    cmPage = 1;
+    renderChannelTable();
+  }
+
+  function getCmImportMode() {
+    const r = document.querySelector('input[name="cmImportMode"]:checked');
+    return r && r.value === 'replace' ? 'replace' : 'merge';
+  }
+
+  async function fetchAndImportM3uFromUrl() {
+    const url = (document.getElementById('cmImportUrl').value || '').trim();
+    if (!url) return showToast('Enter a playlist URL', true);
+    if (!/^https?:\/\//i.test(url)) return showToast('URL must start with http:// or https://', true);
+    try {
+      const res = await fetch(url, { method: 'GET', mode: 'cors', cache: 'no-store' });
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText || ''}`.trim());
+      const text = await res.text();
+      const parsed = parseM3UText(text);
+      if (!parsed.length) return showToast('No channels parsed from response', true);
+      applyChannelImport(parsed, getCmImportMode() === 'replace');
+    } catch (err) {
+      const msg = err && err.message ? err.message : String(err);
+      const looksCors = /Failed to fetch|NetworkError|network|load failed|CORS|cors|blocked|aborted/i.test(msg);
+      const hint = looksCors
+        ? ' Browsers often block cross-origin playlist URLs (CORS). Use Import file or Paste M3U, or host the playlist with CORS headers / a same-origin proxy.'
+        : '';
+      showToast('Could not fetch: ' + msg + hint, true);
     }
   }
 
-  /** Downscale + JPEG compress so data URL stays reasonable for Firebase. Transparency → white backing.
-   *  Stay under ~450k chars: many browsers cap &lt;input type="text"&gt; at ~524k, which broke long data URLs. */
-  function channelMgrDownscaleImageFile(file) {
-    const MAX_DATA_URL_CHARS = 450000;
-    const maxSides = [512, 384, 320, 256, 200, 160, 128];
-    const qualities = [0.88, 0.8, 0.72, 0.64, 0.55, 0.48, 0.42, 0.36, 0.32];
-
-    return new Promise((resolve, reject) => {
-      const blobUrl = URL.createObjectURL(file);
-      const img = new Image();
-      img.onload = () => {
-        URL.revokeObjectURL(blobUrl);
-        const nw = img.naturalWidth || img.width;
-        const nh = img.naturalHeight || img.height;
-        if (!nw || !nh) {
-          reject(new Error('Invalid image dimensions.'));
-          return;
-        }
-        try {
-          let best = '';
-          for (const maxSide of maxSides) {
-            const scale = Math.min(1, maxSide / Math.max(nw, nh));
-            const dw = Math.max(1, Math.round(nw * scale));
-            const dh = Math.max(1, Math.round(nh * scale));
-            const canvas = document.createElement('canvas');
-            canvas.width = dw;
-            canvas.height = dh;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-              reject(new Error('Could not use canvas in this browser.'));
-              return;
-            }
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, dw, dh);
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(img, 0, 0, dw, dh);
-            for (const q of qualities) {
-              const dataUrl = canvas.toDataURL('image/jpeg', q);
-              best = dataUrl;
-              if (dataUrl.length <= MAX_DATA_URL_CHARS) {
-                resolve(dataUrl);
-                return;
-              }
-            }
-          }
-          if (best) resolve(best);
-          else reject(new Error('Could not encode image.'));
-        } catch (err) {
-          reject(err);
-        }
-      };
-      img.onerror = () => {
-        URL.revokeObjectURL(blobUrl);
-        reject(new Error('Could not read image file.'));
-      };
-      img.src = blobUrl;
-    });
+  function closeCmEditor() {
+    document.getElementById('cmEditor').classList.remove('open');
   }
 
-  window.openChannelManager = async (code) => {
-    window.channelMgrCode = code;
-    window.channelMgrRows = [];
-    window.channelMgrPage = 1;
-    window.channelMgrSelected = {};
-    window.channelMgrDraggedRowId = null;
-    document.getElementById('channelMgrSyncKeyLabel').innerText = 'Device ID: ' + code;
-    document.getElementById('channelMgrStatus').innerText = '';
-    document.getElementById('channelManagerModal').style.display = 'flex';
-    try {
-      const snap = await get(ref(db, 'sync/' + code));
-      if (!snap.exists()) {
-        alert('No profile for ' + code);
-        window.closeChannelManager();
-        return;
-      }
-      window.channelMgrProfile = snap.val();
-      const mp = window.channelMgrProfile.managedPlaylist;
-      const items = mp && mp.items;
-      if (items && Object.keys(items).length) {
-        window.channelMgrRows = Object.keys(items).map(k => ({
-          id: k,
-          name: items[k].name || '',
-          url: items[k].url || '',
-          group: items[k].group || 'General',
-          logo: items[k].logo || '',
-          hidden: !!items[k].hidden,
-          adult: !!items[k].adult,
-          type: items[k].type || detectTypeFromUrlJs(items[k].url || ''),
-          order: channelMgrCoerceOrder(items[k].order),
-          logoHttpBroken: false
-        }));
-        window.channelMgrRows.sort((a, b) =>
-          (a.order ?? 1e9) - (b.order ?? 1e9) || String(a.id).localeCompare(String(b.id))
-        );
-        channelMgrNormalizeOrders();
-      }
-    } catch (e) {
-      alert(e.message);
+  function openCmEditor(ch) {
+    const ed = document.getElementById('cmEditor');
+    document.getElementById('cmEditorTitle').innerHTML = ch
+      ? '<i class="fas fa-pen-to-square"></i> Edit channel'
+      : '<i class="fas fa-plus"></i> New channel';
+    document.getElementById('cmEdId').value = ch ? ch.id : '';
+    document.getElementById('cmEdName').value = ch ? (ch.name || '') : '';
+    document.getElementById('cmEdGroup').value = ch ? (ch.group || 'General') : 'General';
+    document.getElementById('cmEdUrl').value = ch ? (ch.url || '') : '';
+    document.getElementById('cmEdLogo').value = ch ? (ch.logo || '') : '';
+    document.getElementById('cmEdType').value = ch && ch.type === 'vod' ? 'vod' : (ch && ch.type === 'series' ? 'series' : 'live');
+    document.getElementById('cmEdHidden').checked = !!(ch && ch.hidden);
+    document.getElementById('cmEdAdult').checked = !!(ch && ch.adult);
+    ed.classList.add('open');
+    ed.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  async function openChannelManager(syncKey) {
+    currentChannelSyncKey = syncKey;
+    cmPage = 1;
+    document.getElementById('cmSyncLabel').textContent = syncKey;
+    document.getElementById('cmFirebasePath').textContent = 'sync/' + syncKey;
+    document.getElementById('cmPastePanel').classList.remove('open');
+    document.getElementById('cmUrlPanel').classList.remove('open');
+    document.getElementById('cmPasteTa').value = '';
+    document.getElementById('cmImportUrl').value = '';
+    closeCmEditor();
+    await loadChannelsFromFirebase();
+    renderChannelTable();
+    setModal(document.getElementById('channelManagerModal'), true);
+  }
+
+  async function loadChannelsFromFirebase() {
+    const snap = await get(ref(db, `sync/${currentChannelSyncKey}/managedPlaylist`));
+    if (snap.exists() && snap.val().items) {
+      const items = snap.val().items;
+      currentChannels = Object.keys(items).map((id) => ({ id, ...items[id] }));
+      currentChannels.sort((a, b) => (a.order ?? 1e9) - (b.order ?? 1e9));
+    } else {
+      currentChannels = [];
     }
-    window.channelMgrRender();
-  };
+  }
 
-  window.closeChannelManager = () => {
-    document.getElementById('channelManagerModal').style.display = 'none';
-    window.channelMgrProfile = null;
-  };
-
-  window.channelMgrPickFile = () => document.getElementById('channelMgrFile').click();
-
-  window.channelMgrOnFile = async (input) => {
-    const f = input.files && input.files[0];
-    if (!f) return;
-    try {
-      const text = await readFileContent(f);
-      window.applyParsedM3u(text);
-    } catch (e) {
-      alert(e.message);
-    }
-    input.value = '';
-  };
-
-  window.channelMgrParsePasted = () => {
-    const ta = document.getElementById('channelMgrPasteTa');
-    window.applyParsedM3u(ta.value || '');
-  };
-
-  window.applyParsedM3u = (text) => {
-    const parsed = parseM3UText(text);
-    if (!parsed.length) {
-      alert('No channels found in M3U.');
-      return;
-    }
-    const managedItems = window.channelMgrProfile && window.channelMgrProfile.managedPlaylist && window.channelMgrProfile.managedPlaylist.items;
-    window.channelMgrRows = mergeRowsFromManaged(parsed, managedItems);
-    channelMgrNormalizeOrders();
-    window.channelMgrPage = 1;
-    document.getElementById('channelMgrStatus').innerText = 'Loaded ' + window.channelMgrRows.length + ' channels (unsaved until you save to Firebase).';
-    window.channelMgrRender();
-  };
-
-  window.channelMgrImportFromProfile = async () => {
-    const u = window.channelMgrProfile;
-    if (!u) return;
-    if (u.content) {
-      window.applyParsedM3u(u.content);
-      return;
-    }
-    if (u.url) {
-      try {
-        const r = await fetch(u.url);
-        const t = await r.text();
-        window.applyParsedM3u(t);
-      } catch (e) {
-        alert('Could not fetch M3U URL (often CORS in browser). Use PASTE M3U, LOAD FILE, or embed file in profile content.');
-      }
-      return;
-    }
-    alert('This profile has no M3U URL or embedded content. For Xtream-only profiles, paste an M3U export or use Load .m3u file.');
-  };
-
-  function channelMgrFiltered() {
-    const el = document.getElementById('channelMgrFilter');
-    const q = (el && el.value || '').trim().toLowerCase();
-    if (!q) return window.channelMgrRows;
-    return window.channelMgrRows.filter(r =>
-      (r.name || '').toLowerCase().includes(q) ||
-      (r.group || '').toLowerCase().includes(q) ||
-      (r.url || '').toLowerCase().includes(q)
+  function getFilteredChannels() {
+    const q = (document.getElementById('cmSearch').value || '').toLowerCase();
+    return currentChannels.filter((c) =>
+      !q ||
+      (c.name && c.name.toLowerCase().includes(q)) ||
+      (c.group && c.group.toLowerCase().includes(q)) ||
+      (c.url && c.url.toLowerCase().includes(q))
     );
   }
 
-  window.channelMgrRender = () => {
-    const filtered = channelMgrFiltered();
-    const size = window.channelMgrPageSize;
-    const totalPages = Math.max(1, Math.ceil(filtered.length / size));
-    if (window.channelMgrPage > totalPages) window.channelMgrPage = totalPages;
-    const start = (window.channelMgrPage - 1) * size;
-    const slice = filtered.slice(start, start + size);
-    const tb = document.getElementById('channelMgrTbody');
-    tb.innerHTML = '';
-    slice.forEach((row) => {
-      const globalIdx = window.channelMgrRows.findIndex(x => x.id === row.id) + 1;
+  function moveChannelBefore(movedId, beforeId) {
+    if (!movedId || !beforeId || movedId === beforeId) return;
+    const from = currentChannels.findIndex((c) => c.id === movedId);
+    const to = currentChannels.findIndex((c) => c.id === beforeId);
+    if (from < 0 || to < 0) return;
+    const [item] = currentChannels.splice(from, 1);
+    const insertAt = currentChannels.findIndex((c) => c.id === beforeId);
+    if (insertAt >= 0) currentChannels.splice(insertAt, 0, item);
+    renderChannelTable();
+  }
+
+  function renderChannelTable() {
+    const filtered = getFilteredChannels();
+    const total = filtered.length;
+    const pages = Math.max(1, Math.ceil(total / CM_PAGE_SIZE));
+    if (cmPage > pages) cmPage = pages;
+    const start = (cmPage - 1) * CM_PAGE_SIZE;
+    const slice = filtered.slice(start, start + CM_PAGE_SIZE);
+
+    document.getElementById('cmStatLine').textContent = `${currentChannels.length} channels · ${total} shown (filter)`;
+    document.getElementById('cmPageInfo').textContent = `Page ${cmPage} / ${pages}`;
+
+    const tbody = document.getElementById('cmTbody');
+    tbody.innerHTML = '';
+    slice.forEach((ch, i) => {
+      const globalIdx = start + i + 1;
+      const ty = (ch.type || 'live').toLowerCase();
+      const typeClass = ty === 'vod' ? 'vod' : (ty === 'series' ? 'vod' : 'live');
       const tr = document.createElement('tr');
-      tr.className = 'cm-data-row';
-      tr.dataset.rowId = row.id;
-      const flags = [];
-      if (row.hidden) flags.push('<span class="tag-hidden">HIDDEN</span>');
-      if (row.adult) flags.push('<span class="tag-adult">ADULT</span>');
-      const rid = channelMgrEscapeAttr(row.id);
-      const cbChecked = window.channelMgrSelected[row.id] ? ' checked' : '';
-      tr.innerHTML =
-        '<td class="checkbox-col"><input type="checkbox" class="cm-row-cb"' + cbChecked + ' data-id="' + rid + '"></td>' +
-        '<td class="cm-move-cell">' +
-        '<span class="cm-drag-handle" draggable="true" title="Drag to reorder">⠿</span> ' +
-        '<button type="button" class="btn-small cm-move-up" title="Move up in list">↑</button> ' +
-        '<button type="button" class="btn-small cm-move-down" title="Move down in list">↓</button>' +
-        '</td>' +
-        '<td>' + globalIdx + '</td>' +
-        '<td class="channel-mgr-logo-cell"></td>' +
-        '<td>' + channelMgrEscapeAttr(row.name) + '</td>' +
-        '<td>' + channelMgrEscapeAttr(row.group) + '</td>' +
-        '<td>' + channelMgrEscapeAttr(row.type) + '</td>' +
-        '<td>' + (flags.join(' ') || '—') + '</td>' +
-        '<td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + channelMgrEscapeAttr(row.url) + '">' + channelMgrEscapeAttr(row.url) + '</td>' +
-        '<td style="white-space:nowrap">' +
-        '<button type="button" class="btn-small cm-row-edit">EDIT</button> ' +
-        '<button type="button" class="btn-small cm-row-clone">CLONE</button> ' +
-        '<button type="button" class="btn-small cm-row-del" style="color:var(--error);border-color:var(--error);">DEL</button>' +
-        '</td>';
-      const logoTd = tr.querySelector('.channel-mgr-logo-cell');
-      const lg = (row.logo && String(row.logo).trim()) || '';
-      if (lg.startsWith('data:image/') || /^https?:\/\//i.test(lg)) {
-        const img = document.createElement('img');
-        img.className = 'channel-mgr-logo-thumb';
-        img.alt = '';
-        img.loading = 'eager';
-        img.decoding = 'async';
-        img.src = lg;
-        img.onerror = function () {
-          const targetRow = window.channelMgrRows.find(r => r.id === row.id);
-          if (targetRow && /^https?:\/\//i.test((targetRow.logo || '').trim())) targetRow.logoHttpBroken = true;
-          logoTd.textContent = '×';
-          logoTd.title = 'Image failed to load';
-          channelMgrUpdateValidationStrip();
-        };
-        logoTd.appendChild(img);
-      } else if (lg.length > 0) {
-        logoTd.textContent = '●';
-        logoTd.title = 'Logo set (not http/data — check in EDIT)';
-      } else {
-        logoTd.textContent = '—';
-      }
-      const cb = tr.querySelector('.cm-row-cb');
-      if (cb) {
-        cb.addEventListener('change', () => {
-          if (cb.checked) window.channelMgrSelected[row.id] = true;
-          else delete window.channelMgrSelected[row.id];
-          const allCb = document.getElementById('channelMgrCbAllPage');
-          if (allCb) {
-            const ids = slice.map(r => r.id);
-            const allOn = ids.length && ids.every(id => window.channelMgrSelected[id]);
-            const some = ids.some(id => window.channelMgrSelected[id]);
-            allCb.checked = allOn;
-            allCb.indeterminate = !allOn && some;
-          }
-        });
-      }
-      const mu = tr.querySelector('.cm-move-up');
-      const md = tr.querySelector('.cm-move-down');
-      if (mu) mu.onclick = (e) => { e.stopPropagation(); window.channelMgrMoveRowUp(row.id); };
-      if (md) md.onclick = (e) => { e.stopPropagation(); window.channelMgrMoveRowDown(row.id); };
-      const editBtn = tr.querySelector('.cm-row-edit');
-      const cloneBtn = tr.querySelector('.cm-row-clone');
-      const delBtn = tr.querySelector('.cm-row-del');
-      if (editBtn) editBtn.onclick = () => window.openChannelMgrEdit(row.id);
-      if (cloneBtn) cloneBtn.onclick = () => window.channelMgrCloneRow(row.id);
-      if (delBtn) delBtn.onclick = () => window.channelMgrDeleteRow(row.id);
+      tr.setAttribute('data-ch-id', ch.id);
+      tr.innerHTML = `
+        <td class="cm-drag-cell"><span class="cm-drag-handle" draggable="true" data-id="${escapeHtml(ch.id)}" title="Drag to reorder"><i class="fas fa-grip-vertical"></i></span></td>
+        <td><input type="checkbox" class="cmRowCb" data-id="${escapeHtml(ch.id)}"></td>
+        <td style="color:var(--text-muted);font-weight:600">${globalIdx}</td>
+        <td><strong style="color:#e2e8f0">${escapeHtml(ch.name)}</strong><br><small style="color:#64748b">${escapeHtml(ch.group || 'General')}</small></td>
+        <td><span class="cm-type ${typeClass}">${escapeHtml(ty)}</span></td>
+        <td><div class="cm-url-cell" title="${escapeHtml(ch.url || '')}">${escapeHtml(ch.url || '')}</div></td>
+        <td style="font-size:0.65rem;color:#94a3b8">${ch.hidden ? '<i class="fas fa-eye-slash"></i>' : ''} ${ch.adult ? '🔞' : ''}</td>
+        <td>
+          <button type="button" class="action-btn cm-mini cm-move" data-dir="up" data-id="${escapeHtml(ch.id)}"><i class="fas fa-arrow-up"></i></button>
+          <button type="button" class="action-btn cm-mini cm-move" data-dir="down" data-id="${escapeHtml(ch.id)}"><i class="fas fa-arrow-down"></i></button>
+        </td>
+        <td>
+          <button type="button" class="action-btn cm-mini cm-edit" data-id="${escapeHtml(ch.id)}"><i class="fas fa-pen"></i></button>
+          <button type="button" class="action-btn danger cm-mini cm-del" data-id="${escapeHtml(ch.id)}"><i class="fas fa-trash"></i></button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
 
-      const dragHandle = tr.querySelector('.cm-drag-handle');
-      if (dragHandle) {
-        dragHandle.addEventListener('dragstart', (e) => {
-          e.stopPropagation();
-          window.channelMgrDraggedRowId = row.id;
-          tr.classList.add('cm-dragging');
-          e.dataTransfer.effectAllowed = 'move';
-          e.dataTransfer.setData('text/plain', row.id);
-        });
-        dragHandle.addEventListener('dragend', () => {
-          tr.classList.remove('cm-dragging');
-          document.querySelectorAll('.channel-mgr-table tr.cm-drag-over').forEach(x => x.classList.remove('cm-drag-over'));
-          window.channelMgrDraggedRowId = null;
-        });
-      }
-      tr.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        tr.classList.add('cm-drag-over');
+    tbody.querySelectorAll('.cm-move').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const dir = btn.getAttribute('data-dir');
+        const idx = currentChannels.findIndex((c) => c.id === id);
+        if (idx < 0) return;
+        const j = dir === 'up' ? idx - 1 : idx + 1;
+        if (j < 0 || j >= currentChannels.length) return;
+        const t = currentChannels[idx];
+        currentChannels[idx] = currentChannels[j];
+        currentChannels[j] = t;
+        renderChannelTable();
       });
-      tr.addEventListener('dragleave', () => { tr.classList.remove('cm-drag-over'); });
-      tr.addEventListener('drop', (e) => {
-        e.preventDefault();
-        tr.classList.remove('cm-drag-over');
-        const fromId = e.dataTransfer.getData('text/plain') || window.channelMgrDraggedRowId;
-        window.channelMgrDropRowOn(fromId, row.id);
+    });
+    tbody.querySelectorAll('.cm-edit').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const ch = currentChannels.find((c) => c.id === id);
+        if (ch) openCmEditor(ch);
       });
-
-      tb.appendChild(tr);
     });
-    const allCb = document.getElementById('channelMgrCbAllPage');
-    if (allCb) {
-      const ids = slice.map(r => r.id);
-      const allOn = ids.length && ids.every(id => window.channelMgrSelected[id]);
-      const some = ids.some(id => window.channelMgrSelected[id]);
-      allCb.checked = allOn;
-      allCb.indeterminate = !allOn && some;
-      allCb.onchange = () => {
-        const on = allCb.checked;
-        slice.forEach(r => {
-          if (on) window.channelMgrSelected[r.id] = true;
-          else delete window.channelMgrSelected[r.id];
-        });
-        window.channelMgrRender();
-      };
-    }
-    channelMgrUpdateValidationStrip();
-    document.getElementById('channelMgrPageInfo').innerText =
-      'Page ' + window.channelMgrPage + ' / ' + totalPages + ' — ' + slice.length + ' of ' + filtered.length + ' (' + window.channelMgrRows.length + ' total)';
-  };
-
-  window.channelMgrPrevPage = () => {
-    if (window.channelMgrPage > 1) {
-      window.channelMgrPage--;
-      window.channelMgrRender();
-    }
-  };
-  window.channelMgrNextPage = () => {
-    const filtered = channelMgrFiltered();
-    const totalPages = Math.max(1, Math.ceil(filtered.length / window.channelMgrPageSize));
-    if (window.channelMgrPage < totalPages) {
-      window.channelMgrPage++;
-      window.channelMgrRender();
-    }
-  };
-
-  window.openChannelMgrEdit = (id) => {
-    const row = window.channelMgrRows.find(r => r.id === id);
-    if (!row) return;
-    window.channelMgrEditingId = id;
-    window.channelMgrPendingLogoDataUrl = null;
-    const f = document.getElementById('channelMgrEditFields');
-    const t = row.type === 'vod' ? 'vod' : row.type === 'series' ? 'series' : 'live';
-    f.innerHTML =
-      '<div class="form-group"><label>Display name</label><input type="text" id="cm-edit-name" value="' + channelMgrEscapeAttr(row.name) + '"></div>' +
-      '<div class="form-group"><label>Group</label><input type="text" id="cm-edit-group" value="' + channelMgrEscapeAttr(row.group) + '"></div>' +
-      '<div class="form-group"><label>Stream URL</label><input type="text" id="cm-edit-url" value="' + channelMgrEscapeAttr(row.url) + '" placeholder="https://… or .m3u8 stream" spellcheck="false" autocomplete="off"></div>' +
-      '<div class="form-group"><label>Logo URL or embedded image (paste https:// or pick file below)</label><textarea id="cm-edit-logo" placeholder="https://… or embedded data after file pick" spellcheck="false" autocomplete="off"></textarea></div>' +
-      '<div class="form-group"><label>Channel icon — from your device</label>' +
-      '<div class="file-upload-wrapper">' +
-      '<label for="cm-edit-logo-file" class="file-upload-label" style="padding:20px">' +
-      '<span>SELECT LOGO IMAGE</span>' +
-      '<small>Any common image — auto-resized for sync · transparent areas become white</small>' +
-      '<div id="cm-edit-logo-file-name" class="file-selected-name" style="display:none;color:var(--accent);"></div>' +
-      '</label>' +
-      '<input type="file" id="cm-edit-logo-file" class="file-upload-input" accept="image/*">' +
-      '</div>' +
-      '<div class="mgr-note" style="margin-top:10px;">If the list is long, <b>scroll down</b> in this panel for Type and APPLY.</div>' +
-      '<img id="cm-edit-logo-preview" alt="Logo preview" style="display:none;max-width:120px;max-height:120px;margin-top:12px;border-radius:8px;border:1px solid var(--glass-border);object-fit:contain;background:rgba(0,0,0,0.25);"></div>' +
-      '<div class="form-group"><label>Type</label>' +
-      '<select id="cm-edit-type" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:12px; color:white;">' +
-      '<option value="live"' + (t === 'live' ? ' selected' : '') + '>live</option>' +
-      '<option value="vod"' + (t === 'vod' ? ' selected' : '') + '>vod</option>' +
-      '<option value="series"' + (t === 'series' ? ' selected' : '') + '>series</option>' +
-      '</select></div>' +
-      '<div class="form-group"><label><input type="checkbox" id="cm-edit-hidden"' + (row.hidden ? ' checked' : '') + '> Hidden (hide in app)</label></div>' +
-      '<div class="form-group"><label><input type="checkbox" id="cm-edit-adult"' + (row.adult ? ' checked' : '') + '> Adult (18+)</label></div>';
-    const logoEl = document.getElementById('cm-edit-logo');
-    const logoFile = document.getElementById('cm-edit-logo-file');
-    const logoPrev = document.getElementById('cm-edit-logo-preview');
-    logoEl.value = row.logo || '';
-    channelMgrSyncLogoPreview(logoEl, logoPrev);
-    logoEl.addEventListener('input', () => {
-      window.channelMgrPendingLogoDataUrl = null;
-      channelMgrSyncLogoPreview(logoEl, logoPrev);
+    tbody.querySelectorAll('.cm-del').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        currentChannels = currentChannels.filter((c) => c.id !== id);
+        renderChannelTable();
+      });
     });
-    const maxLogoUploadBytes = 18 * 1024 * 1024;
-    const logoFileNameEl = document.getElementById('cm-edit-logo-file-name');
-    logoFile.addEventListener('change', () => {
-      const run = async () => {
-        const file = logoFile.files && logoFile.files[0];
-        if (!file) {
-          if (logoFileNameEl) {
-            logoFileNameEl.style.display = 'none';
-            logoFileNameEl.textContent = '';
-          }
-          return;
-        }
-        if (file.type && !/^image\//i.test(file.type)) {
-          alert('Choose an image file (PNG, JPG, WebP, etc.).');
-          logoFile.value = '';
-          return;
-        }
-        if (file.size > maxLogoUploadBytes) {
-          alert('File is too large (' + Math.round(file.size / (1024 * 1024)) + ' MB). Max ~18 MB before auto-resize, or use a Logo URL.');
-          logoFile.value = '';
-          if (logoFileNameEl) {
-            logoFileNameEl.style.display = 'none';
-            logoFileNameEl.textContent = '';
-          }
-          return;
-        }
-        if (logoFileNameEl) {
-          logoFileNameEl.textContent = file.name + ' — processing…';
-          logoFileNameEl.style.display = 'block';
-        }
-        try {
-          const dataUrl = await channelMgrDownscaleImageFile(file);
-          window.channelMgrPendingLogoDataUrl = dataUrl;
-          logoEl.value = dataUrl;
-          channelMgrSyncLogoPreview(logoEl, logoPrev);
-          if (logoFileNameEl) {
-            const kb = Math.round(dataUrl.length / 1024);
-            logoFileNameEl.textContent = file.name + ' · resized (~' + kb + ' KB data)';
-          }
-        } catch (e) {
-          alert((e && e.message) ? e.message : 'Could not process image.');
-          logoFile.value = '';
-          if (logoFileNameEl) {
-            logoFileNameEl.style.display = 'none';
-            logoFileNameEl.textContent = '';
-          }
-        }
-      };
-      run();
-    });
-    document.getElementById('channelMgrEditModal').style.display = 'flex';
-  };
+  }
 
-  window.closeChannelMgrEdit = () => {
-    document.getElementById('channelMgrEditModal').style.display = 'none';
-    window.channelMgrEditingId = null;
-    window.channelMgrPendingLogoDataUrl = null;
-  };
-
-  window.channelMgrSaveEditRow = () => {
-    const id = window.channelMgrEditingId;
-    const row = window.channelMgrRows.find(r => r.id === id);
-    if (!row) return;
-    const newUrl = (document.getElementById('cm-edit-url').value || '').trim();
-    if (!newUrl) {
-      alert('Stream URL cannot be empty. Paste the new stream link or cancel.');
-      return;
-    }
-    row.name = document.getElementById('cm-edit-name').value;
-    row.group = document.getElementById('cm-edit-group').value;
-    row.url = newUrl;
-    row.logoHttpBroken = false;
-    const logoTa = document.getElementById('cm-edit-logo');
-    const fromTextarea = (logoTa && logoTa.value) ? logoTa.value.trim() : '';
-    row.logo = (window.channelMgrPendingLogoDataUrl != null && window.channelMgrPendingLogoDataUrl !== '')
-      ? window.channelMgrPendingLogoDataUrl
-      : fromTextarea;
-    window.channelMgrPendingLogoDataUrl = null;
-    row.type = document.getElementById('cm-edit-type').value;
-    row.hidden = document.getElementById('cm-edit-hidden').checked;
-    row.adult = document.getElementById('cm-edit-adult').checked;
-    window.closeChannelMgrEdit();
-    window.channelMgrRender();
-  };
-
-  window.channelMgrSaveToFirebase = async () => {
-    const code = window.channelMgrCode;
-    if (!code) return;
-    if (!window.channelMgrRows.length) {
-      alert('No channels to save.');
-      return;
-    }
-    const v = channelMgrComputeValidation();
-    const problemCount = v.emptyUrl.length + v.dupUrlRows.length + v.badLogo.length;
-    if (problemCount > 0) {
-      let msg = 'Pre-save checks found issues:\n';
-      if (v.emptyUrl.length) msg += '• ' + v.emptyUrl.length + ' empty stream URL(s)\n';
-      if (v.dupUrlRows.length) msg += '• duplicate stream URL(s) (' + v.dupUrlRows.length + ' rows)\n';
-      if (v.badLogo.length) msg += '• ' + v.badLogo.length + ' broken http(s) logo(s)\n';
-      msg += '\nSave to Firebase anyway?';
-      if (!confirm(msg)) return;
-    }
-    channelMgrNormalizeOrders();
+  async function saveManagedPlaylist() {
     const items = {};
-    for (const r of window.channelMgrRows) {
-      items[r.id] = {
-        name: r.name,
-        url: r.url,
-        group: r.group,
-        logo: r.logo || '',
-        hidden: !!r.hidden,
-        adult: !!r.adult,
-        type: r.type || 'live',
-        order: typeof r.order === 'number' ? r.order : 0
+    currentChannels.forEach((ch, idx) => {
+      items[ch.id] = {
+        name: ch.name,
+        url: ch.url,
+        group: ch.group || 'General',
+        logo: ch.logo || '',
+        order: idx,
+        type: ch.type || 'live',
+        hidden: !!ch.hidden,
+        adult: !!ch.adult,
       };
+    });
+    await update(ref(db, `sync/${currentChannelSyncKey}`), {
+      managedPlaylist: { schemaVersion: 1, updatedAt: Date.now(), items },
+    });
+    showToast(`Saved ${currentChannels.length} → ${currentChannelSyncKey}`);
+  }
+
+  function refreshDynamicFields(existing) {
+    const method = document.getElementById('modalMethod').value;
+    const container = document.getElementById('dynamicFields');
+    if (method === 'xtream') {
+      container.innerHTML = `
+        <label style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase">Xtream server</label>
+        <input class="search-input" id="xtreamServer" placeholder="http://host:port" value="${escapeHtml(existing?.server || '')}" style="margin-top:0.2rem">
+        <label style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase">Username & password</label>
+        <input class="search-input" id="xtreamUser" placeholder="Username" value="${escapeHtml(existing?.user || '')}" style="margin-top:0.2rem">
+        <input class="search-input" id="xtreamPass" type="password" placeholder="Password" value="${escapeHtml(existing?.pass || '')}" style="margin-top:0">`;
+    } else if (method === 'm3u') {
+      container.innerHTML = `
+        <label style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase">M3U / M3U8 URL</label>
+        <input class="search-input" id="m3uUrl" placeholder="https://…/playlist.m3u" value="${escapeHtml(existing?.url || '')}" style="margin-top:0.2rem;margin-bottom:0">`;
+    } else {
+      container.innerHTML = `
+        <label style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase">Upload .m3u / .m3u8</label>
+        <input type="file" id="fileUpload" accept=".m3u,.m3u8,.txt" class="search-input" style="padding:0.5rem;margin-top:0.2rem">
+        <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.35rem">${escapeHtml(existing?.filename || 'Leaves existing file if unchanged')}</p>`;
     }
-    const st = document.getElementById('channelMgrStatus');
-    st.innerText = 'Saving...';
+  }
+
+  function openEditProfile(code) {
+    editingProfileKey = code;
+    const data = currentUserData[code];
+    if (!data) return;
+    setProfileTier(code === 'global' ? 'global' : 'premium');
+    document.getElementById('modalSyncKey').value = code;
+    document.getElementById('modalSyncKey').readOnly = true;
+    const m = data.method === 'm3u_file' ? 'file' : (data.method === 'm3u' ? 'm3u' : 'xtream');
+    setMethodSeg(m);
+    refreshDynamicFields(data);
+    document.getElementById('expirySelect').value = '0';
+    setModal(document.getElementById('profileModal'), true);
+  }
+
+  function openNewProfile(presetKey) {
+    editingProfileKey = null;
+    if (presetKey === 'global') setProfileTier('global');
+    else {
+      setProfileTier('premium');
+      if (presetKey && presetKey !== 'premium') document.getElementById('modalSyncKey').value = presetKey;
+    }
+    document.getElementById('modalSyncKey').readOnly = profileTier === 'global';
+    setMethodSeg('xtream');
+    refreshDynamicFields(null);
+    document.getElementById('expirySelect').value = '0';
+    setModal(document.getElementById('profileModal'), true);
+  }
+
+  document.getElementById('tierGlobalBtn').addEventListener('click', () => {
+    setProfileTier('global');
+    if (!editingProfileKey) refreshDynamicFields(null);
+  });
+  document.getElementById('tierPremiumBtn').addEventListener('click', () => {
+    setProfileTier('premium');
+    if (!editingProfileKey) refreshDynamicFields(null);
+  });
+  document.querySelectorAll('#methodSeg .seg-btn').forEach((b) => {
+    b.addEventListener('click', () => {
+      setMethodSeg(b.getAttribute('data-method'));
+      const k = editingProfileKey;
+      refreshDynamicFields(k ? currentUserData[k] : null);
+    });
+  });
+
+  document.getElementById('modalSaveBtn').addEventListener('click', async () => {
+    let syncKey = normalizeSyncKeyInput(document.getElementById('modalSyncKey').value);
+    if (profileTier === 'global') syncKey = 'global';
+    if (!isValidSyncKey(syncKey)) {
+      showToast('Invalid sync key', true);
+      return;
+    }
+    const methodSel = document.getElementById('modalMethod').value;
+    const payload = { method: methodSel, timestamp: Date.now() };
+    const months = parseInt(document.getElementById('expirySelect').value, 10);
+    payload.expiryDate = months > 0 ? Date.now() + months * 30 * 24 * 60 * 60 * 1000 : 0;
+
+    if (methodSel === 'xtream') {
+      payload.server = document.getElementById('xtreamServer').value.trim();
+      payload.user = document.getElementById('xtreamUser').value.trim();
+      payload.pass = document.getElementById('xtreamPass').value;
+    } else if (methodSel === 'm3u') {
+      payload.url = document.getElementById('m3uUrl').value.trim();
+    } else {
+      const fi = document.getElementById('fileUpload');
+      const file = fi && fi.files && fi.files[0];
+      if (file) {
+        payload.content = await file.text();
+        payload.filename = file.name;
+      } else if (currentUserData[syncKey] && currentUserData[syncKey].content) {
+        payload.content = currentUserData[syncKey].content;
+        payload.filename = currentUserData[syncKey].filename;
+      } else {
+        showToast('Choose an M3U file', true);
+        return;
+      }
+      payload.method = 'm3u_file';
+    }
+
+    const prev = await get(ref(db, `sync/${syncKey}`));
+    const oldManaged = prev.exists() ? prev.val().managedPlaylist : null;
+    const next = { ...payload };
+    if (oldManaged != null) next.managedPlaylist = oldManaged;
+    await set(ref(db, `sync/${syncKey}`), next);
+    showToast('Saved ' + syncKey);
+    closeProfileModal();
+    await fetchAllSync();
+  });
+
+  async function refreshDeviceListPreview() {
+    const el = document.getElementById('deviceListPreview');
     try {
-      await update(ref(db, 'sync/' + code), stripUndefinedDeep({
-        managedPlaylist: {
-          schemaVersion: 1,
-          updatedAt: Date.now(),
-          items
-        },
-        timestamp: Date.now()
-      }));
-      st.innerText = 'Saved. Users must sync app again to refresh cache.';
-      window.channelMgrProfile = (await get(ref(db, 'sync/' + code))).val();
-    } catch (e) {
-      st.innerText = 'Error: ' + e.message;
-      alert(e.message);
+      const snap = await get(ref(db, 'device_assignments'));
+      if (!snap.exists()) {
+        el.innerHTML = '<p style="color:#64748b">No mappings.</p>';
+        return;
+      }
+      const val = snap.val();
+      let html = '<strong>Active mappings</strong><ul style="margin:8px 0 0 16px;line-height:1.65">';
+      Object.keys(val).sort().forEach((code) => {
+        const row = val[code];
+        const sk = row && row.syncKey != null ? row.syncKey : '—';
+        const a = row && row.active === true;
+        html += `<li>${escapeHtml(code)} → <code>${escapeHtml(sk)}</code> ${a ? '✓' : 'off'} <button type="button" class="action-btn danger" style="padding:0.12rem 0.45rem;font-size:0.68rem;margin-left:6px" data-rm-device="${escapeHtml(code)}">×</button></li>`;
+      });
+      html += '</ul>';
+      el.innerHTML = html;
+      el.querySelectorAll('[data-rm-device]').forEach((b) => {
+        b.addEventListener('click', async () => {
+          const c = b.getAttribute('data-rm-device');
+          if (!confirm('Remove ' + c + '?')) return;
+          await remove(ref(db, 'device_assignments/' + c));
+          showToast('Removed');
+          await refreshDeviceListPreview();
+          updateStats();
+        });
+      });
+    } catch (e) { el.textContent = e.message; }
+  }
+
+  document.getElementById('deviceAssignBtn').addEventListener('click', async () => {
+    await refreshDeviceListPreview();
+    setModal(document.getElementById('deviceModal'), true);
+  });
+  document.getElementById('deviceSaveBtn').addEventListener('click', async () => {
+    const dev = normalizeDeviceCodeStrict(document.getElementById('deviceCode').value);
+    const sk = normalizeSyncKeyInput(document.getElementById('deviceSyncKey').value);
+    const active = document.getElementById('deviceActive').checked;
+    if (!dev) return showToast('8-digit code required', true);
+    if (active) {
+      if (!isValidSyncKey(sk)) return showToast('Invalid sync key', true);
+      if (sk === 'global') return showToast('Private map cannot use global', true);
+      await set(ref(db, 'device_assignments/' + dev), { syncKey: sk, active: true, updatedAt: Date.now() });
+    } else {
+      await remove(ref(db, 'device_assignments/' + dev));
     }
-  };
+    showToast('Mapping saved');
+    closeDeviceModal();
+    await refreshDeviceListPreview();
+    updateStats();
+  });
+
+  document.getElementById('closeCmBtn').addEventListener('click', () => setModal(document.getElementById('channelManagerModal'), false));
+  document.getElementById('cmSaveToFirebaseBtn').addEventListener('click', () => saveManagedPlaylist().catch((e) => showToast(e.message, true)));
+  document.getElementById('cmNewChBtn').addEventListener('click', () => openCmEditor(null));
+  document.getElementById('cmEdCancel').addEventListener('click', closeCmEditor);
+  document.getElementById('cmEdApply').addEventListener('click', () => {
+    const id = document.getElementById('cmEdId').value;
+    const name = document.getElementById('cmEdName').value.trim();
+    const url = document.getElementById('cmEdUrl').value.trim();
+    if (!name || !url) return showToast('Name and URL required', true);
+    const group = document.getElementById('cmEdGroup').value.trim() || 'General';
+    const logo = document.getElementById('cmEdLogo').value.trim();
+    const type = document.getElementById('cmEdType').value;
+    const hidden = document.getElementById('cmEdHidden').checked;
+    const adult = document.getElementById('cmEdAdult').checked;
+    if (id) {
+      const ch = currentChannels.find((c) => c.id === id);
+      if (ch) {
+        Object.assign(ch, { name, url, group, logo, type, hidden, adult });
+      }
+    } else {
+      currentChannels.push({ id: newChannelId(), name, url, group, logo, type, hidden, adult });
+    }
+    closeCmEditor();
+    renderChannelTable();
+    showToast('Channel updated locally — save to Firebase when done');
+  });
+  document.getElementById('cmImportM3uBtn').addEventListener('click', () => document.getElementById('cmFileInput').click());
+  document.getElementById('cmFileInput').addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    const parsed = parseM3UText(text);
+    applyChannelImport(parsed, getCmImportMode() === 'replace');
+    e.target.value = '';
+  });
+  document.getElementById('cmTogglePasteBtn').addEventListener('click', () => {
+    document.getElementById('cmPastePanel').classList.toggle('open');
+  });
+  document.getElementById('cmToggleUrlBtn').addEventListener('click', () => {
+    document.getElementById('cmUrlPanel').classList.toggle('open');
+  });
+  document.getElementById('cmFetchUrlBtn').addEventListener('click', () => {
+    fetchAndImportM3uFromUrl().catch((e) => showToast(e.message || String(e), true));
+  });
+  document.getElementById('cmParsePasteBtn').addEventListener('click', () => {
+    const text = document.getElementById('cmPasteTa').value;
+    const parsed = parseM3UText(text);
+    if (!parsed.length) return showToast('No channels parsed', true);
+    applyChannelImport(parsed, getCmImportMode() === 'replace');
+  });
+  document.getElementById('cmSearch').addEventListener('input', () => { cmPage = 1; renderChannelTable(); });
+  document.getElementById('cmPrevPage').addEventListener('click', () => { if (cmPage > 1) { cmPage--; renderChannelTable(); } });
+  document.getElementById('cmNextPage').addEventListener('click', () => {
+    const pages = Math.max(1, Math.ceil(getFilteredChannels().length / CM_PAGE_SIZE));
+    if (cmPage < pages) { cmPage++; renderChannelTable(); }
+  });
+  document.getElementById('cmSelectAll').addEventListener('change', (e) => {
+    document.querySelectorAll('.cmRowCb').forEach((cb) => { cb.checked = e.target.checked; });
+  });
+  document.getElementById('cmBulkHideBtn').addEventListener('click', () => {
+    const ids = [...document.querySelectorAll('.cmRowCb:checked')].map((cb) => cb.getAttribute('data-id'));
+    if (!ids.length) return showToast('Select channels on this page', true);
+    currentChannels.forEach((c) => { if (ids.includes(c.id)) c.hidden = true; });
+    renderChannelTable();
+    showToast('Marked hidden (save to Firebase)');
+  });
+  document.getElementById('cmBulkDelBtn').addEventListener('click', () => {
+    const ids = new Set([...document.querySelectorAll('.cmRowCb:checked')].map((cb) => cb.getAttribute('data-id')));
+    if (!ids.size) return showToast('Select channels', true);
+    if (!confirm(`Remove ${ids.size} channel(s)?`)) return;
+    currentChannels = currentChannels.filter((c) => !ids.has(c.id));
+    renderChannelTable();
+  });
+
+  (function bindChannelTableDnD() {
+    const tbody = document.getElementById('cmTbody');
+    let dragSourceId = null;
+    tbody.addEventListener('dragstart', (e) => {
+      const h = e.target.closest('.cm-drag-handle');
+      if (!h || !tbody.contains(h)) return;
+      dragSourceId = h.getAttribute('data-id');
+      e.dataTransfer.setData('text/plain', dragSourceId);
+      e.dataTransfer.effectAllowed = 'move';
+      const tr = h.closest('tr');
+      if (tr) tr.classList.add('cm-dragging');
+    });
+    tbody.addEventListener('dragend', (e) => {
+      const h = e.target.closest('.cm-drag-handle');
+      if (h) {
+        const tr = h.closest('tr');
+        if (tr) tr.classList.remove('cm-dragging');
+      }
+      tbody.querySelectorAll('tr.cm-drag-over').forEach((r) => r.classList.remove('cm-drag-over'));
+      dragSourceId = null;
+    });
+    tbody.addEventListener('dragover', (e) => {
+      const tr = e.target.closest('tr[data-ch-id]');
+      if (!tr || !tbody.contains(tr) || !dragSourceId) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      tbody.querySelectorAll('tr.cm-drag-over').forEach((r) => { if (r !== tr) r.classList.remove('cm-drag-over'); });
+      tr.classList.add('cm-drag-over');
+    });
+    tbody.addEventListener('dragleave', (e) => {
+      const tr = e.target.closest('tr[data-ch-id]');
+      if (!tr || !tbody.contains(tr)) return;
+      const rel = e.relatedTarget;
+      if (rel && tr.contains(rel)) return;
+      tr.classList.remove('cm-drag-over');
+    });
+    tbody.addEventListener('drop', (e) => {
+      const tr = e.target.closest('tr[data-ch-id]');
+      if (!tr || !tbody.contains(tr)) return;
+      e.preventDefault();
+      const dropId = tr.getAttribute('data-ch-id');
+      const movedId = e.dataTransfer.getData('text/plain') || dragSourceId;
+      tbody.querySelectorAll('tr.cm-drag-over').forEach((r) => r.classList.remove('cm-drag-over'));
+      if (movedId && dropId) moveChannelBefore(movedId, dropId);
+    });
+  })();
+
+  document.getElementById('addProfileBtn').addEventListener('click', () => openNewProfile(null));
+  document.getElementById('addGlobalBtn').addEventListener('click', () => openNewProfile('global'));
+  document.getElementById('openGlobalCmBtn').addEventListener('click', () => openChannelManager('global'));
+  document.getElementById('modalCloseBtn').addEventListener('click', closeProfileModal);
+  document.getElementById('profileBackBtn').addEventListener('click', closeProfileModal);
+  document.getElementById('deviceBackBtn').addEventListener('click', closeDeviceModal);
+  document.getElementById('refreshBtn').addEventListener('click', fetchAllSync);
+  document.getElementById('bulkDeleteBtn').addEventListener('click', () => bulkDeleteSelected().catch((e) => showToast(e.message, true)));
+  document.getElementById('exportCsvBtn').addEventListener('click', () => {
+    let csv = 'SyncKey,Method,Expiry,Info\n';
+    Object.entries(currentUserData).forEach(([k, v]) => {
+      const info = v.server || v.url || v.filename || '';
+      csv += `${csvEscape(k)},${csvEscape(v.method)},${v.expiryDate || 0},${csvEscape(info)}\n`;
+    });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'optic_ghost_export.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('CSV exported');
+  });
+  document.getElementById('globalSearch').addEventListener('input', renderUserTable);
+  document.getElementById('selectAllCheckbox').addEventListener('change', (e) => {
+    document.querySelectorAll('.rowSelect').forEach((cb) => { cb.checked = e.target.checked; });
+  });
+
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    if (!email || !pass) return showToast('Enter email and password', true);
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch {
+      if (email === _d(_ae) && pass === _d(_ap)) {
+        try { await createUserWithEmailAndPassword(auth, _d(_ae), _d(_ap)); }
+        catch (e2) { showToast('Login failed: ' + (e2 && e2.message), true); return; }
+      } else { showToast('Invalid credentials', true); return; }
+    }
+  });
+  document.getElementById('exitAdminBtn').addEventListener('click', () => signOut(auth).catch(() => {}));
+
+  onAuthStateChanged(auth, (user) => {
+    const shell = document.getElementById('loginShell');
+    const root = document.getElementById('appRoot');
+    if (user) {
+      shell.style.display = 'none';
+      root.style.display = 'block';
+      fetchAllSync();
+    } else {
+      shell.style.display = 'flex';
+      root.style.display = 'none';
+      document.getElementById('loginPass').value = '';
+    }
+  });
 </script>
 </body>
 </html>

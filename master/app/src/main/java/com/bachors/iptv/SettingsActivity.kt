@@ -30,6 +30,7 @@ class SettingsActivity : BaseThemedAppCompatActivity() {
     private var suppressStreamQuality = false
     private var suppressLanguageRadio = false
     private var suppressThemeRadio = false
+    private var suppressPrivatePlaylistSwitch = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,18 +97,17 @@ class SettingsActivity : BaseThemedAppCompatActivity() {
         bindLanguageRadiosFromPrefs()
         bindThemeRadiosFromPrefs()
 
+        binding.tvDeviceCodeValue.text = ActivationHelper.getDeviceCode(this)
+        suppressPrivatePlaylistSwitch = true
+        binding.switchPrivatePlaylist.isChecked =
+            sharedPrefManager.getSpBoolean(SharedPrefManager.SP_USE_PRIVATE_PLAYLIST, false)
+        suppressPrivatePlaylistSwitch = false
+
         updateActivePlaylistLabel()
         updateLastSyncDisplay()
     }
 
-    private fun deviceCodeForDisplay(): String {
-        val code = ActivationHelper.getDeviceCode(this)
-        return if (code.length == 8) "${code.substring(0, 4)} ${code.substring(4)}" else code
-    }
-
     private fun refreshAccountPanel() {
-        binding.tvDeviceIdDisplay.text = deviceCodeForDisplay()
-
         val expiry = sharedPrefManager.getSpLong(SharedPrefManager.SP_EXPIRY_DATE, 0L)
         val now = System.currentTimeMillis()
         binding.tvExpiry.text = when {
@@ -119,7 +119,7 @@ class SettingsActivity : BaseThemedAppCompatActivity() {
         }
         binding.tvAccountStatus.text = when {
             expiry > 0L && expiry < now -> getString(R.string.activation_status_expired)
-            else -> getString(R.string.settings_status_premium)
+            else -> getString(R.string.settings_account_public)
         }
     }
 
@@ -129,7 +129,6 @@ class SettingsActivity : BaseThemedAppCompatActivity() {
             SharedPrefManager.LANGUAGE_KMR -> binding.rbLangBadini.isChecked = true
             SharedPrefManager.LANGUAGE_AR -> binding.rbLangAr.isChecked = true
             SharedPrefManager.LANGUAGE_EN -> binding.rbLangEn.isChecked = true
-            SharedPrefManager.LANGUAGE_SYSTEM -> binding.rbLangSystem.isChecked = true
             else -> binding.rbLangSorani.isChecked = true
         }
         suppressLanguageRadio = false
@@ -164,13 +163,6 @@ class SettingsActivity : BaseThemedAppCompatActivity() {
         binding.btnLanguage.setOnClickListener { showSection("language") }
         binding.btnAppearance.setOnClickListener { showSection("appearance") }
         binding.btnLastSyncSection.setOnClickListener { showSection("last_sync") }
-
-        binding.btnCopyDeviceId.setOnClickListener {
-            val code = ActivationHelper.getDeviceCode(this)
-            val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            cm.setPrimaryClip(ClipData.newPlainText("device_id", code))
-            Toast.makeText(this, getString(R.string.settings_device_id_copied), Toast.LENGTH_SHORT).show()
-        }
 
         binding.rgResizeMode.setOnCheckedChangeListener { _, checkedId ->
             val mode = when (checkedId) {
@@ -226,7 +218,6 @@ class SettingsActivity : BaseThemedAppCompatActivity() {
                 R.id.rb_lang_badini -> SharedPrefManager.LANGUAGE_KMR
                 R.id.rb_lang_ar -> SharedPrefManager.LANGUAGE_AR
                 R.id.rb_lang_en -> SharedPrefManager.LANGUAGE_EN
-                R.id.rb_lang_system -> SharedPrefManager.LANGUAGE_SYSTEM
                 else -> SharedPrefManager.LANGUAGE_CKB
             }
             if (key == sharedPrefManager.getAppLanguageKey()) return@setOnCheckedChangeListener
@@ -250,6 +241,19 @@ class SettingsActivity : BaseThemedAppCompatActivity() {
 
         binding.btnClearCache.setOnClickListener { clearAppCache() }
         binding.btnRefreshData.setOnClickListener { refreshPlaylistData() }
+
+        binding.btnCopyDeviceCode.setOnClickListener {
+            val code = ActivationHelper.getDeviceCode(this)
+            val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            cm.setPrimaryClip(ClipData.newPlainText("device_code", code))
+            Toast.makeText(this, R.string.settings_device_id_copied, Toast.LENGTH_SHORT).show()
+        }
+
+        binding.switchPrivatePlaylist.setOnCheckedChangeListener { _, isChecked ->
+            if (suppressPrivatePlaylistSwitch) return@setOnCheckedChangeListener
+            sharedPrefManager.saveSPBoolean(SharedPrefManager.SP_USE_PRIVATE_PLAYLIST, isChecked)
+            Toast.makeText(this, R.string.settings_playlist_source_saved, Toast.LENGTH_SHORT).show()
+        }
 
         binding.btnSavePlaylist.setOnClickListener { showSavePlaylistDialog() }
         binding.btnLoadPlaylist.setOnClickListener { showLoadPlaylistDialog() }

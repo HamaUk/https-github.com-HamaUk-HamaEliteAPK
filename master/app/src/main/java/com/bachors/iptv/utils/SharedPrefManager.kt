@@ -33,11 +33,17 @@ class SharedPrefManager(context: Context) {
         /** Last successful Firebase / playlist sync (epoch millis) */
         const val SP_LAST_SYNC_SUCCESS_AT = "spLastSyncSuccessAt"
         /**
-         * App UI language: [LANGUAGE_SYSTEM], [LANGUAGE_CKB], [LANGUAGE_AR], [LANGUAGE_EN], [LANGUAGE_KMR]
+         * App UI language: [LANGUAGE_CKB], [LANGUAGE_AR], [LANGUAGE_EN], [LANGUAGE_KMR].
+         * Legacy [LANGUAGE_SYSTEM] is migrated to Sorani on read.
          */
         const val SP_APP_LANGUAGE = "spAppLanguage"
         /** Theme: dark | amoled | light */
         const val SP_THEME_MODE = "spThemeMode"
+        /**
+         * When false (default), sync uses [sync/global] only.
+         * When true, sync uses admin [device_assignments] → dedicated [sync/key] if linked; otherwise error.
+         */
+        const val SP_USE_PRIVATE_PLAYLIST = "spUsePrivatePlaylist"
 
         const val LANGUAGE_SYSTEM = "system"
         const val LANGUAGE_CKB = "ckb"
@@ -111,11 +117,26 @@ class SharedPrefManager(context: Context) {
         saveSPString(SP_THEME_MODE, mode)
     }
 
-    /** Stored key: system, ckb, ar, en, kmr — default ckb (Sorani). */
-    fun getAppLanguageKey(): String =
-        sp.getString(SP_APP_LANGUAGE, LANGUAGE_CKB) ?: LANGUAGE_CKB
+    /** Stored key: ckb, ar, en, kmr — default ckb (Kurdish Sorani). Legacy `system` is persisted as ckb. */
+    fun getAppLanguageKey(): String {
+        val raw = sp.getString(SP_APP_LANGUAGE, LANGUAGE_CKB)?.trim().orEmpty()
+        val key = when (raw) {
+            "", LANGUAGE_SYSTEM -> LANGUAGE_CKB
+            LANGUAGE_CKB, LANGUAGE_AR, LANGUAGE_EN, LANGUAGE_KMR -> raw
+            else -> LANGUAGE_CKB
+        }
+        if (raw != key) {
+            saveSPString(SP_APP_LANGUAGE, key)
+        }
+        return key
+    }
 
     fun saveAppLanguageKey(key: String) {
-        saveSPString(SP_APP_LANGUAGE, key)
+        val normalized = when (key.trim()) {
+            LANGUAGE_SYSTEM, "" -> LANGUAGE_CKB
+            LANGUAGE_CKB, LANGUAGE_AR, LANGUAGE_EN, LANGUAGE_KMR -> key.trim()
+            else -> LANGUAGE_CKB
+        }
+        saveSPString(SP_APP_LANGUAGE, normalized)
     }
 }
