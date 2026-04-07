@@ -20,8 +20,10 @@ object AppHttp {
     const val USER_AGENT =
         "Mozilla/5.0 (Linux; Android 10; SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
-    private val ipv4PreferredDns = Dns { hostname ->
-        Dns.SYSTEM.lookup(hostname).sortedBy { if (it is Inet4Address) 0 else 1 }
+    private val ipv4PreferredDns = object : Dns {
+        override fun lookup(hostname: String): List<InetAddress> {
+            return Dns.SYSTEM.lookup(hostname).sortedBy { if (it is Inet4Address) 0 else 1 }
+        }
     }
 
     val client: OkHttpClient by lazy {
@@ -32,7 +34,7 @@ object AppHttp {
             .writeTimeout(120, TimeUnit.SECONDS)
             .callTimeout(0, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
-            .connectionSpecs(listOf(ConnectionSpec.MODERN, ConnectionSpec.COMPATIBLE_TLS))
+            .connectionSpecs(listOf(ConnectionSpec.MODERN_TLS, ConnectionSpec.COMPATIBLE_TLS))
             .addInterceptor { chain ->
                 val req = chain.request()
                 val next = if (req.header("User-Agent").isNullOrBlank()) {

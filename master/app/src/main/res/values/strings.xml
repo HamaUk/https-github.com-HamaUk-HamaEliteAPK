@@ -105,6 +105,7 @@
     <string name="settings_stream_1080">1080p</string>
     <string name="settings_stream_4k">4K</string>
     <string name="settings_stream_hint">کاریگەری لەسەر پەخشکردنی داهاتوو دەبێت.</string>
+    <string name="settings_stream_saved">کوالێتی پەخش پاشەکەوت کرا</string>
 
     <string name="settings_player_title">ڕێکخستنەکانی پەخشکەر</string>
     <string name="settings_playback_engine">بزوێنەری پەخش</string>
