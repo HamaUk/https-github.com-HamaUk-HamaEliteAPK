@@ -44,6 +44,14 @@
     <string name="hint_search_categories">Search categories…</string>
     <string name="no_information">No information</string>
 
+    <string name="crash_report_title">Something went wrong</string>
+    <string name="crash_report_message">If this keeps happening, send details to the admin on Telegram: @Opt1c_gh0st\nhttps://t.me/Opt1c_gh0st</string>
+    <string name="player_error_contact_line">Problems? Contact the admin on Telegram: @Opt1c_gh0st — https://t.me/Opt1c_gh0st</string>
+    <string name="player_error_unavailable">Playback is not available</string>
+    <string name="player_error_load_failed">Could not start playback</string>
+    <string name="player_help_title">Support</string>
+    <string name="player_pip_desc">Picture in picture</string>
+
     <string name="dash_live">Live TV</string>
     <string name="dash_vod">Movies</string>
     <string name="dash_series">Series</string>

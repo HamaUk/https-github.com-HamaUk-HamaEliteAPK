@@ -36,6 +36,14 @@
     <string name="hint_search_categories">گەڕان لە هاوپۆلەکان…</string>
     <string name="no_information">زانیاری نییە</string>
 
+    <string name="crash_report_title">کێشەیەک ڕوویدا</string>
+    <string name="crash_report_message">ئەگەر دووبارە بووەوە، وردەکارییەکان بنێرە بۆ بەڕێوەبەر لە تێلیگرام: @Opt1c_gh0st\nhttps://t.me/Opt1c_gh0st</string>
+    <string name="player_error_contact_line">کێشە هەیە؟ پەیوەندی بە بەڕێوەبەرەوە بکە لە تێلیگرام: @Opt1c_gh0st — https://t.me/Opt1c_gh0st</string>
+    <string name="player_error_unavailable">پەخشەکە بەردەست نییە</string>
+    <string name="player_error_load_failed">نەتوانرا پەخشەکە باربکرێت</string>
+    <string name="player_help_title">پشتگیری</string>
+    <string name="player_pip_desc">وێنە لە وێنە</string>
+
     <!-- Dashboard -->
     <string name="dash_live">پەخشی ڕاستەوخۆ</string>
     <string name="dash_vod">فیلمەکان</string>

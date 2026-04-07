@@ -44,6 +44,14 @@
     <string name="hint_search_categories">البحث في التصنيفات…</string>
     <string name="no_information">لا توجد معلومات</string>
 
+    <string name="crash_report_title">حدث خطأ</string>
+    <string name="crash_report_message">إذا تكرر ذلك، أرسل التفاصيل للمسؤول على تيليجرام: @Opt1c_gh0st\nhttps://t.me/Opt1c_gh0st</string>
+    <string name="player_error_contact_line">مشكلة؟ تواصل مع المسؤول على تيليجرام: @Opt1c_gh0st — https://t.me/Opt1c_gh0st</string>
+    <string name="player_error_unavailable">التشغيل غير متاح</string>
+    <string name="player_error_load_failed">تعذر بدء التشغيل</string>
+    <string name="player_help_title">الدعم</string>
+    <string name="player_pip_desc">صورة داخل صورة</string>
+
     <string name="dash_live">بث مباشر</string>
     <string name="dash_vod">أفلام</string>
     <string name="dash_series">مسلسلات</string>

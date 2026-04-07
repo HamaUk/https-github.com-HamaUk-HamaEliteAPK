@@ -10,6 +10,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Rational
+import android.text.method.LinkMovementMethod
+import android.text.util.Linkify
 import android.view.KeyEvent
 import android.view.View
 import android.widget.ImageView
@@ -82,6 +84,7 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
     private lateinit var btnSubtitle: ImageView
     private lateinit var btnSpeed: TextView
     private lateinit var btnQuality: ImageView
+    private lateinit var btnPip: ImageView
     private lateinit var seekBar: SeekBar
     private lateinit var seekSpacer: View
     private lateinit var tvChannel: TextView
@@ -724,9 +727,7 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
                         else -> maxReconnectAttempts
                     }
                     if (scheduleReconnect(allowedAttempts)) return
-                    loadingBar.visibility = View.GONE
-                    errorText.visibility  = View.VISIBLE
-                    errorText.text        = "پەخشەکە بەردەست نییە"
+                    showFinalPlayerError(getString(R.string.player_error_unavailable))
                 }
             })
         }
@@ -995,9 +996,7 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
             tvEpg.text     = "زانیاری نییە"
             cancelBufferingWatchdog()
         } catch (_: Exception) {
-            errorText.text        = "نەتوانرا پەخشەکە باربکرێت"
-            errorText.visibility  = View.VISIBLE
-            loadingBar.visibility = View.GONE
+            showFinalPlayerError(getString(R.string.player_error_load_failed))
             cancelBufferingWatchdog()
         }
     }
@@ -1168,6 +1167,15 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
         } catch (_: Exception) {}
     }
 
+    private fun showFinalPlayerError(message: String) {
+        loadingBar.visibility = View.GONE
+        val full = "$message\n\n${getString(R.string.player_error_contact_line)}"
+        errorText.text = full
+        Linkify.addLinks(errorText, Linkify.WEB_URLS)
+        errorText.movementMethod = LinkMovementMethod.getInstance()
+        errorText.visibility = View.VISIBLE
+    }
+
     // ════════════════════════════════════════════════════════
     //  CONTROLS UI
     // ════════════════════════════════════════════════════════
@@ -1175,6 +1183,7 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
         playerView      = findViewById(R.id.player_view)
         loadingBar      = findViewById(R.id.player_loading)
         errorText       = findViewById(R.id.player_error)
+        errorText.movementMethod = LinkMovementMethod.getInstance()
         topBar          = findViewById(R.id.player_top_bar)
         bottomBar       = findViewById(R.id.player_bottom_bar)
         btnBack         = findViewById(R.id.btn_back)
@@ -1186,6 +1195,7 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
         btnSubtitle     = findViewById(R.id.btn_subtitle)
         btnSpeed        = findViewById(R.id.btn_speed)
         btnQuality      = findViewById(R.id.btn_quality)
+        btnPip          = findViewById(R.id.btn_pip)
         resizeOsd       = findViewById(R.id.resize_osd)
         channelNumberOsd = findViewById(R.id.channel_number_osd)
         seekBar         = findViewById(R.id.seek_bar)
@@ -1201,6 +1211,13 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
 
         btnAudioTrack.visibility = View.GONE
         btnSubtitle.visibility = View.GONE
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+            packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)) {
+            btnPip.visibility = View.VISIBLE
+        } else {
+            btnPip.visibility = View.GONE
+        }
     }
 
     /** Android TV / leanback: SurfaceView avoids TextureView+GPU path that often shows green decode artifacts. */
@@ -1221,6 +1238,16 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
         btnSubtitle.setOnClickListener { showSubtitleSelector() }
         btnSpeed.setOnClickListener { cyclePlaybackSpeed() }
         btnQuality.setOnClickListener { showQualitySelector() }
+        btnPip.setOnClickListener { enterPipIfSupported(); scheduleHideControls() }
+
+        tvClock.setOnLongClickListener {
+            MaterialAlertDialogBuilder(this, ThemeHelper.getMaterialAlertDialogThemeResId(this))
+                .setTitle(R.string.player_help_title)
+                .setMessage(R.string.crash_report_message)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+            true
+        }
 
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {}

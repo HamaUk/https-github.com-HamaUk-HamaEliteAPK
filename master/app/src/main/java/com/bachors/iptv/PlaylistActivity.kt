@@ -62,6 +62,9 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
     /** Stable key for [PlaylistOrderStore] channel order (virtual = internal id, else uppercase display name). */
     private var currentGroupOrderKey: String = ""
 
+    /** Full sidebar list (used to filter categories without losing data). */
+    private val fullCategoryData = mutableListOf<PlaylistData>()
+
     // ── Loading overlay views ────────────────────────────────
     private lateinit var loadingOverlay: View
     private lateinit var loadingProgressFill: View
@@ -94,7 +97,11 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
         wic.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 
-    override fun onResume() { super.onResume(); goFullscreen() }
+    override fun onResume() {
+        super.onResume()
+        goFullscreen()
+        refreshVirtualCategoryCountsIfNeeded()
+    }
 
     // ════════════════════════════════════════════════════════
     //  LOADING OVERLAY
@@ -195,7 +202,8 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
     private fun setupUI() {
         categoryAdapter = PlaylistAdapter(this)
         categoryAdapter.setOnItemClickListener { position ->
-            showGroup(groupNames.getOrNull(position) ?: return@setOnItemClickListener)
+            val item = categoryAdapter.getItem(position)
+            showGroup(categoryGroupKey(item))
         }
         categoryAdapter.setOnItemLongClickListener { position ->
             val item = categoryAdapter.getItem(position)
@@ -577,7 +585,6 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
                 .addAll(groupMap[key] ?: emptyList())
         }
 
-        categoryAdapter.clear()
         val allCount = allChannelsForCurrentType().size
         val favCount = loadFavoritesAsChannels().size
         val histCount = loadContinueWatchingAsChannels().size
@@ -605,7 +612,15 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
                 )
             }
         }
-        categoryAdapter.addAll(groupData)
+        fullCategoryData.clear()
+        fullCategoryData.addAll(groupData)
+        val catQuery = binding.etSearchCategories.text?.toString()?.trim().orEmpty()
+        if (catQuery.isEmpty()) {
+            categoryAdapter.clear()
+            categoryAdapter.addAll(fullCategoryData)
+        } else {
+            filterCategories(catQuery)
+        }
 
         if (groupNames.isNotEmpty()) {
             showGroup(groupNames.first())
@@ -712,15 +727,36 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
         channelAdapter.addAll(applySorting(currentGroupChannels))
     }
 
-    private fun filterCategories(query: String) {
-        if (query.isEmpty()) {
-            channelAdapter.clear()
-            channelAdapter.addAll(applySorting(currentGroupChannels))
-        } else {
-            val filtered = currentGroupChannels.filter { it.name.contains(query, ignoreCase = true) }
-            channelAdapter.clear()
-            channelAdapter.addAll(applySorting(filtered))
+    private fun categoryGroupKey(item: PlaylistData): String =
+        if (item.link.startsWith("__VIRTUAL_")) item.link else item.title
+
+    private fun refreshVirtualCategoryCountsIfNeeded() {
+        if (fullCategoryData.none { it.link == VIRTUAL_ALL }) return
+        if (groupMap.isEmpty()) return
+        for (row in fullCategoryData) {
+            when (row.link) {
+                VIRTUAL_ALL -> row.channel = allChannelsForCurrentType().size.toString()
+                VIRTUAL_FAV -> row.channel = loadFavoritesAsChannels().size.toString()
+                VIRTUAL_CONTINUE -> row.channel = loadContinueWatchingAsChannels().size.toString()
+            }
         }
+        categoryAdapter.refreshVirtualRowDisplays()
+    }
+
+    private fun filterCategories(query: String) {
+        val q = query.trim()
+        if (fullCategoryData.isEmpty()) return
+        if (q.isEmpty()) {
+            categoryAdapter.clear()
+            categoryAdapter.addAll(fullCategoryData)
+            return
+        }
+        val filtered = fullCategoryData.filter { row ->
+            row.title.contains(q, ignoreCase = true) ||
+                row.link.contains(q, ignoreCase = true)
+        }
+        categoryAdapter.clear()
+        categoryAdapter.addAll(filtered)
     }
 
     private fun filterChannels(query: String) {
@@ -793,10 +829,17 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
             groupNames.clear()
             groupNames.addAll(orderedTitles)
 
-            categoryAdapter.clear()
-            categoryAdapter.addAll(orderedTitles.mapNotNull { byTitle[it] })
-
             val orderedList = orderedTitles.mapNotNull { byTitle[it] }
+            fullCategoryData.clear()
+            fullCategoryData.addAll(orderedList)
+            val catQuery = binding.etSearchCategories.text?.toString()?.trim().orEmpty()
+            if (catQuery.isEmpty()) {
+                categoryAdapter.clear()
+                categoryAdapter.addAll(fullCategoryData)
+            } else {
+                filterCategories(catQuery)
+            }
+
             if (orderedList.isNotEmpty()) {
                 val first = orderedList.first()
                 binding.tvHeaderTitle.text = first.title.uppercase()

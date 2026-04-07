@@ -10,8 +10,10 @@ import android.widget.TextView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.bachors.iptv.utils.CrashReportHelper
 import com.bachors.iptv.utils.SharedPrefManager
 import com.bachors.iptv.utils.ThemeHelper
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class SplashActivity : BaseThemedAppCompatActivity() {
 
@@ -65,7 +67,20 @@ class SplashActivity : BaseThemedAppCompatActivity() {
 
         subtitleText.alpha = 0f
 
-        handler.postDelayed(navigateAfterSplashRunnable, splashDelay)
+        if (CrashReportHelper.hasPendingReport(this)) {
+            CrashReportHelper.readPendingReport(this)
+            MaterialAlertDialogBuilder(this, ThemeHelper.getMaterialAlertDialogThemeResId(this))
+                .setTitle(R.string.crash_report_title)
+                .setMessage(R.string.crash_report_message)
+                .setCancelable(false)
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    CrashReportHelper.clearReport(this)
+                    handler.postDelayed(navigateAfterSplashRunnable, 300)
+                }
+                .show()
+        } else {
+            handler.postDelayed(navigateAfterSplashRunnable, splashDelay)
+        }
     }
 
     override fun onDestroy() {

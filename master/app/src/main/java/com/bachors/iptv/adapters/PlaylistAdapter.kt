@@ -33,6 +33,13 @@ class PlaylistAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
         val holder = holder as ViewHolder
 
         holder.tvTitle.text = data.title
+        val count = data.channel.trim()
+        if (count.isNotEmpty()) {
+            holder.tvChannel.text = count
+            holder.tvChannel.visibility = View.VISIBLE
+        } else {
+            holder.tvChannel.visibility = View.GONE
+        }
         holder.itemView.setOnClickListener {
             val pos = holder.bindingAdapterPosition
             if (pos != RecyclerView.NO_POSITION) onItemClick?.invoke(pos)
@@ -61,7 +68,14 @@ class PlaylistAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
 
     fun getItem(position: Int): PlaylistData = allData[position]
 
+    fun refreshVirtualRowDisplays() {
+        for (i in allData.indices) {
+            if (allData[i].link.startsWith("__VIRTUAL_")) notifyItemChanged(i)
+        }
+    }
+
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvTitle: TextView = itemView.findViewById(R.id.title)
+        val tvChannel: TextView = itemView.findViewById(R.id.channel)
     }
 }
