@@ -1,4 +1,4 @@
-﻿package com.optic.tv.adapters
+package com.optic.tv.adapters
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
@@ -15,8 +15,10 @@ import com.optic.tv.R
 import com.optic.tv.models.ChannelsData
 import com.optic.tv.utils.ChannelLogoUri
 import com.google.android.material.card.MaterialCardView
-import com.squareup.picasso.Callback
-import com.squareup.picasso.Picasso
+import coil3.load
+import coil3.dispose
+import coil3.request.error
+import coil3.request.placeholder
 
 class FavoritesAdapter(private val inContext: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val allData = mutableListOf<ChannelsData>()
@@ -35,17 +37,17 @@ class FavoritesAdapter(private val inContext: Context) : RecyclerView.Adapter<Re
         holder.tvName.text = data.name
         val ph = ContextCompat.getDrawable(inContext, R.drawable.load)!!
         if (logoUri != null) {
-            Picasso.get()
-                .load(logoUri)
-                .placeholder(ph)
-                .into(holder.tvLogo, object : Callback {
-                    override fun onSuccess() {}
-                    override fun onError(e: Exception) {
-                        ChannelLogoUri.logLoadFailure(data.logo, e)
+            holder.tvLogo.load(logoUri) {
+                placeholder(ph)
+                error(ph)
+                listener(
+                    onError = { _, result ->
+                        ChannelLogoUri.logLoadFailure(data.logo, result.throwable)
                     }
-                })
+                )
+            }
         } else {
-            Picasso.get().cancelRequest(holder.tvLogo)
+            holder.tvLogo.dispose()
             holder.tvLogo.setImageDrawable(ph)
         }
 

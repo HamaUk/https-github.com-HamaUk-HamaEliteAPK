@@ -1,4 +1,4 @@
-﻿package com.optic.tv.utils
+package com.optic.tv.utils
 
 import android.net.Uri
 import android.util.Log
@@ -34,7 +34,7 @@ object ChannelLogoUri {
         }
     }
 
-    fun logLoadFailure(raw: String, e: Exception?) {
+    fun logLoadFailure(raw: String, e: Throwable?) {
         Log.w(TAG, "logo load failed: ${raw.trim().take(96)}", e)
     }
 }

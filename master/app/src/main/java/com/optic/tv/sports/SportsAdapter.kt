@@ -1,4 +1,4 @@
-﻿package com.optic.tv.sports
+package com.optic.tv.sports
 
 import android.view.LayoutInflater
 import android.view.View
@@ -8,7 +8,10 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.optic.tv.R
-import com.squareup.picasso.Picasso
+import coil3.load
+import coil3.request.crossfade
+import coil3.request.error
+import coil3.dispose
 
 class SportsAdapter(
     private val items: List<SportsListItem>
@@ -45,8 +48,8 @@ class SportsAdapter(
     override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
         super.onViewRecycled(holder)
         if (holder is MatchViewHolder) {
-            Picasso.get().cancelRequest(holder.ivHomeLogo)
-            Picasso.get().cancelRequest(holder.ivAwayLogo)
+            holder.ivHomeLogo.dispose()
+            holder.ivAwayLogo.dispose()
         }
     }
 
@@ -60,10 +63,10 @@ class SportsAdapter(
             tvMatchCount.text = header.matchCount.toString()
             val icon = header.leagueIcon
             if (!icon.isNullOrBlank()) {
-                Picasso.get()
-                    .load(icon)
-                    .error(R.drawable.ic_sports_ball)
-                    .into(ivLeagueIcon)
+                ivLeagueIcon.load(icon) {
+                    crossfade(true)
+                    error(R.drawable.ic_sports_ball)
+                }
             } else {
                 ivLeagueIcon.setImageResource(R.drawable.ic_sports_ball)
             }
@@ -163,10 +166,10 @@ class SportsAdapter(
 
         private fun loadLogo(url: String, target: ImageView) {
             if (url.isNotBlank()) {
-                Picasso.get()
-                    .load(url)
-                    .error(R.drawable.ic_sports_ball)
-                    .into(target)
+                target.load(url) {
+                    crossfade(true)
+                    error(R.drawable.ic_sports_ball)
+                }
             } else {
                 target.setImageResource(R.drawable.ic_sports_ball)
             }

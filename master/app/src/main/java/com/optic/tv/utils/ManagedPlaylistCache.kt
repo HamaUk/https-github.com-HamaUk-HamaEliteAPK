@@ -1,4 +1,4 @@
-﻿package com.optic.tv.utils
+package com.optic.tv.utils
 
 import android.content.Context
 import com.optic.tv.models.ChannelsData
@@ -46,7 +46,7 @@ object ManagedPlaylistCache {
     }
 
     /**
-     * Fills [groupMap] from managed items (skips hidden). Logos use [ManagedChannelItem.logo] for the app list / Picasso.
+     * Fills [groupMap] from managed items (skips hidden). Logos use [ManagedChannelItem.logo] for the app list / Coil.
      */
     fun fillGroupMap(
         ctx: Context,

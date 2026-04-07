@@ -1,4 +1,4 @@
-﻿package com.optic.tv.adapters
+package com.optic.tv.adapters
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
@@ -22,8 +22,10 @@ import com.optic.tv.utils.ChannelLogoUri
 import com.optic.tv.utils.PlayerLauncher
 import com.optic.tv.utils.SharedPrefManager
 import com.google.android.material.card.MaterialCardView
-import com.squareup.picasso.Callback
-import com.squareup.picasso.Picasso
+import coil3.load
+import coil3.dispose
+import coil3.request.error
+import coil3.request.placeholder
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -183,21 +185,18 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
             iv.clearColorFilter()
             iv.imageTintList = null
             iv.scaleType = ImageView.ScaleType.CENTER_CROP
-            Picasso.get()
-                .load(uri)
-                .resize(200, 200)
-                .centerCrop()
-                .onlyScaleDown()
-                .placeholder(R.drawable.ic_live)
-                .error(R.drawable.ic_live)
-                .into(iv, object : Callback {
-                    override fun onSuccess() {}
-                    override fun onError(e: Exception) {
-                        ChannelLogoUri.logLoadFailure(logoRaw, e)
+            iv.load(uri) {
+                // scaleType handles the cropping, just need size hint if desired but let Coil default
+                placeholder(R.drawable.ic_live)
+                error(R.drawable.ic_live)
+                listener(
+                    onError = { _, result ->
+                        ChannelLogoUri.logLoadFailure(logoRaw, result.throwable)
                     }
-                })
+                )
+            }
         } else {
-            Picasso.get().cancelRequest(iv)
+            iv.dispose()
             iv.scaleType = ImageView.ScaleType.CENTER_INSIDE
             iv.setImageResource(R.drawable.ic_live)
             iv.imageTintList = fallbackTint
