@@ -33,7 +33,7 @@ class MainActivity : BaseThemedAppCompatActivity() {
         sharedPrefManager = SharedPrefManager(this)
 
         binding.txtStatus.visibility = View.GONE
-        binding.progressSync.visibility = View.GONE
+        binding.rowSyncProgress.visibility = View.GONE
 
         binding.txtDeviceRef.text = getString(R.string.main_device_ref, ActivationHelper.getDeviceCode(this))
 
@@ -50,10 +50,8 @@ class MainActivity : BaseThemedAppCompatActivity() {
 
     private fun performGlobalSync() {
         binding.btnStart.visibility = View.GONE
-        binding.progressSync.visibility = View.VISIBLE
-        binding.txtStatus.visibility = View.VISIBLE
-        binding.txtStatus.text = getString(R.string.main_sync_checking)
-        binding.txtStatus.setTextColor(Color.WHITE)
+        binding.rowSyncProgress.visibility = View.VISIBLE
+        binding.txtStatus.visibility = View.GONE
 
         DeviceSyncCoordinator.loadEffectivePlaylist(
             this,
@@ -123,26 +121,29 @@ class MainActivity : BaseThemedAppCompatActivity() {
     }
 
     private fun showActivationRequired() {
-        binding.progressSync.visibility = View.GONE
+        binding.rowSyncProgress.visibility = View.GONE
         binding.btnStart.visibility = View.VISIBLE
         binding.btnStart.setText(R.string.activation_btn_retry)
+        binding.txtStatus.visibility = View.VISIBLE
         binding.txtStatus.text = getString(R.string.main_playlist_unavailable)
         binding.txtStatus.setTextColor(Color.parseColor("#FF4B2B"))
     }
 
     private fun showExpired(expiry: Long) {
-        binding.progressSync.visibility = View.GONE
+        binding.rowSyncProgress.visibility = View.GONE
         binding.btnStart.visibility = View.VISIBLE
         binding.btnStart.setText(R.string.activation_btn_retry)
+        binding.txtStatus.visibility = View.VISIBLE
         binding.txtStatus.text = getString(R.string.main_subscription_ended)
         binding.txtStatus.setTextColor(Color.parseColor("#FF4B2B"))
     }
 
     private fun showError(msg: String) {
-        binding.progressSync.visibility = View.GONE
+        binding.rowSyncProgress.visibility = View.GONE
         binding.btnStart.visibility = View.VISIBLE
         binding.btnStart.setText(R.string.activation_btn_retry)
+        binding.txtStatus.visibility = View.VISIBLE
         binding.txtStatus.text = msg
-        binding.txtStatus.setTextColor(Color.YELLOW)
+        binding.txtStatus.setTextColor(Color.parseColor("#FFC107"))
     }
 }

@@ -37,6 +37,10 @@
     <string name="iptvorg">IPTV-ORG</string>
     <string name="m3u">ملف M3U</string>
     <string name="favorite">المفضلة</string>
+    <string name="category_all_channels">جميع القنوات</string>
+    <string name="category_favorites">المفضلة</string>
+    <string name="category_continue_watching">متابعة المشاهدة</string>
+    <string name="channel_playing_badge">قيد التشغيل</string>
     <string name="hint_search_categories">البحث في التصنيفات…</string>
     <string name="no_information">لا توجد معلومات</string>
 

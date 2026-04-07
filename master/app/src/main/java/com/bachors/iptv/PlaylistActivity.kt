@@ -18,6 +18,7 @@ import com.bachors.iptv.adapters.PlaylistAdapter
 import com.bachors.iptv.databinding.ActivityPlaylistBinding
 import com.bachors.iptv.models.ChannelsData
 import com.bachors.iptv.models.PlaylistData
+import com.bachors.iptv.utils.ContinueWatchingStore
 import com.bachors.iptv.utils.HttpHandler
 import com.bachors.iptv.utils.ManagedPlaylistCache
 import com.bachors.iptv.utils.M3uPlaylistCache
@@ -37,6 +38,9 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
 
     companion object {
         private const val PROGRESS_UPDATE_INTERVAL = 200L
+        private const val VIRTUAL_ALL = "__VIRTUAL_ALL__"
+        private const val VIRTUAL_FAV = "__VIRTUAL_FAV__"
+        private const val VIRTUAL_CONTINUE = "__VIRTUAL_CONTINUE__"
     }
 
     private lateinit var binding: ActivityPlaylistBinding
@@ -54,6 +58,9 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
     private var currentType = "live"
     private var currentSortMode = SortMode.DEFAULT
     private var lastProgressUpdate = 0L
+    private var currentCategoryIsVirtual = false
+    /** Stable key for [PlaylistOrderStore] channel order (virtual = internal id, else uppercase display name). */
+    private var currentGroupOrderKey: String = ""
 
     // ── Loading overlay views ────────────────────────────────
     private lateinit var loadingOverlay: View
@@ -191,7 +198,19 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
             showGroup(groupNames.getOrNull(position) ?: return@setOnItemClickListener)
         }
         categoryAdapter.setOnItemLongClickListener { position ->
-            val title = categoryAdapter.getItem(position).title
+            val item = categoryAdapter.getItem(position)
+            if (item.link.startsWith("__VIRTUAL_")) {
+                PlaylistOrderStore.moveVirtualGroupToTop(
+                    this,
+                    currentType,
+                    item.link,
+                    listOf(VIRTUAL_ALL, VIRTUAL_FAV, VIRTUAL_CONTINUE)
+                )
+                Toast.makeText(this, "گرووپەکە بڕیاردرا لە سەرەوە", Toast.LENGTH_SHORT).show()
+                buildAndShowGroups()
+                return@setOnItemLongClickListener
+            }
+            val title = item.title
             if (title.isBlank()) return@setOnItemLongClickListener
             PlaylistOrderStore.moveGroupToTop(this, currentType, title)
             Toast.makeText(this, "گرووپەکە بڕیاردرا لە سەرەوە", Toast.LENGTH_SHORT).show()
@@ -214,7 +233,9 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
             }
         )
         channelAdapter.setOnChannelLongClickListener { ch ->
-            val g = binding.tvHeaderTitle.text?.toString()?.trim().orEmpty()
+            val g = currentGroupOrderKey.ifEmpty {
+                binding.tvHeaderTitle.text?.toString()?.trim().orEmpty()
+            }
             if (g.isEmpty()) return@setOnChannelLongClickListener
             PlaylistOrderStore.moveChannelToTop(this, currentType, g, ch.url)
             Toast.makeText(this, "کەناڵەکە لە سەرەوە", Toast.LENGTH_SHORT).show()
@@ -542,7 +563,12 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
         }
 
         val naturalOrder = keysToShow.map { it.substringAfter("|") }.distinct().sorted()
-        groupNames.addAll(PlaylistOrderStore.applyGroupOrder(this, currentType, naturalOrder))
+        val orderedReal = PlaylistOrderStore.applyGroupOrder(this, currentType, naturalOrder)
+        val virtualKeys = listOf(VIRTUAL_ALL, VIRTUAL_FAV, VIRTUAL_CONTINUE)
+        val orderedVirtual = PlaylistOrderStore.applyVirtualGroupOrder(this, currentType, virtualKeys)
+
+        groupNames.addAll(orderedVirtual)
+        groupNames.addAll(orderedReal)
 
         displayGroupMap.clear()
         for (key in keysToShow) {
@@ -552,8 +578,32 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
         }
 
         categoryAdapter.clear()
+        val allCount = allChannelsForCurrentType().size
+        val favCount = loadFavoritesAsChannels().size
+        val histCount = loadContinueWatchingAsChannels().size
         val groupData = groupNames.map { name ->
-            PlaylistData(title = name, link = "", channel = (displayGroupMap[name]?.size ?: 0).toString())
+            when (name) {
+                VIRTUAL_ALL -> PlaylistData(
+                    title = getString(R.string.category_all_channels),
+                    link = VIRTUAL_ALL,
+                    channel = allCount.toString()
+                )
+                VIRTUAL_FAV -> PlaylistData(
+                    title = getString(R.string.category_favorites),
+                    link = VIRTUAL_FAV,
+                    channel = favCount.toString()
+                )
+                VIRTUAL_CONTINUE -> PlaylistData(
+                    title = getString(R.string.category_continue_watching),
+                    link = VIRTUAL_CONTINUE,
+                    channel = histCount.toString()
+                )
+                else -> PlaylistData(
+                    title = name,
+                    link = "",
+                    channel = (displayGroupMap[name]?.size ?: 0).toString()
+                )
+            }
         }
         categoryAdapter.addAll(groupData)
 
@@ -562,15 +612,56 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
             binding.rvCategories.post {
                 binding.rvCategories.layoutManager?.findViewByPosition(0)?.requestFocus()
             }
-        } else if (currentType == "vod" || currentType == "series") {
-            currentGroupChannels.clear()
-            channelAdapter.clear()
-            binding.tvHeaderTitle.text = when (currentType) {
-                "vod" -> "فیلمەکان"
-                "series" -> "زنجیرەکان"
-                else -> binding.tvHeaderTitle.text
+        }
+    }
+
+    private fun allChannelsForCurrentType(): List<ChannelsData> {
+        val matchingKeys = when (currentType) {
+            "vod" -> groupMap.keys.filter { it.startsWith("vod|") }
+            "series" -> groupMap.keys.filter { it.startsWith("series|") }
+            else -> groupMap.keys.filter { it.startsWith("live|") }
+        }
+        val keysToShow = when (currentType) {
+            "vod", "series" -> matchingKeys
+            else -> matchingKeys.ifEmpty { groupMap.keys.toList() }
+        }
+        val seen = LinkedHashSet<String>()
+        val out = mutableListOf<ChannelsData>()
+        for (key in keysToShow) {
+            for (ch in groupMap[key] ?: emptyList()) {
+                if (seen.add(ch.url)) out.add(ch)
             }
         }
+        return out
+    }
+
+    private fun loadFavoritesAsChannels(): List<ChannelsData> {
+        return try {
+            val listType = object : TypeToken<List<ChannelsData>>() {}.type
+            (Gson().fromJson<List<ChannelsData>>(sharedPrefManager.getSpFavorites(), listType) ?: emptyList())
+                .filter { it.url.isNotBlank() }
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    private fun loadContinueWatchingAsChannels(): List<ChannelsData> {
+        val type = when (currentType) {
+            "vod" -> "vod"
+            "series" -> "series"
+            else -> "live"
+        }
+        return ContinueWatchingStore.getAll(this)
+            .filter { it.contentType == type }
+            .map { e ->
+                ChannelsData(
+                    name = e.title,
+                    logo = "",
+                    url = e.url,
+                    userAgent = "",
+                    referrer = ""
+                )
+            }
     }
 
     private fun extractAttr(line: String, attr: String): String? {
@@ -594,9 +685,28 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
     //  GROUP DISPLAY
     // ════════════════════════════════════════════════════════
     private fun showGroup(name: String) {
-        val channels = displayGroupMap[name] ?: groupMap[name] ?: return
+        val channels: List<ChannelsData> = when (name) {
+            VIRTUAL_ALL -> allChannelsForCurrentType()
+            VIRTUAL_FAV -> loadFavoritesAsChannels()
+            VIRTUAL_CONTINUE -> loadContinueWatchingAsChannels()
+            else -> displayGroupMap[name] ?: groupMap[name] ?: run {
+                currentCategoryIsVirtual = false
+                currentGroupOrderKey = ""
+                return
+            }
+        }
+        currentCategoryIsVirtual = name == VIRTUAL_ALL || name == VIRTUAL_FAV || name == VIRTUAL_CONTINUE
+        currentGroupOrderKey = when (name) {
+            VIRTUAL_ALL, VIRTUAL_FAV, VIRTUAL_CONTINUE -> name
+            else -> name.uppercase()
+        }
         currentGroupChannels = channels.toMutableList()
-        binding.tvHeaderTitle.text = name.uppercase()
+        binding.tvHeaderTitle.text = when (name) {
+            VIRTUAL_ALL -> getString(R.string.category_all_channels)
+            VIRTUAL_FAV -> getString(R.string.category_favorites)
+            VIRTUAL_CONTINUE -> getString(R.string.category_continue_watching)
+            else -> name
+        }.uppercase()
         binding.etSearchChannels.setText("")
         channelAdapter.clear()
         channelAdapter.addAll(applySorting(currentGroupChannels))
@@ -646,8 +756,11 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
         val genericHeaders = setOf("فیلمەکان", "زنجیرەکان", "پەخشی ڕاستەوخۆ")
         return when (currentSortMode) {
             SortMode.DEFAULT -> {
-                if (header.isEmpty() || header in genericHeaders) list
-                else PlaylistOrderStore.applyChannelOrder(this, currentType, header, list)
+                when {
+                    header.isEmpty() || currentGroupOrderKey.isEmpty() -> list
+                    header in genericHeaders && !currentCategoryIsVirtual -> list
+                    else -> PlaylistOrderStore.applyChannelOrder(this, currentType, currentGroupOrderKey, list)
+                }
             }
             SortMode.NAME_AZ -> list.sortedBy { it.name.lowercase() }
             SortMode.NAME_ZA -> list.sortedByDescending { it.name.lowercase() }

@@ -1,18 +1,11 @@
 package com.bachors.iptv.utils
 
 import android.util.Log
+import okhttp3.Request
 import java.io.BufferedInputStream
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.net.HttpURLConnection
-import java.net.MalformedURLException
-import java.net.ProtocolException
-import java.net.URL
 
 class HttpHandler {
     companion object {
@@ -20,23 +13,20 @@ class HttpHandler {
     }
 
     fun makeServiceCall(reqUrl: String?): String? {
-        var response: String? = null
-        try {
-            val url = URL(reqUrl)
-            val conn = url.openConnection() as HttpURLConnection
-            conn.requestMethod = "GET"
-            val inputStream = BufferedInputStream(conn.inputStream)
-            response = convertStreamToString(inputStream)
-        } catch (e: MalformedURLException) {
-            Log.e(TAG, "MalformedURLException: ${e.message}")
-        } catch (e: ProtocolException) {
-            Log.e(TAG, "ProtocolException: ${e.message}")
-        } catch (e: IOException) {
-            Log.e(TAG, "IOException: ${e.message}")
+        if (reqUrl.isNullOrBlank()) return null
+        return try {
+            val request = Request.Builder().url(reqUrl).build()
+            AppHttp.client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    Log.e(TAG, "makeServiceCall HTTP ${response.code} for $reqUrl")
+                    return null
+                }
+                response.body?.string()
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Exception: ${e.message}")
+            Log.e(TAG, "makeServiceCall: ${e.message}", e)
+            null
         }
-        return response
     }
 
     /**
@@ -47,41 +37,33 @@ class HttpHandler {
         reqUrl: String?,
         onProgress: (bytesRead: Long, totalBytes: Long) -> Unit
     ): String? {
-        var response: String? = null
-        try {
-            val url = URL(reqUrl)
-            val conn = url.openConnection() as HttpURLConnection
-            conn.requestMethod = "GET"
-            conn.instanceFollowRedirects = true
-            conn.connectTimeout = 60_000
-            conn.readTimeout = 600_000
-            conn.connect()
-
-            val totalBytes = conn.contentLength.toLong()
-            val inputStream = BufferedInputStream(conn.inputStream, 16384)
-            val sb = StringBuilder()
-            val buffer = ByteArray(8192)
-            var bytesRead: Long = 0
-
-            val reader = inputStream.buffered()
-            var chunkSize: Int
-            while (reader.read(buffer).also { chunkSize = it } != -1) {
-                sb.append(String(buffer, 0, chunkSize, Charsets.UTF_8))
-                bytesRead += chunkSize
-                onProgress(bytesRead, totalBytes)
+        if (reqUrl.isNullOrBlank()) return null
+        return try {
+            val request = Request.Builder().url(reqUrl).build()
+            AppHttp.client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    Log.e(TAG, "makeServiceCallWithProgress HTTP ${response.code} for $reqUrl")
+                    return null
+                }
+                val body = response.body ?: return null
+                val totalBytes = body.contentLength().let { if (it > 0) it else -1L }
+                val inputStream = BufferedInputStream(body.byteStream(), 16384)
+                val sb = StringBuilder()
+                val buffer = ByteArray(8192)
+                var bytesRead: Long = 0
+                var chunkSize: Int
+                while (inputStream.read(buffer).also { chunkSize = it } != -1) {
+                    sb.append(String(buffer, 0, chunkSize, Charsets.UTF_8))
+                    bytesRead += chunkSize
+                    onProgress(bytesRead, totalBytes)
+                }
+                inputStream.close()
+                sb.toString()
             }
-            inputStream.close()
-            response = sb.toString()
-        } catch (e: MalformedURLException) {
-            Log.e(TAG, "MalformedURLException: ${e.message}")
-        } catch (e: ProtocolException) {
-            Log.e(TAG, "ProtocolException: ${e.message}")
-        } catch (e: IOException) {
-            Log.e(TAG, "IOException: ${e.message}")
         } catch (e: Exception) {
-            Log.e(TAG, "Exception: ${e.message}")
+            Log.e(TAG, "makeServiceCallWithProgress: ${e.message}", e)
+            null
         }
-        return response
     }
 
     /**
@@ -94,67 +76,35 @@ class HttpHandler {
         onProgress: (bytesRead: Long, totalBytes: Long) -> Unit
     ): Boolean {
         if (reqUrl.isNullOrBlank()) return false
-        var conn: HttpURLConnection? = null
         return try {
-            val url = URL(reqUrl)
-            conn = url.openConnection() as HttpURLConnection
-            conn.requestMethod = "GET"
-            conn.instanceFollowRedirects = true
-            conn.connectTimeout = 60_000
-            // Large provider playlists can pause mid-download; short read timeout was cutting transfers (~60%).
-            conn.readTimeout = 600_000
-            conn.connect()
-            val total = conn.contentLength.toLong().let { if (it > 0) it else -1L }
-            dest.parentFile?.mkdirs()
-            BufferedInputStream(conn.inputStream, 32768).use { input ->
-                BufferedOutputStream(FileOutputStream(dest), 32768).use { output ->
-                    val buffer = ByteArray(32768)
-                    var bytesRead = 0L
-                    while (true) {
-                        val n = input.read(buffer)
-                        if (n <= 0) break
-                        output.write(buffer, 0, n)
-                        bytesRead += n
-                        onProgress(bytesRead, total)
+            val request = Request.Builder().url(reqUrl).build()
+            AppHttp.client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    Log.e(TAG, "downloadToFile HTTP ${response.code} for $reqUrl")
+                    return false
+                }
+                val body = response.body ?: return false
+                val total = body.contentLength().let { if (it > 0) it else -1L }
+                dest.parentFile?.mkdirs()
+                BufferedInputStream(body.byteStream(), 32768).use { input ->
+                    BufferedOutputStream(FileOutputStream(dest), 32768).use { output ->
+                        val buffer = ByteArray(32768)
+                        var bytesRead = 0L
+                        while (true) {
+                            val n = input.read(buffer)
+                            if (n <= 0) break
+                            output.write(buffer, 0, n)
+                            bytesRead += n
+                            onProgress(bytesRead, total)
+                        }
                     }
                 }
+                dest.length() > 0L
             }
-            dest.length() > 0L
-        } catch (e: MalformedURLException) {
-            Log.e(TAG, "downloadToFile MalformedURL: ${e.message}")
-            false
-        } catch (e: ProtocolException) {
-            Log.e(TAG, "downloadToFile Protocol: ${e.message}")
-            false
-        } catch (e: IOException) {
-            Log.e(TAG, "downloadToFile IO: ${e.message}")
-            false
         } catch (e: Exception) {
-            Log.e(TAG, "downloadToFile: ${e.message}")
+            Log.e(TAG, "downloadToFile: ${e.message}", e)
             false
-        } finally {
-            conn?.disconnect()
         }
     }
 
-    private fun convertStreamToString(inputStream: InputStream): String {
-        val reader = BufferedReader(InputStreamReader(inputStream))
-        val sb = StringBuilder()
-
-        try {
-            var line: String?
-            while (reader.readLine().also { line = it } != null) {
-                sb.append(line).append('\n')
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } finally {
-            try {
-                inputStream.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-        }
-        return sb.toString()
-    }
 }

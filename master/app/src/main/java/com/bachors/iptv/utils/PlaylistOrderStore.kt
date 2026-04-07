@@ -7,7 +7,8 @@ import com.google.gson.annotations.SerializedName
 
 private data class PlaylistCustomOrder(
     @SerializedName("g") val groupOrderByType: MutableMap<String, MutableList<String>> = mutableMapOf(),
-    @SerializedName("c") val channelUrlsByTypeAndGroup: MutableMap<String, MutableMap<String, MutableList<String>>> = mutableMapOf()
+    @SerializedName("c") val channelUrlsByTypeAndGroup: MutableMap<String, MutableMap<String, MutableList<String>>> = mutableMapOf(),
+    @SerializedName("v") val virtualGroupOrderByType: MutableMap<String, MutableList<String>> = mutableMapOf()
 )
 
 object PlaylistOrderStore {
@@ -17,7 +18,12 @@ object PlaylistOrderStore {
         val raw = SharedPrefManager(ctx).getSpString(SharedPrefManager.SP_PLAYLIST_CUSTOM_ORDER)
         if (raw.isBlank()) return PlaylistCustomOrder()
         return try {
-            gson.fromJson(raw, PlaylistCustomOrder::class.java) ?: PlaylistCustomOrder()
+            val parsed = gson.fromJson(raw, PlaylistCustomOrder::class.java)
+            PlaylistCustomOrder(
+                groupOrderByType = parsed?.groupOrderByType ?: mutableMapOf(),
+                channelUrlsByTypeAndGroup = parsed?.channelUrlsByTypeAndGroup ?: mutableMapOf(),
+                virtualGroupOrderByType = parsed?.virtualGroupOrderByType ?: mutableMapOf()
+            )
         } catch (_: Exception) {
             PlaylistCustomOrder()
         }
@@ -33,6 +39,28 @@ object PlaylistOrderStore {
         list.remove(groupDisplayName)
         list.add(0, groupDisplayName)
         save(ctx, o)
+    }
+
+    /** Reorder the three built-in categories (All / Favorites / Continue watching). Keys must match PlaylistActivity constants. */
+    fun moveVirtualGroupToTop(ctx: Context, typeKey: String, virtualKey: String, canonicalVirtualKeys: List<String>) {
+        if (virtualKey !in canonicalVirtualKeys) return
+        val o = load(ctx)
+        val list = o.virtualGroupOrderByType.getOrPut(typeKey) { canonicalVirtualKeys.toMutableList() }
+        for (k in canonicalVirtualKeys) {
+            if (k !in list) list.add(k)
+        }
+        list.remove(virtualKey)
+        list.add(0, virtualKey)
+        save(ctx, o)
+    }
+
+    fun applyVirtualGroupOrder(ctx: Context, typeKey: String, canonicalVirtualKeys: List<String>): List<String> {
+        val stored = load(ctx).virtualGroupOrderByType[typeKey]
+        if (stored.isNullOrEmpty()) return canonicalVirtualKeys
+        val allowed = canonicalVirtualKeys.toSet()
+        val head = stored.filter { it in allowed }
+        val tail = canonicalVirtualKeys.filter { it !in head.toSet() }
+        return head + tail
     }
 
     fun moveChannelToTop(ctx: Context, typeKey: String, groupDisplayName: String, url: String) {

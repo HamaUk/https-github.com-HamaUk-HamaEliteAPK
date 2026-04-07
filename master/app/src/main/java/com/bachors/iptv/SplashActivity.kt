@@ -5,12 +5,12 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.bachors.iptv.utils.SharedPrefManager
 import com.bachors.iptv.utils.ThemeHelper
 
 class SplashActivity : BaseThemedAppCompatActivity() {
@@ -19,9 +19,15 @@ class SplashActivity : BaseThemedAppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var isCancelled = false
 
-    private val navigateToMainRunnable = Runnable {
+    private val navigateAfterSplashRunnable = Runnable {
         if (!isCancelled) {
-            startActivity(Intent(this, MainActivity::class.java))
+            val prefs = SharedPrefManager(this)
+            val next = if (prefs.shouldSkipActivationScreen()) {
+                Intent(this, DashboardActivity::class.java)
+            } else {
+                Intent(this, MainActivity::class.java)
+            }
+            startActivity(next)
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
             finish()
         }
@@ -59,20 +65,19 @@ class SplashActivity : BaseThemedAppCompatActivity() {
 
         subtitleText.alpha = 0f
 
-        // Schedule navigation to MainActivity
-        handler.postDelayed(navigateToMainRunnable, splashDelay)
+        handler.postDelayed(navigateAfterSplashRunnable, splashDelay)
     }
 
     override fun onDestroy() {
         isCancelled = true
-        handler.removeCallbacks(navigateToMainRunnable)
+        handler.removeCallbacks(navigateAfterSplashRunnable)
         super.onDestroy()
     }
 
     override fun onBackPressed() {
         super.onBackPressed()
         isCancelled = true
-        handler.removeCallbacks(navigateToMainRunnable)
+        handler.removeCallbacks(navigateAfterSplashRunnable)
     }
 
     private fun goFullscreen() {

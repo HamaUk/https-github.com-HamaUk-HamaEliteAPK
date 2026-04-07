@@ -37,6 +37,10 @@
     <string name="iptvorg">IPTV-ORG</string>
     <string name="m3u">M3U file</string>
     <string name="favorite">Favorites</string>
+    <string name="category_all_channels">All channels</string>
+    <string name="category_favorites">Favorites</string>
+    <string name="category_continue_watching">Continue watching</string>
+    <string name="channel_playing_badge">Di lê de</string>
     <string name="hint_search_categories">Search categories…</string>
     <string name="no_information">No information</string>
 

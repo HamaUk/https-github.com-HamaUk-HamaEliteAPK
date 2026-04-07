@@ -4,6 +4,9 @@ import android.content.Context
 import android.content.SharedPreferences
 
 class SharedPrefManager(context: Context) {
+
+    private val appContext: Context = context.applicationContext
+
     companion object {
         const val SP_SS_APP = "spIPTV"
         const val SP_PLAYLIST = "spPlaylist"
@@ -52,7 +55,7 @@ class SharedPrefManager(context: Context) {
         const val LANGUAGE_KMR = "kmr"
     }
 
-    private val sp: SharedPreferences = context.getSharedPreferences(SP_SS_APP, Context.MODE_PRIVATE)
+    private val sp: SharedPreferences = appContext.getSharedPreferences(SP_SS_APP, Context.MODE_PRIVATE)
     private val spEditor: SharedPreferences.Editor = sp.edit()
 
     fun saveSPString(keySP: String, value: String) {
@@ -108,6 +111,19 @@ class SharedPrefManager(context: Context) {
 
     fun recordSuccessfulSync() {
         saveSPLong(SP_LAST_SYNC_SUCCESS_AT, System.currentTimeMillis())
+    }
+
+    /**
+     * True after the user completed "Start" / sync at least once and playlist config still exists.
+     * Used to open [DashboardActivity] directly from splash instead of [MainActivity] every launch.
+     */
+    fun shouldSkipActivationScreen(): Boolean {
+        if (getSpLong(SP_LAST_SYNC_SUCCESS_AT, 0L) <= 0L) return false
+        val m3u = getSpM3uDirect().trim()
+        if (m3u.isNotEmpty()) return true
+        if (ManagedPlaylistCache.hasCachedItems(appContext)) return true
+        val pl = getSpPlaylist().trim()
+        return pl.isNotEmpty() && pl != "[]"
     }
 
     fun getThemeMode(): String =

@@ -60,4 +60,7 @@
     <color name="quran_ayah_playing">#01D192</color>
     <color name="quran_player_bar">#14182A</color>
     <color name="quran_header_scrim">#3314182A</color>
+
+    <color name="channel_row_focus_bg">#1A2233</color>
+    <color name="channel_logo_well">#0E1018</color>
 </resources>

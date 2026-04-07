@@ -11,11 +11,13 @@ object GlobalSync {
 
     fun retrofit(): Retrofit = Retrofit.Builder()
         .baseUrl(FIREBASE_RTDB_BASE)
+        .client(AppHttp.client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
     fun worldTimeRetrofit(): Retrofit = Retrofit.Builder()
         .baseUrl("http://worldtimeapi.org/")
+        .client(AppHttp.client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 

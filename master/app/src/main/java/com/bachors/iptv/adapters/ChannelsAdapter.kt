@@ -30,6 +30,12 @@ import org.json.JSONObject
 class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val allData = mutableListOf<ChannelsData>()
     private lateinit var sharedPrefManager: SharedPrefManager
+
+    private val cardBgDefault = ContextCompat.getColor(inContext, R.color.sports_card)
+    private val cardBgFocus = ContextCompat.getColor(inContext, R.color.channel_row_focus_bg)
+    private val strokeDefault = ContextCompat.getColor(inContext, R.color.sports_card_stroke)
+    private val strokePlaying = ContextCompat.getColor(inContext, R.color.crimson_mid)
+    private val strokeFocus = Color.parseColor("#E53935")
     private var onBeforePlay: (() -> Unit)? = null
     private var isLivePlayback: Boolean = true
     private var contentTypeExtra: String = "live"
@@ -68,17 +74,16 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
         val currentUrl = sharedPrefManager.getSpCurrentUrl()
         val isPlaying = currentUrl.isNotEmpty() && currentUrl == data.url
         h.tvPlayingBadge.visibility = if (isPlaying) View.VISIBLE else View.GONE
-        h.cardRoot.strokeColor = ContextCompat.getColor(
-            inContext,
-            if (isPlaying) R.color.vu_purple else R.color.white_opacity_10
-        )
+
+        h.cardRoot.setCardBackgroundColor(cardBgDefault)
+        h.cardRoot.strokeColor = if (isPlaying) strokePlaying else strokeDefault
         h.cardRoot.strokeWidth = if (isPlaying) 2 else 1
 
         h.cardRoot.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
-                h.cardRoot.strokeColor = Color.parseColor("#E53935")
+                h.cardRoot.strokeColor = strokeFocus
                 h.cardRoot.strokeWidth = 2
-                h.cardRoot.setCardBackgroundColor(Color.parseColor("#221111"))
+                h.cardRoot.setCardBackgroundColor(cardBgFocus)
                 AnimatorSet().apply {
                     playTogether(
                         ObjectAnimator.ofFloat(h.cardRoot, View.SCALE_X, 1.02f),
@@ -89,12 +94,9 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
                 }
             } else {
                 val stillPlaying = sharedPrefManager.getSpCurrentUrl().let { it.isNotEmpty() && it == data.url }
-                h.cardRoot.strokeColor = ContextCompat.getColor(
-                    inContext,
-                    if (stillPlaying) R.color.vu_purple else R.color.white_opacity_10
-                )
+                h.cardRoot.strokeColor = if (stillPlaying) strokePlaying else strokeDefault
                 h.cardRoot.strokeWidth = if (stillPlaying) 2 else 1
-                h.cardRoot.setCardBackgroundColor(Color.parseColor("#141414"))
+                h.cardRoot.setCardBackgroundColor(cardBgDefault)
                 AnimatorSet().apply {
                     playTogether(
                         ObjectAnimator.ofFloat(h.cardRoot, View.SCALE_X, 1.0f),
@@ -183,10 +185,11 @@ class ChannelsAdapter(private val inContext: Context) : RecyclerView.Adapter<Rec
             iv.scaleType = ImageView.ScaleType.CENTER_CROP
             Picasso.get()
                 .load(uri)
+                .resize(200, 200)
+                .centerCrop()
+                .onlyScaleDown()
                 .placeholder(R.drawable.ic_live)
                 .error(R.drawable.ic_live)
-                .fit()
-                .centerCrop()
                 .into(iv, object : Callback {
                     override fun onSuccess() {}
                     override fun onError(e: Exception) {

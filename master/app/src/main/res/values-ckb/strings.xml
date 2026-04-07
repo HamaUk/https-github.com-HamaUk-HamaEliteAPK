@@ -29,6 +29,10 @@
     <string name="iptvorg">IPTV-ORG</string>
     <string name="m3u">پەڕگی M3U</string>
     <string name="favorite">دڵخوازەکان</string>
+    <string name="category_all_channels">هەموو کەناڵەکان</string>
+    <string name="category_favorites">دڵخوازەکان</string>
+    <string name="category_continue_watching">بینراوەکان</string>
+    <string name="channel_playing_badge">لە پەخشداندا</string>
     <string name="hint_search_categories">گەڕان لە هاوپۆلەکان…</string>
     <string name="no_information">زانیاری نییە</string>
 
