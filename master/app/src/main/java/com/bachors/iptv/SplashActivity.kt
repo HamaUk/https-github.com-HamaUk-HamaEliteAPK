@@ -4,9 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -46,41 +48,53 @@ class SplashActivity : BaseThemedAppCompatActivity() {
         val logoContainer = findViewById<LinearLayout>(R.id.logo_container)
         val subtitleText = findViewById<TextView>(R.id.subtitle_text)
 
-        // Simple scale and alpha animation for the logo
-        logoContainer.alpha = 0f
-        logoContainer.scaleX = 0.8f
-        logoContainer.scaleY = 0.8f
-        
-        logoContainer.animate()
-            .alpha(1f)
-            .scaleX(1f)
-            .scaleY(1f)
-            .setDuration(800)
-            .setInterpolator(android.view.animation.OvershootInterpolator())
-            .withEndAction {
-                subtitleText.animate()
-                    .alpha(1f)
-                    .setDuration(400)
-                    .start()
-            }
-            .start()
-
-        subtitleText.alpha = 0f
-
-        if (CrashReportHelper.hasPendingReport(this)) {
-            CrashReportHelper.readPendingReport(this)
-            MaterialAlertDialogBuilder(this, ThemeHelper.getMaterialAlertDialogThemeResId(this))
-                .setTitle(R.string.crash_report_title)
-                .setMessage(R.string.crash_report_message)
-                .setCancelable(false)
-                .setPositiveButton(android.R.string.ok) { _, _ ->
-                    CrashReportHelper.clearReport(this)
-                    handler.postDelayed(navigateAfterSplashRunnable, 300)
+        if (logoContainer != null && subtitleText != null) {
+            logoContainer.alpha = 0f
+            logoContainer.scaleX = 0.8f
+            logoContainer.scaleY = 0.8f
+            subtitleText.alpha = 0f
+            logoContainer.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(800)
+                .setInterpolator(android.view.animation.OvershootInterpolator())
+                .withEndAction {
+                    subtitleText.animate()
+                        .alpha(1f)
+                        .setDuration(400)
+                        .start()
                 }
-                .show()
-        } else {
-            handler.postDelayed(navigateAfterSplashRunnable, splashDelay)
+                .start()
         }
+
+        scheduleAfterSplashOrCrashDialog()
+    }
+
+    private fun scheduleAfterSplashOrCrashDialog() {
+        try {
+            if (CrashReportHelper.hasPendingReport(this)) {
+                CrashReportHelper.readPendingReport(this)
+                MaterialAlertDialogBuilder(this, ThemeHelper.getMaterialAlertDialogThemeResId(this))
+                    .setTitle(R.string.crash_report_title)
+                    .setMessage(R.string.crash_report_message)
+                    .setCancelable(false)
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        CrashReportHelper.clearReport(this)
+                        handler.postDelayed(navigateAfterSplashRunnable, 300)
+                    }
+                    .show()
+                return
+            }
+        } catch (e: Exception) {
+            Log.e("SplashActivity", "crash dialog", e)
+            try {
+                CrashReportHelper.clearReport(this)
+            } catch (_: Exception) {
+            }
+            Toast.makeText(this, R.string.crash_report_message, Toast.LENGTH_LONG).show()
+        }
+        handler.postDelayed(navigateAfterSplashRunnable, splashDelay)
     }
 
     override fun onDestroy() {

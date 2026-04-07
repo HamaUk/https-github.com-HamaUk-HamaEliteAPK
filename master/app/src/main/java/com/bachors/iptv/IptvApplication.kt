@@ -8,15 +8,19 @@ import com.bachors.iptv.utils.ThemeHelper
 
 class IptvApplication : Application() {
     override fun attachBaseContext(base: Context) {
-        // Apply before super so the first configuration (splash, etc.) resolves Sorani resources.
-        AppLocaleHelper.applySavedApplicationLocales(base)
         super.attachBaseContext(base)
+        // After super: applicationContext / prefs are safe on all OEMs; locale still applies before first Activity.
+        AppLocaleHelper.applySavedApplicationLocales(this)
     }
 
     override fun onCreate() {
-        AppLocaleHelper.applySavedApplicationLocales(this)
         super.onCreate()
-        CrashReportHelper.install(this)
+        AppLocaleHelper.applySavedApplicationLocales(this)
+        try {
+            CrashReportHelper.install(this)
+        } catch (e: Exception) {
+            android.util.Log.e("IptvApplication", "CrashReportHelper.install", e)
+        }
         ThemeHelper.applyDefaultNightMode(this)
     }
 }

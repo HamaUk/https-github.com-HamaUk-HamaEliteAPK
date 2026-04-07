@@ -2,8 +2,10 @@ package com.bachors.iptv.utils
 
 import android.content.Context
 import android.graphics.Color
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import com.bachors.iptv.R
 
 object ThemeHelper {
@@ -56,18 +58,24 @@ object ThemeHelper {
 }
 
 object AppLocaleHelper {
+    private const val TAG = "AppLocale"
+
     /**
      * Applies a concrete app locale (never "follow system").
      * Default and fallback: Kurdish Sorani (`ckb`) to match `values/` + `values-ckb` and [locales_config].
      */
     fun applySavedApplicationLocales(context: Context) {
-        val key = SharedPrefManager(context).getAppLanguageKey()
-        val tags = when (key) {
-            SharedPrefManager.LANGUAGE_AR -> "ar"
-            SharedPrefManager.LANGUAGE_EN -> "en"
-            SharedPrefManager.LANGUAGE_KMR -> "kmr"
-            else -> "ckb"
+        try {
+            val key = SharedPrefManager(context).getAppLanguageKey()
+            val tags = when (key) {
+                SharedPrefManager.LANGUAGE_AR -> "ar"
+                SharedPrefManager.LANGUAGE_EN -> "en"
+                SharedPrefManager.LANGUAGE_KMR -> "kmr"
+                else -> "ckb"
+            }
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tags))
+        } catch (t: Throwable) {
+            Log.e(TAG, "setApplicationLocales failed", t)
         }
-        AppCompatDelegate.setApplicationLocales(androidx.core.os.LocaleListCompat.forLanguageTags(tags))
     }
 }
