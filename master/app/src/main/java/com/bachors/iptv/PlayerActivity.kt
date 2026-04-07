@@ -171,7 +171,8 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
     private val progressUpdateRunnable = object : Runnable {
         override fun run() {
             val p = exoPlayer
-            if (p != null && !seekbarUserDragging && p.duration > 0) {
+            // Live HLS often exposes a short sliding-window duration; still treat as live (no seek UI).
+            if (p != null && !seekbarUserDragging && !isLiveStream && p.duration > 0) {
                 seekBar.max = 1000
                 seekBar.progress = ((p.currentPosition * 1000L) / p.duration).toInt().coerceIn(0, 1000)
             }
@@ -673,10 +674,11 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
                             // FFmpeg/extension renderers can report audio support a moment after READY.
                             handler.postDelayed(audioFallbackRunnable, 900)
                             updatePlayPauseIcon()
-                            val hasDuration = player.duration > 0
-                            seekBar.visibility    = if (hasDuration) View.VISIBLE else View.GONE
-                            seekSpacer.visibility = if (hasDuration) View.GONE   else View.VISIBLE
-                            if (pendingResumeMs > 0L && hasDuration) {
+                            val showSeek = !isLiveStream && player.duration > 0
+                            seekBar.visibility    = if (showSeek) View.VISIBLE else View.GONE
+                            seekSpacer.visibility = if (showSeek) View.GONE   else View.VISIBLE
+                            seekBar.isClickable = showSeek && controlsVisible
+                            if (pendingResumeMs > 0L && showSeek) {
                                 val target = pendingResumeMs.coerceAtMost((player.duration - 500L).coerceAtLeast(0L))
                                 player.seekTo(target)
                                 pendingResumeMs = -1L
@@ -1233,14 +1235,26 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
             }
         })
 
-        listOf(
-            btnBack,
-            btnPrev, btnPlayPause, btnNext, btnAudioTrack, btnSubtitle,
-            btnSpeed, btnQuality, btnResize
-        ).forEach {
+        // TV remotes need focus-in-touch-mode for D-pad; on phones it forces "tap to focus, tap again to click".
+        val tvUi = isTelevisionUi()
+        playerControlTargets().forEach {
             it.isFocusable = true
-            it.isFocusableInTouchMode = true
+            it.isFocusableInTouchMode = tvUi
         }
+        seekBar.isFocusable = true
+        seekBar.isFocusableInTouchMode = tvUi
+    }
+
+    private fun playerControlTargets(): List<View> = listOf(
+        btnBack,
+        btnPrev, btnPlayPause, btnNext, btnAudioTrack, btnSubtitle,
+        btnSpeed, btnQuality, btnResize
+    )
+
+    /** While bars are fading out (alpha 0 but still VISIBLE), they can still steal touches — disable immediately. */
+    private fun setPlayerControlTargetsClickable(enabled: Boolean) {
+        playerControlTargets().forEach { it.isClickable = enabled }
+        seekBar.isClickable = enabled && seekBar.visibility == View.VISIBLE
     }
 
     private fun isFocusInsideBottomBar(): Boolean {
@@ -1281,16 +1295,31 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
         controlsVisible      = true
         topBar.visibility    = View.VISIBLE
         bottomBar.visibility = View.VISIBLE
-        topBar.animate().alpha(1f).setDuration(200).start()
-        bottomBar.animate().alpha(1f).setDuration(200).start()
+        setPlayerControlTargetsClickable(true)
+        topBar.animate().cancel()
+        bottomBar.animate().cancel()
+        // Avoid snapping alpha to 0 on every TV key — only fade in when coming from hidden/faded.
+        val faded = topBar.alpha < 0.05f || bottomBar.alpha < 0.05f
+        if (faded) {
+            topBar.alpha = 0f
+            bottomBar.alpha = 0f
+            topBar.animate().alpha(1f).setDuration(120).start()
+            bottomBar.animate().alpha(1f).setDuration(120).start()
+        } else {
+            topBar.alpha = 1f
+            bottomBar.alpha = 1f
+        }
         scheduleHideControls()
     }
 
     private fun hideControls() {
         controlsVisible = false
-        topBar.animate().alpha(0f).setDuration(300)
+        setPlayerControlTargetsClickable(false)
+        topBar.animate().cancel()
+        bottomBar.animate().cancel()
+        topBar.animate().alpha(0f).setDuration(160)
             .withEndAction { topBar.visibility = View.INVISIBLE }.start()
-        bottomBar.animate().alpha(0f).setDuration(300)
+        bottomBar.animate().alpha(0f).setDuration(160)
             .withEndAction { bottomBar.visibility = View.INVISIBLE }.start()
     }
 

@@ -16,7 +16,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:src="@drawable/ic_volume_high"
-        android:tint="#BB86FC" />
+        android:tint="@color/crimson_light" />
 
     <!-- Percentage -->
     <TextView
@@ -48,7 +48,7 @@
         android:layout_marginTop="12dp"
         android:max="100"
         android:progress="75"
-        android:progressTint="#BB86FC"
+        android:progressTint="@color/crimson_mid"
         android:progressBackgroundTint="#40FFFFFF" />
 
 </LinearLayout>
