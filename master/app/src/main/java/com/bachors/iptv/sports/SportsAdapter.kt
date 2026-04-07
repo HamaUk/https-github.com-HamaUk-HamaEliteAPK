@@ -4,105 +4,185 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bachors.iptv.R
 import com.squareup.picasso.Picasso
 
-class SportsAdapter(private val leagues: List<League>) : RecyclerView.Adapter<SportsAdapter.LeagueViewHolder>() {
+class SportsAdapter(
+    private val items: List<SportsListItem>
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    class LeagueViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val ivLeagueIcon: ImageView = itemView.findViewById(R.id.iv_league_icon)
-        val tvLeagueName: TextView = itemView.findViewById(R.id.tv_league_name)
-        val llMatchesContainer: LinearLayout = itemView.findViewById(R.id.ll_matches_container)
+    override fun getItemViewType(position: Int): Int = when (items[position]) {
+        is SportsListItem.Header -> VIEW_TYPE_HEADER
+        is SportsListItem.MatchRow -> VIEW_TYPE_MATCH
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LeagueViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_sports_league, parent, false)
-        return LeagueViewHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: LeagueViewHolder, position: Int) {
-        val league = leagues[position]
-        holder.tvLeagueName.text = league.league
-
-        if (!league.leagueIcon.isNullOrEmpty()) {
-            Picasso.get().load(league.leagueIcon).into(holder.ivLeagueIcon)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return when (viewType) {
+            VIEW_TYPE_HEADER -> {
+                val v = inflater.inflate(R.layout.item_sports_header, parent, false)
+                HeaderViewHolder(v)
+            }
+            else -> {
+                val v = inflater.inflate(R.layout.item_sports_match, parent, false)
+                MatchViewHolder(v)
+            }
         }
+    }
 
-        // Clean any old views inside the LinearLayout due to recycling
-        holder.llMatchesContainer.removeAllViews()
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (val item = items[position]) {
+            is SportsListItem.Header -> (holder as HeaderViewHolder).bind(item)
+            is SportsListItem.MatchRow -> (holder as MatchViewHolder).bind(item.match)
+        }
+    }
 
-        for (match in league.matches) {
-            val matchView = LayoutInflater.from(holder.itemView.context)
-                .inflate(R.layout.item_sports_match, holder.llMatchesContainer, false)
+    override fun getItemCount(): Int = items.size
 
-            val ivHomeLogo: ImageView = matchView.findViewById(R.id.iv_home_logo)
-            val ivAwayLogo: ImageView = matchView.findViewById(R.id.iv_away_logo)
-            val tvHomeName: TextView = matchView.findViewById(R.id.tv_home_name)
-            val tvAwayName: TextView = matchView.findViewById(R.id.tv_away_name)
-            val tvHomeScore: TextView = matchView.findViewById(R.id.tv_home_score)
-            val tvAwayScore: TextView = matchView.findViewById(R.id.tv_away_score)
-            val tvMatchTime: TextView = matchView.findViewById(R.id.tv_match_time)
-            val tvMatchStatus: TextView = matchView.findViewById(R.id.tv_match_status)
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        super.onViewRecycled(holder)
+        if (holder is MatchViewHolder) {
+            Picasso.get().cancelRequest(holder.ivHomeLogo)
+            Picasso.get().cancelRequest(holder.ivAwayLogo)
+        }
+    }
 
+    class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val ivLeagueIcon: ImageView = itemView.findViewById(R.id.iv_league_icon)
+        private val tvLeagueName: TextView = itemView.findViewById(R.id.tv_league_name)
+        private val tvMatchCount: TextView = itemView.findViewById(R.id.tv_match_count)
+
+        fun bind(header: SportsListItem.Header) {
+            tvLeagueName.text = header.leagueName
+            tvMatchCount.text = header.matchCount.toString()
+            val icon = header.leagueIcon
+            if (!icon.isNullOrBlank()) {
+                Picasso.get()
+                    .load(icon)
+                    .error(R.drawable.ic_sports_ball)
+                    .into(ivLeagueIcon)
+            } else {
+                ivLeagueIcon.setImageResource(R.drawable.ic_sports_ball)
+            }
+        }
+    }
+
+    class MatchViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val ivHomeLogo: ImageView = itemView.findViewById(R.id.iv_home_logo)
+        val ivAwayLogo: ImageView = itemView.findViewById(R.id.iv_away_logo)
+        private val tvHomeName: TextView = itemView.findViewById(R.id.tv_home_name)
+        private val tvAwayName: TextView = itemView.findViewById(R.id.tv_away_name)
+        private val tvHomeScore: TextView = itemView.findViewById(R.id.tv_home_score)
+        private val tvAwayScore: TextView = itemView.findViewById(R.id.tv_away_score)
+        private val tvScoreSep: TextView = itemView.findViewById(R.id.tv_score_sep)
+        private val tvMatchTime: TextView = itemView.findViewById(R.id.tv_match_time)
+        private val tvLiveBadge: TextView = itemView.findViewById(R.id.tv_live_badge)
+        private val tvMatchStatus: TextView = itemView.findViewById(R.id.tv_match_status)
+
+        fun bind(match: Match) {
+            val ctx = itemView.context
             tvHomeName.text = match.homeTeam
             tvAwayName.text = match.awayTeam
 
-            // Parse score (e.g., "1 - 2")
-            if (match.score.contains("-")) {
-                val parts = match.score.split("-")
-                tvHomeScore.text = parts[0].trim()
-                tvAwayScore.text = parts[1].trim()
-            } else {
-                tvHomeScore.text = "-"
-                tvAwayScore.text = "-"
-            }
-
-            val ctx = holder.itemView.context
+            val (homeScore, awayScore) = parseScores(match.score)
+            val statusNorm = match.status.trim()
             val endedLabel = ctx.getString(R.string.sports_status_ended)
             val liveLabel = ctx.getString(R.string.sports_status_live)
-            val statusNorm = match.status.trim()
             val isEnded = statusNorm.equals("Ended", ignoreCase = true)
+            val isLive = !isEnded && (
+                statusNorm.contains(":") ||
+                    statusNorm.contains("Half", ignoreCase = true) ||
+                    statusNorm.equals("Live", ignoreCase = true)
+                )
+            val showTimePill = !isEnded && (statusNorm.contains(":") || statusNorm.contains("Half", ignoreCase = true))
+
+            val scoreColorLive = ContextCompat.getColor(ctx, R.color.sports_live_green)
+            val scoreColorNeutral = ContextCompat.getColor(ctx, R.color.white)
+            val scoreColorSecondary = ContextCompat.getColor(ctx, R.color.sports_text_secondary)
+
+            val missingScore = (homeScore == "-" || homeScore.isEmpty()) &&
+                (awayScore == "-" || awayScore.isEmpty())
+
+            if (missingScore && !isEnded) {
+                tvHomeScore.visibility = View.GONE
+                tvAwayScore.visibility = View.GONE
+                tvScoreSep.visibility = View.VISIBLE
+                tvScoreSep.text = ctx.getString(R.string.sports_vs)
+                tvScoreSep.textSize = 15f
+                tvScoreSep.setTextColor(scoreColorSecondary)
+            } else {
+                tvHomeScore.visibility = View.VISIBLE
+                tvAwayScore.visibility = View.VISIBLE
+                tvScoreSep.visibility = View.VISIBLE
+                tvScoreSep.text = "–"
+                tvScoreSep.textSize = 20f
+                tvScoreSep.setTextColor(
+                    ContextCompat.getColor(ctx, R.color.sports_text_secondary)
+                )
+                tvHomeScore.text = homeScore
+                tvAwayScore.text = awayScore
+                val sc = if (isLive) scoreColorLive else scoreColorNeutral
+                tvHomeScore.setTextColor(sc)
+                tvAwayScore.setTextColor(sc)
+            }
 
             when {
                 isEnded -> {
                     tvMatchTime.visibility = View.GONE
+                    tvLiveBadge.visibility = View.GONE
+                    tvMatchStatus.visibility = View.VISIBLE
                     tvMatchStatus.text = endedLabel
                 }
-                statusNorm.contains(":") || statusNorm.contains("Half", ignoreCase = true) -> {
-                    tvMatchTime.text = match.status
-                    tvMatchStatus.text = liveLabel
+                showTimePill -> {
                     tvMatchTime.visibility = View.VISIBLE
+                    tvMatchTime.text = match.status
+                    tvLiveBadge.visibility = View.VISIBLE
+                    tvLiveBadge.text = liveLabel
+                    tvMatchStatus.visibility = View.GONE
                 }
-                statusNorm.equals("Live", ignoreCase = true) -> {
+                isLive -> {
                     tvMatchTime.visibility = View.GONE
-                    tvMatchStatus.text = liveLabel
+                    tvLiveBadge.visibility = View.VISIBLE
+                    tvLiveBadge.text = liveLabel
+                    tvMatchStatus.visibility = View.GONE
                 }
                 else -> {
                     tvMatchTime.visibility = View.GONE
+                    tvLiveBadge.visibility = View.GONE
+                    tvMatchStatus.visibility = View.VISIBLE
                     tvMatchStatus.text = match.status
                 }
             }
 
-            if (match.homeLogo.isNotEmpty()) Picasso.get().load(match.homeLogo).into(ivHomeLogo)
-            if (match.awayLogo.isNotEmpty()) Picasso.get().load(match.awayLogo).into(ivAwayLogo)
+            loadLogo(match.homeLogo, ivHomeLogo)
+            loadLogo(match.awayLogo, ivAwayLogo)
+        }
 
-            holder.llMatchesContainer.addView(matchView)
-            
-            // Add a small divider between matches if it's not the last one
-            if (league.matches.indexOf(match) != league.matches.size - 1) {
-                val divider = View(holder.itemView.context)
-                divider.layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    1
-                )
-                divider.setBackgroundColor(holder.itemView.context.resources.getColor(R.color.sports_card_stroke))
-                holder.llMatchesContainer.addView(divider)
+        private fun loadLogo(url: String, target: ImageView) {
+            if (url.isNotBlank()) {
+                Picasso.get()
+                    .load(url)
+                    .error(R.drawable.ic_sports_ball)
+                    .into(target)
+            } else {
+                target.setImageResource(R.drawable.ic_sports_ball)
             }
+        }
+
+        private fun parseScores(score: String): Pair<String, String> {
+            if (score.contains("-")) {
+                val parts = score.split("-")
+                return Pair(parts[0].trim(), parts.getOrElse(1) { "-" }.trim())
+            }
+            return Pair("-", "-")
         }
     }
 
-    override fun getItemCount(): Int = leagues.size
+    companion object {
+        private const val VIEW_TYPE_HEADER = 1
+        private const val VIEW_TYPE_MATCH = 2
+    }
 }

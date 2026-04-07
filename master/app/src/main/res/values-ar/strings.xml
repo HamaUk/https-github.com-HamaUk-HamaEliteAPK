@@ -160,6 +160,37 @@
     <string name="sports_title">نتائج مباشرة</string>
     <string name="sports_status_live">مباشر</string>
     <string name="sports_status_ended">انتهت</string>
+    <string name="sports_back">رجوع</string>
+    <string name="sports_refresh">تحديث</string>
+    <string name="sports_retry">إعادة المحاولة</string>
+    <string name="sports_subtitle_loading">جاري الاتصال…</string>
+    <string name="sports_updated_at">تم التحديث: %1$s</string>
+    <string name="sports_auto_refresh_hint">تحديث تلقائي كل 30 ثانية</string>
+    <string name="sports_header_subtitle">%1$s · %2$s</string>
+    <string name="sports_empty_title">لا توجد مباريات مباشرة الآن</string>
+    <string name="sports_empty_hint">عُد لاحقًا أو اضغط تحديث — تُحدَّث البيانات تلقائيًا.</string>
+    <string name="sports_vs">ضد</string>
     <string name="dashboard_expiry_line">ينتهي: %1$s</string>
     <string name="dashboard_expiry_none">ينتهي: —</string>
+
+    <string name="quran_title">القرآن</string>
+    <string name="quran_subtitle_format">%1$d سورة · مشاري العفاسي</string>
+    <string name="quran_subtitle_loading">جاري التحميل…</string>
+    <string name="quran_search_hint">ابحث بالاسم أو الترجمة…</string>
+    <string name="quran_empty_search">لا توجد سور تطابق بحثك</string>
+    <string name="quran_load_error">تعذر تحميل القرآن</string>
+    <string name="quran_error_with_message">خطأ: %1$s</string>
+    <string name="quran_retry">إعادة المحاولة</string>
+    <string name="quran_refresh">تحديث</string>
+    <string name="quran_back">رجوع</string>
+    <string name="quran_surah_meta">%1$s · %2$d آية</string>
+    <string name="quran_surah_list_subtitle">%1$s · %2$s · %3$d آية</string>
+    <string name="quran_verse_label">الآية %1$d</string>
+    <string name="quran_reciter">القارئ: مشاري العفاسي</string>
+    <string name="quran_playing_reciter">تشغيل · مشاري العفاسي</string>
+    <string name="quran_paused">متوقف</string>
+    <string name="quran_surah_load_error">تعذر تحميل السورة</string>
+    <string name="quran_play_pause">تشغيل أو إيقاف</string>
+    <string name="quran_revelation_meccan">مكية</string>
+    <string name="quran_revelation_medinan">مدنية</string>
 </resources>

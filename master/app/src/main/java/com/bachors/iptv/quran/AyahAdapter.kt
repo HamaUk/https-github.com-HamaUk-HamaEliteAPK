@@ -1,12 +1,14 @@
 package com.bachors.iptv.quran
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bachors.iptv.R
+import com.google.android.material.color.MaterialColors
 
 class AyahAdapter(
     private val ayahs: List<Ayah>,
@@ -17,11 +19,12 @@ class AyahAdapter(
         set(value) {
             val old = field
             field = value
-            notifyItemChanged(old)
-            notifyItemChanged(field)
+            if (old >= 0) notifyItemChanged(old)
+            if (value >= 0) notifyItemChanged(value)
         }
 
     class AyahViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val root: LinearLayout = itemView.findViewById(R.id.ll_ayah_root)
         val tvText: TextView = itemView.findViewById(R.id.tv_ayah_text)
         val tvNumber: TextView = itemView.findViewById(R.id.tv_ayah_number)
     }
@@ -33,14 +36,21 @@ class AyahAdapter(
 
     override fun onBindViewHolder(holder: AyahViewHolder, position: Int) {
         val ayah = ayahs[position]
+        val ctx = holder.itemView.context
         holder.tvText.text = ayah.text
-        holder.tvNumber.text = "Verse ${ayah.numberInSurah}"
+        holder.tvNumber.text = ctx.getString(R.string.quran_verse_label, ayah.numberInSurah)
 
-        if (position == currentPlayingIndex) {
-            holder.tvText.setTextColor(Color.parseColor("#01D192")) // Green highlight when playing
-        } else {
-            holder.tvText.setTextColor(Color.WHITE)
-        }
+        val playing = position == currentPlayingIndex
+        holder.root.setBackgroundResource(
+            if (playing) R.drawable.bg_quran_ayah_playing else R.drawable.bg_quran_ayah_normal
+        )
+        val normalText = MaterialColors.getColor(
+            holder.itemView,
+            com.google.android.material.R.attr.colorOnSurface,
+            ContextCompat.getColor(ctx, R.color.white)
+        )
+        val playingText = ContextCompat.getColor(ctx, R.color.quran_ayah_playing)
+        holder.tvText.setTextColor(if (playing) playingText else normalText)
 
         holder.itemView.setOnClickListener {
             onAyahClick(position)

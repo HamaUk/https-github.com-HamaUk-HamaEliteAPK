@@ -68,6 +68,7 @@ dependencies {
     implementation("org.jellyfin.media3:media3-ffmpeg-decoder:1.3.1+2")
     
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
 
     // API Support
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

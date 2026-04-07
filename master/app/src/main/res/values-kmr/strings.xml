@@ -160,6 +160,37 @@
     <string name="sports_title">Canê zindî</string>
     <string name="sports_status_live">Zindî</string>
     <string name="sports_status_ended">Qediya</string>
+    <string name="sports_back">Vegere</string>
+    <string name="sports_refresh">Nû bike</string>
+    <string name="sports_retry">Dîsa hewl bide</string>
+    <string name="sports_subtitle_loading">Girêdan…</string>
+    <string name="sports_updated_at">Nû kir: %1$s</string>
+    <string name="sports_auto_refresh_hint">Her 30 çirke nûkirina xweber</string>
+    <string name="sports_header_subtitle">%1$s · %2$s</string>
+    <string name="sports_empty_title">Niha tu lîstikên zindî tune</string>
+    <string name="sports_empty_hint">Paşê vegere an nû bike — daneyên xweber tên nûkirin.</string>
+    <string name="sports_vs">VS</string>
     <string name="dashboard_expiry_line">Dawî: %1$s</string>
     <string name="dashboard_expiry_none">Dawî: —</string>
+
+    <string name="quran_title">Qur\'an</string>
+    <string name="quran_subtitle_format">%1$d sûre · Mişarî El-Efasî</string>
+    <string name="quran_subtitle_loading">Tê barkirin…</string>
+    <string name="quran_search_hint">Li gorî nav an wergerê bigere…</string>
+    <string name="quran_empty_search">Tu sûreyek tune ku li gorî lêgerînê be</string>
+    <string name="quran_load_error">Nikare Qur\'anê bîne</string>
+    <string name="quran_error_with_message">Çewtî: %1$s</string>
+    <string name="quran_retry">Dîsa hewl bide</string>
+    <string name="quran_refresh">Nû bike</string>
+    <string name="quran_back">Vegere</string>
+    <string name="quran_surah_meta">%1$s · %2$d ayet</string>
+    <string name="quran_surah_list_subtitle">%1$s · %2$s · %3$d ayet</string>
+    <string name="quran_verse_label">Ayet %1$d</string>
+    <string name="quran_reciter">Xwendevan: Mişarî El-Efasî</string>
+    <string name="quran_playing_reciter">Di lê de · Mişarî El-Efasî</string>
+    <string name="quran_paused">Rawestî</string>
+    <string name="quran_surah_load_error">Nikare vê sûreyê bîne</string>
+    <string name="quran_play_pause">Lêde an raweste</string>
+    <string name="quran_revelation_meccan">Mekkî</string>
+    <string name="quran_revelation_medinan">Medînî</string>
 </resources>

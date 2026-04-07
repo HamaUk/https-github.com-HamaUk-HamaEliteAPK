@@ -42,6 +42,16 @@
     <string name="sports_load_error">هەڵەی وەرزش: %1$s</string>
     <string name="sports_status_live">ڕاستەوخۆ</string>
     <string name="sports_status_ended">کۆتایی هات</string>
+    <string name="sports_back">گەڕانەوە</string>
+    <string name="sports_refresh">نوێکردنەوە</string>
+    <string name="sports_retry">دووبارە هەوڵبدە</string>
+    <string name="sports_subtitle_loading">پەیوەندیکردن…</string>
+    <string name="sports_updated_at">نوێکرایەوە: %1$s</string>
+    <string name="sports_auto_refresh_hint">نوێکردنەوەی خۆکار هەر ٣٠ چرکە</string>
+    <string name="sports_header_subtitle">%1$s · %2$s</string>
+    <string name="sports_empty_title">هیچ یارییەکی ڕاستەوخۆ نییە</string>
+    <string name="sports_empty_hint">دواتر بگەڕێوە یان نوێکردنەوە بگرە — زانیارییەکان خۆکار نوێ دەبنەوە.</string>
+    <string name="sports_vs">VS</string>
     <string name="dashboard_expiry_line">کۆتایی: %1$s</string>
     <string name="dashboard_expiry_none">کۆتایی: ----</string>
     <string name="dash_reload">نوێکردنەوە</string>
@@ -155,4 +165,25 @@
     <string name="cache_cleared">هەموو کاش پاککرایەوە</string>
     <string name="cache_error">هەڵە لە پاککردنەوەی کاش</string>
     <string name="data_refresh_scheduled">داتا بۆ نوێکردنەوە دیاریکرا</string>
+
+    <string name="quran_title">قورئان</string>
+    <string name="quran_subtitle_format">%1$d سوورەت · قارێت: مشاری عەفاسی</string>
+    <string name="quran_subtitle_loading">بارکردن…</string>
+    <string name="quran_search_hint">گەڕان بە ناو یان وەرگێڕان…</string>
+    <string name="quran_empty_search">هیچ سوورەتێک نەدۆزرایەوە</string>
+    <string name="quran_load_error">هەڵەی بارکردنی قورئان</string>
+    <string name="quran_error_with_message">هەڵە: %1$s</string>
+    <string name="quran_retry">دووبارە هەوڵبدە</string>
+    <string name="quran_refresh">نوێکردنەوە</string>
+    <string name="quran_back">گەڕانەوە</string>
+    <string name="quran_surah_meta">%1$s · %2$d ئایەت</string>
+    <string name="quran_surah_list_subtitle">%1$s · %2$s · %3$d ئایەت</string>
+    <string name="quran_verse_label">ئایەتی %1$d</string>
+    <string name="quran_reciter">قارێت: مشاری عەفاسی</string>
+    <string name="quran_playing_reciter">پەخش دەکرێت · مشاری عەفاسی</string>
+    <string name="quran_paused">ڕاگیراو</string>
+    <string name="quran_surah_load_error">هەڵەی بارکردنی سوورەت</string>
+    <string name="quran_play_pause">پەخش یان ڕاگرتن</string>
+    <string name="quran_revelation_meccan">مەککی</string>
+    <string name="quran_revelation_medinan">مدینی</string>
 </resources>

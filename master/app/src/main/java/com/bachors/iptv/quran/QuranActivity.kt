@@ -1,66 +1,98 @@
 package com.bachors.iptv.quran
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
-import android.widget.ProgressBar
-import android.widget.Toast
-import com.bachors.iptv.BaseThemedAppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.bachors.iptv.R
-import kotlinx.coroutines.CoroutineScope
+import com.bachors.iptv.BaseThemedAppCompatActivity
+import com.bachors.iptv.databinding.ActivityQuranBinding
+import com.bachors.iptv.utils.ThemeHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 class QuranActivity : BaseThemedAppCompatActivity() {
 
-    private lateinit var rvSurahs: RecyclerView
-    private lateinit var pbLoading: ProgressBar
-    private val BASE_URL = "https://api.alquran.cloud/v1/"
+    private lateinit var binding: ActivityQuranBinding
+    private var adapter: QuranAdapter? = null
+    private var lastSurahs: List<Surah>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_quran)
+        binding = ActivityQuranBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        ThemeHelper.applyPremiumHeroBackground(binding.root)
 
-        rvSurahs = findViewById(R.id.rv_quran_surahs)
-        rvSurahs.layoutManager = LinearLayoutManager(this)
-        pbLoading = findViewById(R.id.pb_loading)
+        binding.tvQuranSubtitle.text = getString(com.bachors.iptv.R.string.quran_subtitle_loading)
+        binding.rvQuranSurahs.layoutManager = LinearLayoutManager(this)
 
-        findViewById<android.widget.ImageView>(R.id.iv_back).setOnClickListener { finish() }
+        binding.ivBack.setOnClickListener { finish() }
+        binding.btnRefresh.setOnClickListener { fetchSurahs() }
+        binding.btnRetry.setOnClickListener { fetchSurahs() }
+
+        binding.etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                adapter?.filter(s?.toString().orEmpty())
+                refreshEmptySearchVisibility()
+            }
+        })
 
         fetchSurahs()
     }
 
     private fun fetchSurahs() {
-        pbLoading.visibility = View.VISIBLE
-        val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
+        binding.pbLoading.visibility = View.VISIBLE
+        binding.llError.visibility = View.GONE
+        binding.rvQuranSurahs.visibility = View.VISIBLE
+        binding.llEmpty.visibility = View.GONE
 
-        val api = retrofit.create(QuranApi::class.java)
-
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch {
             try {
-                val response = api.getAllSurahs()
-                withContext(Dispatchers.Main) {
-                    pbLoading.visibility = View.GONE
-                    if (response.isSuccessful && response.body() != null) {
-                        val adapter = QuranAdapter(response.body()!!.data)
-                        rvSurahs.adapter = adapter
-                    } else {
-                        Toast.makeText(this@QuranActivity, "Failed to load Quran", Toast.LENGTH_SHORT).show()
-                    }
+                val response = withContext(Dispatchers.IO) {
+                    QuranApiClient.api.getAllSurahs()
+                }
+                binding.pbLoading.visibility = View.GONE
+                if (response.isSuccessful && response.body() != null) {
+                    val list = response.body()!!.data
+                    lastSurahs = list
+                    adapter = QuranAdapter(list)
+                    binding.rvQuranSurahs.adapter = adapter
+                    binding.tvQuranSubtitle.text = getString(
+                        com.bachors.iptv.R.string.quran_subtitle_format,
+                        list.size
+                    )
+                    val q = binding.etSearch.text?.toString().orEmpty()
+                    adapter?.filter(q)
+                    refreshEmptySearchVisibility()
+                } else {
+                    showError(getString(com.bachors.iptv.R.string.quran_load_error))
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    pbLoading.visibility = View.GONE
-                    Toast.makeText(this@QuranActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
+                binding.pbLoading.visibility = View.GONE
+                showError(
+                    getString(
+                        com.bachors.iptv.R.string.quran_error_with_message,
+                        e.message ?: ""
+                    )
+                )
             }
         }
+    }
+
+    private fun showError(message: String) {
+        binding.llError.visibility = View.VISIBLE
+        binding.rvQuranSurahs.visibility = View.GONE
+        binding.llEmpty.visibility = View.GONE
+        binding.tvError.text = message
+    }
+
+    private fun refreshEmptySearchVisibility() {
+        val a = adapter
+        val show = a != null && a.itemCount == 0 && lastSurahs?.isNotEmpty() == true
+        binding.llEmpty.visibility = if (show) View.VISIBLE else View.GONE
     }
 }

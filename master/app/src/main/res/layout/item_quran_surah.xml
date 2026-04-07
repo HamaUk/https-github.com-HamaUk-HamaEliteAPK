@@ -1,42 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
-    android:layout_marginBottom="12dp"
-    app:cardBackgroundColor="@color/sports_card"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="0dp"
+    android:layout_marginBottom="10dp"
     android:clickable="true"
     android:focusable="true"
-    android:foreground="?attr/selectableItemBackground">
+    app:cardBackgroundColor="@color/sports_card"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:rippleColor="@color/white_opacity_20"
+    app:strokeColor="@color/sports_card_stroke"
+    app:strokeWidth="1dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="14dp">
 
         <TextView
             android:id="@+id/tv_surah_number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_timer_circle"
+            android:background="@drawable/bg_quran_number_chip"
             android:gravity="center"
-            android:minWidth="35dp"
-            android:padding="8dp"
-            android:textColor="@color/sports_live_green"
+            android:minWidth="40dp"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="8dp"
+            android:textColor="@color/quran_gold"
             android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="1" />
 
         <TextView
             android:id="@+id/tv_surah_english"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -44,31 +50,48 @@
             app:layout_constraintEnd_toStartOf="@+id/tv_surah_arabic"
             app:layout_constraintStart_toEndOf="@id/tv_surah_number"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_chainStyle="packed" />
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="Al-Fatihah" />
 
         <TextView
             android:id="@+id/tv_surah_translation"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="4dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:maxLines="2"
             android:textColor="@color/sports_text_secondary"
-            android:textSize="13sp"
+            android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/tv_surah_arabic"
             app:layout_constraintStart_toEndOf="@id/tv_surah_number"
-            app:layout_constraintTop_toBottomOf="@id/tv_surah_english" />
+            app:layout_constraintTop_toBottomOf="@id/tv_surah_english"
+            tools:text="Meccan · 7 verses" />
 
         <TextView
             android:id="@+id/tv_surah_arabic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
+            android:layout_marginEnd="4dp"
+            android:textColor="@color/quran_gold"
             android:textSize="22sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/iv_chevron"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="الفاتحة" />
+
+        <ImageView
+            android:id="@+id/iv_chevron"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:alpha="0.5"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_chevron_right_white"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

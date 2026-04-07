@@ -160,6 +160,37 @@
     <string name="sports_title">Live scores</string>
     <string name="sports_status_live">Live</string>
     <string name="sports_status_ended">Ended</string>
+    <string name="sports_back">Back</string>
+    <string name="sports_refresh">Refresh</string>
+    <string name="sports_retry">Try again</string>
+    <string name="sports_subtitle_loading">Connecting…</string>
+    <string name="sports_updated_at">Updated: %1$s</string>
+    <string name="sports_auto_refresh_hint">Auto-refresh every 30s</string>
+    <string name="sports_header_subtitle">%1$s · %2$s</string>
+    <string name="sports_empty_title">No live matches right now</string>
+    <string name="sports_empty_hint">Check back soon or tap refresh — data updates automatically.</string>
+    <string name="sports_vs">VS</string>
     <string name="dashboard_expiry_line">Expires: %1$s</string>
     <string name="dashboard_expiry_none">Expires: —</string>
+
+    <string name="quran_title">Quran</string>
+    <string name="quran_subtitle_format">%1$d surahs · Mishary Alafasy</string>
+    <string name="quran_subtitle_loading">Loading…</string>
+    <string name="quran_search_hint">Search by name or translation…</string>
+    <string name="quran_empty_search">No surahs match your search</string>
+    <string name="quran_load_error">Could not load Quran</string>
+    <string name="quran_error_with_message">Error: %1$s</string>
+    <string name="quran_retry">Try again</string>
+    <string name="quran_refresh">Refresh</string>
+    <string name="quran_back">Back</string>
+    <string name="quran_surah_meta">%1$s · %2$d verses</string>
+    <string name="quran_surah_list_subtitle">%1$s · %2$s · %3$d verses</string>
+    <string name="quran_verse_label">Verse %1$d</string>
+    <string name="quran_reciter">Reciter: Mishary Alafasy</string>
+    <string name="quran_playing_reciter">Playing · Mishary Alafasy</string>
+    <string name="quran_paused">Paused</string>
+    <string name="quran_surah_load_error">Could not load this surah</string>
+    <string name="quran_play_pause">Play or pause</string>
+    <string name="quran_revelation_meccan">Meccan</string>
+    <string name="quran_revelation_medinan">Medinan</string>
 </resources>

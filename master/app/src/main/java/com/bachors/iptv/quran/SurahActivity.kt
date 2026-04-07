@@ -2,60 +2,76 @@ package com.bachors.iptv.quran
 
 import android.os.Bundle
 import android.view.View
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
-import com.bachors.iptv.BaseThemedAppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import com.bachors.iptv.BaseThemedAppCompatActivity
 import com.bachors.iptv.R
-import kotlinx.coroutines.CoroutineScope
+import com.bachors.iptv.databinding.ActivitySurahBinding
+import com.bachors.iptv.utils.ThemeHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import java.util.Locale
 
 class SurahActivity : BaseThemedAppCompatActivity() {
 
-    private lateinit var rvAyahs: RecyclerView
-    private lateinit var pbLoading: ProgressBar
-    private lateinit var tvSurahName: TextView
-    private lateinit var tvPlayerStatus: TextView
-    private lateinit var ivPlayPause: ImageView
-
+    private lateinit var binding: ActivitySurahBinding
     private var exoPlayer: ExoPlayer? = null
     private var adapter: AyahAdapter? = null
-
-    private val BASE_URL = "https://api.alquran.cloud/v1/"
+    private var hasEverPlayed: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_surah)
+        binding = ActivitySurahBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        ThemeHelper.applyPremiumHeroBackground(binding.root)
 
         val surahId = intent.getIntExtra("SURAH_ID", 1)
-        val surahName = intent.getStringExtra("SURAH_NAME") ?: "Surah"
+        val nameEn = intent.getStringExtra("SURAH_NAME_EN")
+            ?: intent.getStringExtra("SURAH_NAME")
+            .orEmpty()
+        val nameAr = intent.getStringExtra("SURAH_NAME_AR").orEmpty()
+        val revelation = intent.getStringExtra("SURAH_REVELATION").orEmpty()
+        val ayahCountHint = intent.getIntExtra("SURAH_AYAH_COUNT", -1)
 
-        tvSurahName = findViewById(R.id.tv_surah_name)
-        rvAyahs = findViewById(R.id.rv_ayahs)
-        pbLoading = findViewById(R.id.pb_loading)
-        tvPlayerStatus = findViewById(R.id.tv_player_status)
-        ivPlayPause = findViewById(R.id.iv_play_pause)
+        binding.tvSurahNameEn.text = nameEn.ifEmpty { getString(R.string.quran_title) }
+        binding.tvSurahName.text = nameAr.ifEmpty { nameEn }
+        binding.tvSurahMeta.text = if (ayahCountHint >= 0) {
+            getString(
+                R.string.quran_surah_meta,
+                localizedRevelation(revelation),
+                ayahCountHint
+            )
+        } else {
+            ""
+        }
 
-        findViewById<ImageView>(R.id.iv_back).setOnClickListener { finish() }
+        binding.rvAyahs.layoutManager = LinearLayoutManager(this)
+        binding.tvPlayerStatus.text = getString(R.string.quran_reciter)
 
-        tvSurahName.text = surahName
-        rvAyahs.layoutManager = LinearLayoutManager(this)
+        binding.ivBack.setOnClickListener { finish() }
+        binding.btnRetry.setOnClickListener { fetchSurahDetails(surahId) }
 
         initPlayer()
         fetchSurahDetails(surahId)
     }
 
+    private fun localizedRevelation(raw: String): String {
+        return when (raw.lowercase(Locale.US)) {
+            "meccan" -> getString(R.string.quran_revelation_meccan)
+            "medinan" -> getString(R.string.quran_revelation_medinan)
+            else -> raw.ifEmpty { "—" }
+        }
+    }
+
     private fun initPlayer() {
+        val ivPlayPause = binding.ivPlayPause
+        val tvPlayerStatus = binding.tvPlayerStatus
+        val rvAyahs = binding.rvAyahs
+
         exoPlayer = ExoPlayer.Builder(this).build()
         exoPlayer?.addListener(object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -70,11 +86,16 @@ class SurahActivity : BaseThemedAppCompatActivity() {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 super.onIsPlayingChanged(isPlaying)
                 if (isPlaying) {
+                    hasEverPlayed = true
                     ivPlayPause.setImageResource(android.R.drawable.ic_media_pause)
-                    tvPlayerStatus.text = "Playing: Mishary Alafasy"
+                    tvPlayerStatus.text = getString(R.string.quran_playing_reciter)
                 } else {
                     ivPlayPause.setImageResource(android.R.drawable.ic_media_play)
-                    tvPlayerStatus.text = "Paused"
+                    tvPlayerStatus.text = if (hasEverPlayed) {
+                        getString(R.string.quran_paused)
+                    } else {
+                        getString(R.string.quran_reciter)
+                    }
                 }
             }
         })
@@ -91,41 +112,53 @@ class SurahActivity : BaseThemedAppCompatActivity() {
     }
 
     private fun fetchSurahDetails(surahId: Int) {
-        pbLoading.visibility = View.VISIBLE
-        val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-        val api = retrofit.create(QuranApi::class.java)
+        binding.pbLoading.visibility = View.VISIBLE
+        binding.llError.visibility = View.GONE
+        binding.rvAyahs.visibility = View.VISIBLE
+        binding.cardPlayer.visibility = View.VISIBLE
 
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch {
             try {
-                val response = api.getSurahWithAudio(surahId)
-                withContext(Dispatchers.Main) {
-                    pbLoading.visibility = View.GONE
-                    if (response.isSuccessful && response.body() != null) {
-                        val ayahs = response.body()!!.data.ayahs
-                        setupListAndPlayer(ayahs)
-                    } else {
-                        Toast.makeText(this@SurahActivity, "Failed to fetch Surah", Toast.LENGTH_SHORT).show()
-                    }
+                val response = withContext(Dispatchers.IO) {
+                    QuranApiClient.api.getSurahWithAudio(surahId)
+                }
+                binding.pbLoading.visibility = View.GONE
+                if (response.isSuccessful && response.body() != null) {
+                    val data = response.body()!!.data
+                    binding.tvSurahName.text = data.name
+                    binding.tvSurahNameEn.text = data.englishName
+                    val revelation = intent.getStringExtra("SURAH_REVELATION").orEmpty()
+                    binding.tvSurahMeta.text = getString(
+                        R.string.quran_surah_meta,
+                        localizedRevelation(revelation),
+                        data.ayahs.size
+                    )
+                    setupListAndPlayer(data.ayahs)
+                } else {
+                    showSurahError(getString(R.string.quran_surah_load_error))
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    pbLoading.visibility = View.GONE
-                    Toast.makeText(this@SurahActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
+                binding.pbLoading.visibility = View.GONE
+                showSurahError(
+                    getString(R.string.quran_error_with_message, e.message ?: "")
+                )
             }
         }
     }
 
+    private fun showSurahError(message: String) {
+        binding.llError.visibility = View.VISIBLE
+        binding.rvAyahs.visibility = View.GONE
+        binding.cardPlayer.visibility = View.GONE
+        binding.tvError.text = message
+    }
+
     private fun setupListAndPlayer(ayahs: List<Ayah>) {
         adapter = AyahAdapter(ayahs) { index ->
-            // Update exoPlayer track
             exoPlayer?.seekToDefaultPosition(index)
             exoPlayer?.play()
         }
-        rvAyahs.adapter = adapter
+        binding.rvAyahs.adapter = adapter
 
         val mediaItems = ayahs.mapNotNull { ayah ->
             ayah.audio?.let { MediaItem.fromUri(it) }

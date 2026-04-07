@@ -53,4 +53,11 @@
     <color name="sports_card_stroke">#212436</color>
     <color name="sports_text_secondary">#8C92B1</color>
     <color name="sports_live_green">#01D192</color>
+
+    <!-- Quran -->
+    <color name="quran_gold">#D4AF37</color>
+    <color name="quran_gold_dim">#66D4AF37</color>
+    <color name="quran_ayah_playing">#01D192</color>
+    <color name="quran_player_bar">#14182A</color>
+    <color name="quran_header_scrim">#3314182A</color>
 </resources>
