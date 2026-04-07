@@ -1,0 +1,178 @@
+﻿package com.optic.tv
+
+import android.content.Context
+import android.content.Intent
+import android.graphics.Color
+import android.os.Build
+import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SearchView
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.optic.tv.adapters.FavoritesAdapter
+import com.optic.tv.models.ChannelsData
+import com.optic.tv.utils.RecyclerTouchListener
+import com.optic.tv.utils.PlayerLauncher
+import com.optic.tv.utils.SharedPrefManager
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import org.json.JSONArray
+import androidx.core.net.toUri
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+
+class FavoritesActivity : BaseThemedAppCompatActivity() {
+    private lateinit var sharedPrefManager: SharedPrefManager
+    private var key: Int = 0
+    private lateinit var mcon: Context
+    private val allData = mutableListOf<ChannelsData>()
+    private var searchData: List<ChannelsData>? = null
+    private var all = true
+    private lateinit var adapter: FavoritesAdapter
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_channels)
+        supportActionBar?.elevation = 0f
+        supportActionBar?.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
+
+        supportActionBar?.subtitle = "دڵخوازەکان"
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        mcon = this
+
+        val decorView = window.decorView
+        val wic = WindowInsetsControllerCompat(window, decorView)
+        wic.isAppearanceLightStatusBars = false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            decorView.isForceDarkAllowed = true
+        }
+
+        sharedPrefManager = SharedPrefManager(this)
+        adapter = FavoritesAdapter(this)
+
+        val linearLayoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        val rv = findViewById<RecyclerView>(R.id.rv)
+        rv.layoutManager = linearLayoutManager
+        rv.itemAnimator = DefaultItemAnimator()
+        rv.adapter = adapter
+        rv.addOnItemTouchListener(RecyclerTouchListener(this, rv, object : RecyclerTouchListener.ClickListener {
+            override fun onClick(view: View, position: Int) {
+                goTo(position)
+            }
+
+            override fun onLongClick(view: View, position: Int) {
+                goDel(position)
+            }
+        }))
+        adapter.clear()
+        jsonTogson()
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                finish()
+            }
+        })
+    }
+
+    private fun jsonTogson() {
+        val listType = object : TypeToken<List<ChannelsData>>() {}.type
+        val gson = Gson()
+        val data: List<ChannelsData> = gson.fromJson(sharedPrefManager.getSpFavorites(), listType)
+        allData.clear()
+        allData.addAll(data)
+        adapter.addAll(allData)
+    }
+
+    private fun filter(text: String) {
+        searchData = allData.filter { it.name.lowercase().contains(text.lowercase()) }
+        adapter.addAll(searchData!!)
+    }
+
+    private fun goTo(id: Int) {
+        key = if (all) id else allData.indexOf(searchData!![id])
+        val intent = Intent(mcon, PlayerActivity::class.java)
+        intent.putExtra("name", allData[key].name)
+        intent.putExtra("url", allData[key].url)
+        intent.putExtra("userAgent", allData[key].userAgent)
+        intent.putExtra("referrer", allData[key].referrer)
+        intent.putExtra("isLive", isLikelyLiveUrl(allData[key].url))
+        PlayerLauncher.start(mcon, intent)
+    }
+
+    private fun isLikelyLiveUrl(url: String): Boolean {
+        val lower = url.lowercase()
+        return lower.contains("/live/") ||
+            lower.contains("/stream/") ||
+            lower.contains("output=mpegts") ||
+            lower.contains("output=ts") ||
+            lower.endsWith(".m3u8")
+    }
+
+    private fun goDel(id: Int) {
+        key = if (all) id else allData.indexOf(searchData!![id])
+
+        MaterialAlertDialogBuilder(mcon)
+            .setTitle("سڕینەوە؟")
+            .setCancelable(false)
+            .setPositiveButton("بەڵێ") { _, _ ->
+                try {
+                    val arr = JSONArray(sharedPrefManager.getSpFavorites())
+                    arr.remove(key)
+                    sharedPrefManager.saveSPString(SharedPrefManager.SP_FAVORITES, arr.toString())
+                    adapter.clear()
+                    all = true
+                    jsonTogson()
+                } catch (_: Exception) {
+                    // Handle exception
+                }
+            }
+            .setNegativeButton("نەخێر", null)
+            .show()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_search, menu)
+        menuInflater.inflate(R.menu.menu_download, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        val searchView = menu.findItem(R.id.action_search).actionView as SearchView
+        searchView.queryHint = "گەڕان..."
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(s: String): Boolean = false
+
+            override fun onQueryTextChange(s: String): Boolean {
+                adapter.clear()
+                if (s.isEmpty()) {
+                    all = true
+                    adapter.addAll(allData)
+                } else {
+                    all = false
+                    filter(s)
+                }
+                return true
+            }
+        })
+        return super.onPrepareOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            finish()
+            return true
+        }
+        if (item.itemId == R.id.download) {
+            val uri = "https://github.com/bachors/IPTV-Android".toUri()
+            startActivity(Intent(Intent.ACTION_VIEW, uri))
+        }
+        return super.onOptionsItemSelected(item)
+    }
+}

@@ -1,0 +1,61 @@
+﻿package com.optic.tv.quran
+
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.RecyclerView
+import com.optic.tv.R
+import com.google.android.material.color.MaterialColors
+
+class AyahAdapter(
+    private val ayahs: List<Ayah>,
+    private val onAyahClick: (Int) -> Unit
+) : RecyclerView.Adapter<AyahAdapter.AyahViewHolder>() {
+
+    var currentPlayingIndex: Int = -1
+        set(value) {
+            val old = field
+            field = value
+            if (old >= 0) notifyItemChanged(old)
+            if (value >= 0) notifyItemChanged(value)
+        }
+
+    class AyahViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val root: LinearLayout = itemView.findViewById(R.id.ll_ayah_root)
+        val tvText: TextView = itemView.findViewById(R.id.tv_ayah_text)
+        val tvNumber: TextView = itemView.findViewById(R.id.tv_ayah_number)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AyahViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_quran_ayah, parent, false)
+        return AyahViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: AyahViewHolder, position: Int) {
+        val ayah = ayahs[position]
+        val ctx = holder.itemView.context
+        holder.tvText.text = ayah.text
+        holder.tvNumber.text = ctx.getString(R.string.quran_verse_label, ayah.numberInSurah)
+
+        val playing = position == currentPlayingIndex
+        holder.root.setBackgroundResource(
+            if (playing) R.drawable.bg_quran_ayah_playing else R.drawable.bg_quran_ayah_normal
+        )
+        val normalText = MaterialColors.getColor(
+            holder.itemView,
+            com.google.android.material.R.attr.colorOnSurface,
+            ContextCompat.getColor(ctx, R.color.white)
+        )
+        val playingText = ContextCompat.getColor(ctx, R.color.quran_ayah_playing)
+        holder.tvText.setTextColor(if (playing) playingText else normalText)
+
+        holder.itemView.setOnClickListener {
+            onAyahClick(position)
+        }
+    }
+
+    override fun getItemCount(): Int = ayahs.size
+}

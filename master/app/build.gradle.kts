@@ -1,10 +1,10 @@
-plugins {
+﻿plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
 }
 
 android {
-    namespace = "com.bachors.iptv"
+    namespace = "com.optic.tv"
     compileSdk = 35
 
     defaultConfig {
