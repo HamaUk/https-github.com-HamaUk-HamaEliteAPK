@@ -1,4 +1,4 @@
-﻿package com.optic.tv
+package com.optic.tv
 
 import android.animation.ObjectAnimator
 import android.os.Bundle
@@ -26,6 +26,10 @@ import com.optic.tv.utils.M3uTypeDetect
 import com.optic.tv.utils.PlaylistOrderStore
 import com.optic.tv.utils.SharedPrefManager
 import com.optic.tv.utils.ThemeHelper
+import com.optic.tv.db.AppDatabase
+import com.optic.tv.db.ChannelEntity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -451,6 +455,10 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
                 val estLineCount = (fileLen / 100L).coerceAtLeast(1L).toInt()
 
                 groupMap.clear()
+                runBlocking(Dispatchers.IO) {
+                    AppDatabase.getDatabase(this@PlaylistActivity).channelsDao().clearAll()
+                }
+                val batch = mutableListOf<ChannelEntity>()
 
                 var currentName = ""
                 var currentLogo = ""
@@ -488,15 +496,33 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
                             trimmed.startsWith("rtsp://") || trimmed.startsWith("rtmp://") -> {
                             if (currentName.isNotEmpty()) {
                                 val resolvedType = detectTypeFromUrl(trimmed)
-                                val channel = ChannelsData(
+                                val channelData = ChannelsData(
                                     name = currentName,
                                     logo = currentLogo,
                                     url = trimmed,
                                     userAgent = currentUserAgent,
                                     referrer = currentReferrer
                                 )
+                                val channelEntity = ChannelEntity(
+                                    name = currentName,
+                                    logo = currentLogo,
+                                    url = trimmed,
+                                    userAgent = currentUserAgent,
+                                    referrer = currentReferrer,
+                                    type = resolvedType,
+                                    groupName = currentGroup,
+                                    isFavorite = false
+                                )
                                 val key = "$resolvedType|$currentGroup"
-                                groupMap.getOrPut(key) { mutableListOf() }.add(channel)
+                                groupMap.getOrPut(key) { mutableListOf() }.add(channelData)
+                                batch.add(channelEntity)
+                                if (batch.size >= 2500) {
+                                    val flush = ArrayList(batch)
+                                    batch.clear()
+                                    runBlocking(Dispatchers.IO) {
+                                        AppDatabase.getDatabase(this@PlaylistActivity).channelsDao().insertChannels(flush)
+                                    }
+                                }
                                 channelsFound++
                                 currentName = ""
                             }
@@ -523,6 +549,14 @@ class PlaylistActivity : BaseThemedAppCompatActivity() {
                     setProgressWidth(1f)
                     loadingChannelCount.text = "${numberFormat.format(channelsFound)} کەناڵ ئامادەیە"
                     loadingStatus.text = "دروستکردنی لیستی کەناڵ..."
+                }
+
+                if (batch.isNotEmpty()) {
+                    val flush = ArrayList(batch)
+                    batch.clear()
+                    runBlocking(Dispatchers.IO) {
+                        AppDatabase.getDatabase(this@PlaylistActivity).channelsDao().insertChannels(flush)
+                    }
                 }
 
                 runOnUiThread {

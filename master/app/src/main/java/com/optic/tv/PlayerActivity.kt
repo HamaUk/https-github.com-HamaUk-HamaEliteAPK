@@ -1,4 +1,4 @@
-﻿package com.optic.tv
+package com.optic.tv
 
 import android.app.PictureInPictureParams
 import android.content.pm.PackageManager
@@ -523,11 +523,26 @@ class PlayerActivity : BaseThemedAppCompatActivity() {
 
     private fun loadChannelList(currentUrl: String) {
         try {
-            val json = SharedPrefManager(this).getSpChannels()
-            if (json.isNotEmpty() && json != "[]") {
-                val type = object : TypeToken<List<ChannelsData>>() {}.type
-                channelList = Gson().fromJson<List<ChannelsData>>(json, type).toMutableList()
-                currentIndex = channelList.indexOfFirst { it.url == currentUrl }.coerceAtLeast(0)
+            kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.IO) {
+                val db = com.optic.tv.db.AppDatabase.getDatabase(this@PlayerActivity).channelsDao()
+                val group = db.getGroupNameByUrl(currentUrl)
+                if (group != null) {
+                    val entities = db.getChannelsByGroup(contentTypeForPlayer, group)
+                    channelList = entities.map { 
+                        ChannelsData(it.name, it.logo, it.url, it.userAgent, it.referrer)
+                    }.toMutableList()
+                    currentIndex = channelList.indexOfFirst { it.url == currentUrl }.coerceAtLeast(0)
+                } else {
+                    // Fallback if not found in db (e.g. single streams)
+                    val json = SharedPrefManager(this@PlayerActivity).getSpChannels()
+                    if (json.isNotEmpty() && json != "[]") {
+                        val type = object : TypeToken<List<ChannelsData>>() {}.type
+                        channelList = Gson().fromJson<List<ChannelsData>>(json, type).toMutableList()
+                        currentIndex = channelList.indexOfFirst { it.url == currentUrl }.coerceAtLeast(0)
+                    } else {
+                        channelList.clear()
+                    }
+                }
             }
         } catch (_: Exception) {}
     }

@@ -20,6 +20,18 @@ interface ChannelsDao {
     @Query("SELECT * FROM channels WHERE type = :type AND groupName = :groupName")
     suspend fun getChannelsByGroup(type: String, groupName: String): List<ChannelEntity>
 
+    @Query("SELECT DISTINCT groupName FROM channels WHERE type = :type")
+    suspend fun getGroupNames(type: String): List<String>
+
+    @Query("SELECT groupName FROM channels WHERE url = :url LIMIT 1")
+    suspend fun getGroupNameByUrl(url: String): String?
+
+    @Query("SELECT COUNT(*) FROM channels WHERE type = :type AND groupName = :groupName")
+    suspend fun getChannelCountByGroup(type: String, groupName: String): Int
+
+    @Query("SELECT COUNT(*) FROM channels WHERE type = :type")
+    suspend fun getTotalChannelCount(type: String): Int
+
     @Query("SELECT * FROM channels WHERE type = :type")
     suspend fun getAllChannels(type: String): List<ChannelEntity>
 
