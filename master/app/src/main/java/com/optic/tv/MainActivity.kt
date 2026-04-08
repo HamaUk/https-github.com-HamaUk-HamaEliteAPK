@@ -12,7 +12,6 @@ import com.optic.tv.utils.DeviceSyncCoordinator
 import com.optic.tv.utils.GlobalSync
 import com.optic.tv.utils.ActivationHelper
 import com.optic.tv.utils.SharedPrefManager
-import com.optic.tv.utils.ThemeHelper
 import com.optic.tv.utils.SyncData
 import com.optic.tv.utils.WorldTimeResponse
 import com.optic.tv.utils.WorldTimeService
@@ -29,7 +28,6 @@ class MainActivity : BaseThemedAppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        ThemeHelper.applyMainActivationHero(binding.root, binding.bgGradient)
         supportActionBar?.hide()
 
         sharedPrefManager = SharedPrefManager(this)
@@ -164,7 +162,7 @@ class MainActivity : BaseThemedAppCompatActivity() {
         binding.btnStart.setText(R.string.activation_btn_retry)
         binding.txtStatus.visibility = View.VISIBLE
         binding.txtStatus.text = msg
-        binding.txtStatus.setTextColor(Color.parseColor("#FFC107"))
+        binding.txtStatus.setTextColor(Color.parseColor("#FFFFFF"))
         requestStartButtonFocus()
     }
 }

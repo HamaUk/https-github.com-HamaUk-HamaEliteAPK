@@ -47,7 +47,7 @@ object ThemeHelper {
         }
     }
 
-    /** Legacy: solid background for a single root view (unused by current activation layout). */
+    /** Legacy: solid background for a single root view (main screen uses fixed colors in XML). */
     fun applyMainActivationBackground(view: View) {
         when (SharedPrefManager(view.context).getThemeMode()) {
             THEME_LIGHT -> view.setBackgroundColor(Color.parseColor("#EEF1F6"))
@@ -56,19 +56,6 @@ object ThemeHelper {
         }
     }
 
-    /**
-     * Main activation: transparent window root + full-screen gradient on [gradientOverlay]
-     * (see [R.id.bg_gradient] in [R.layout.activity_main]).
-     */
-    fun applyMainActivationHero(root: View, gradientOverlay: View) {
-        root.setBackgroundColor(Color.TRANSPARENT)
-        val resId = when (SharedPrefManager(root.context).getThemeMode()) {
-            THEME_LIGHT -> R.drawable.bg_activation_gradient_light
-            THEME_AMOLED -> R.drawable.bg_activation_gradient_amoled
-            else -> R.drawable.bg_activation_gradient_dark
-        }
-        gradientOverlay.setBackgroundResource(resId)
-    }
 }
 
 object AppLocaleHelper {
