@@ -17,6 +17,7 @@
     <string name="sync_assigned_unavailable">لیستی تایبەت بۆ ئەم ئامێرە لە سێرڤەر نییە یان نادروستە. پەیوەندی بە بەڕێوەبەرەوە بکە.</string>
     <string name="sync_private_not_linked">لیستی تایبەت چالاکە، بەڵام ئامێرەکەت هێشتا لەلایەن بەڕێوەبەرەوە بەستراونەتەوە نییە. ئەم کۆدە بنێرە بۆ بەڕێوەبەر، یان لە ڕێکخستنەکاندا لیستی تایبەت بکوژێنەرەوە بۆ بەکارهێنانی لیستی گشتی.</string>
     <string name="main_device_ref">کۆدی ئامێر بۆ بەڕێوەبەر: %1$s</string>
+    <string name="activation_footer_note">تکایە کۆدی ئامێرەکەت تەنها لەگەڵ بەڕێوەبەر هاوبەش بکە.</string>
     <string name="auto_resume_failed">نەتوانرا بەرنامەکە بکرێتەوە. دووبارە «دەستپێکردن» دابگرە.</string>
     <string name="dashboard_device_code">ناسنامەی ئامێر: %1$s</string>
     <string name="activation_required">چالاککردن پێویستە</string>

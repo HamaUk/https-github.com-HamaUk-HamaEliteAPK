@@ -5,6 +5,8 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import androidx.activity.OnBackPressedCallback
+import androidx.core.view.ViewCompat
+import androidx.core.view.isVisible
 import com.optic.tv.databinding.ActivityMainBinding
 import com.optic.tv.utils.DeviceSyncCoordinator
 import com.optic.tv.utils.GlobalSync
@@ -27,7 +29,7 @@ class MainActivity : BaseThemedAppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        ThemeHelper.applyMainActivationBackground(binding.root)
+        ThemeHelper.applyMainActivationHero(binding.root, binding.bgGradient)
         supportActionBar?.hide()
 
         sharedPrefManager = SharedPrefManager(this)
@@ -40,12 +42,28 @@ class MainActivity : BaseThemedAppCompatActivity() {
         binding.btnStart.setOnClickListener {
             performGlobalSync()
         }
+        ViewCompat.setFocusedByDefault(binding.btnStart, true)
+        requestStartButtonFocus()
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 finish()
             }
         })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        requestStartButtonFocus()
+    }
+
+    /** D-pad / TV: land initial focus on Start when it is the primary action. */
+    private fun requestStartButtonFocus() {
+        binding.btnStart.post {
+            if (binding.btnStart.isVisible) {
+                binding.btnStart.requestFocus()
+            }
+        }
     }
 
     private fun performGlobalSync() {
@@ -127,6 +145,7 @@ class MainActivity : BaseThemedAppCompatActivity() {
         binding.txtStatus.visibility = View.VISIBLE
         binding.txtStatus.text = getString(R.string.main_playlist_unavailable)
         binding.txtStatus.setTextColor(Color.parseColor("#FF4B2B"))
+        requestStartButtonFocus()
     }
 
     private fun showExpired(expiry: Long) {
@@ -136,6 +155,7 @@ class MainActivity : BaseThemedAppCompatActivity() {
         binding.txtStatus.visibility = View.VISIBLE
         binding.txtStatus.text = getString(R.string.main_subscription_ended)
         binding.txtStatus.setTextColor(Color.parseColor("#FF4B2B"))
+        requestStartButtonFocus()
     }
 
     private fun showError(msg: String) {
@@ -145,5 +165,6 @@ class MainActivity : BaseThemedAppCompatActivity() {
         binding.txtStatus.visibility = View.VISIBLE
         binding.txtStatus.text = msg
         binding.txtStatus.setTextColor(Color.parseColor("#FFC107"))
+        requestStartButtonFocus()
     }
 }

@@ -47,13 +47,27 @@ object ThemeHelper {
         }
     }
 
-    /** Main activation screen uses a flat color in XML. */
+    /** Legacy: solid background for a single root view (unused by current activation layout). */
     fun applyMainActivationBackground(view: View) {
         when (SharedPrefManager(view.context).getThemeMode()) {
             THEME_LIGHT -> view.setBackgroundColor(Color.parseColor("#EEF1F6"))
             THEME_AMOLED -> view.setBackgroundColor(Color.BLACK)
             else -> view.setBackgroundColor(Color.parseColor("#050505"))
         }
+    }
+
+    /**
+     * Main activation: transparent window root + full-screen gradient on [gradientOverlay]
+     * (see [R.id.bg_gradient] in [R.layout.activity_main]).
+     */
+    fun applyMainActivationHero(root: View, gradientOverlay: View) {
+        root.setBackgroundColor(Color.TRANSPARENT)
+        val resId = when (SharedPrefManager(root.context).getThemeMode()) {
+            THEME_LIGHT -> R.drawable.bg_activation_gradient_light
+            THEME_AMOLED -> R.drawable.bg_activation_gradient_amoled
+            else -> R.drawable.bg_activation_gradient_dark
+        }
+        gradientOverlay.setBackgroundResource(resId)
     }
 }
 

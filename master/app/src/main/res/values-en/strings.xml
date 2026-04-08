@@ -17,6 +17,7 @@
     <string name="sync_assigned_unavailable">The dedicated playlist for this device is missing or invalid. Contact the administrator.</string>
     <string name="sync_private_not_linked">Private playlist is on, but this device is not linked yet. Send your device code to the administrator, or turn off private playlist in Settings to use the public one.</string>
     <string name="main_device_ref">Device code for admin: %1$s</string>
+    <string name="activation_footer_note">Only share your device code with your administrator.</string>
     <string name="auto_resume_failed">Could not reopen the app. Tap Get started again.</string>
     <string name="dashboard_device_code">Device ID: %1$s</string>
     <string name="activation_required">Activation required</string>

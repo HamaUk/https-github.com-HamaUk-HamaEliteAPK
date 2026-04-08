@@ -14,7 +14,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.kurd.iptv"
+        applicationId = "com.optic.tv"
         minSdk = 21
         targetSdk = 35
         versionCode = 13

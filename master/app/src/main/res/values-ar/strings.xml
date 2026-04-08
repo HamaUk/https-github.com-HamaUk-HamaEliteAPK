@@ -17,6 +17,7 @@
     <string name="sync_assigned_unavailable">قائمة هذا الجهاز المخصصة غير متوفرة أو غير صالحة. تواصل مع المسؤول.</string>
     <string name="sync_private_not_linked">قائمة خاصة مفعّلة، لكن الجهاز غير مربوط بعد. أرسل رمز الجهاز للمسؤول، أو عطّل القائمة الخاصة في الإعدادات لاستخدام العامة.</string>
     <string name="main_device_ref">رمز الجهاز للمسؤول: %1$s</string>
+    <string name="activation_footer_note">لا تشارك رمز جهازك إلا مع المسؤول.</string>
     <string name="auto_resume_failed">تعذر إعادة فتح التطبيق. اضغط ابدأ مرة أخرى.</string>
     <string name="dashboard_device_code">معرف الجهاز: %1$s</string>
     <string name="activation_required">التفعيل مطلوب</string>
