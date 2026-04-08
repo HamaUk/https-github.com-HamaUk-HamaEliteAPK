@@ -1,10 +1,10 @@
-﻿package com.optic.tv.db
+package com.optic.tv.db
 
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "channels", indices = [Index(value = ["type", "groupName"])])
+@Entity(tableName = "channels", indices = arrayOf(Index(value = arrayOf("type", "groupName"))))
 data class ChannelEntity(
     @PrimaryKey
     val url: String,
