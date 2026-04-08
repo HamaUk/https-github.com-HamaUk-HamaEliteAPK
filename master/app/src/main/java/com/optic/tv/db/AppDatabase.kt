@@ -2,7 +2,7 @@ package com.optic.tv.db
 
 import androidx.room.*
 
-@Entity(tableName = "channels", indices = [Index(value = ["type", "groupName"])])
+@Entity(tableName = "channels", indices = [Index(value = arrayOf("type", "groupName"))])
 data class ChannelEntity(
     @PrimaryKey
     val url: String,
@@ -67,7 +67,7 @@ interface ContinueWatchingDao {
     suspend fun insert(progress: ContinueWatchingEntity)
 }
 
-@Database(entities = [ChannelEntity::class, ContinueWatchingEntity::class], version = 1, exportSchema = false)
+@Database(entities = arrayOf(ChannelEntity::class, ContinueWatchingEntity::class), version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun channelsDao(): ChannelsDao
     abstract fun continueWatchingDao(): ContinueWatchingDao

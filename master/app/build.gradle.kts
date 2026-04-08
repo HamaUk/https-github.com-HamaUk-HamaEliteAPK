@@ -4,6 +4,10 @@ plugins {
     alias(libs.plugins.kotlin.kapt)
 }
 
+kapt {
+    correctErrorTypes = true
+}
+
 android {
     namespace = "com.optic.tv"
     compileSdk = 35
