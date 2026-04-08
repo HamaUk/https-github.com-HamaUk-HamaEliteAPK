@@ -237,6 +237,11 @@
   .cm-type.live { background: rgba(16,185,129,0.2); color: #6ee7b7; }
   .cm-type.vod { background: rgba(245,158,11,0.2); color: #fcd34d; }
   .cm-url-cell { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: ui-monospace, monospace; font-size: 0.68rem; color: #94a3b8; }
+  .cm-logo-cell { width: 48px; text-align: center; vertical-align: middle; }
+  .cm-logo-thumb {
+    width: 40px; height: 40px; object-fit: contain; border-radius: 0.45rem;
+    border: 1px solid var(--glass-edge); background: rgba(0,0,0,0.35); vertical-align: middle;
+  }
   .cm-mini { padding: 0.2rem 0.45rem; font-size: 0.68rem; border-radius: 0.5rem; }
   .cm-pagination {
     display: flex; justify-content: center; align-items: center; gap: 0.75rem;
@@ -258,6 +263,18 @@
   .cm-check-row label { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; text-transform: none; letter-spacing: 0; }
   .cm-group-hint { font-size: 0.65rem; color: var(--text-muted); margin: 0 0 0.4rem; line-height: 1.4; }
   .cm-editor-actions { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+  .cm-logo-preview-row { margin-top: 0.25rem; }
+  .cm-logo-preview {
+    display: none;
+    max-width: 96px;
+    max-height: 96px;
+    border-radius: 0.5rem;
+    border: 1px solid var(--glass-edge);
+    object-fit: contain;
+    background: rgba(0,0,0,0.35);
+  }
+  .cm-logo-preview.visible { display: block; }
+  input[type="file"].cm-logo-file-input { padding: 0.45rem 0.65rem; font-size: 0.8rem; cursor: pointer; }
   @media (max-width: 760px) {
     .dashboard-container { padding: 1rem; }
     .cm-table-wrap { margin: 0 0.75rem; }
@@ -468,7 +485,7 @@
       </div>
     </div>
     <div class="cm-inner" style="padding-top:0.75rem">
-      <input type="search" id="cmSearch" class="search-input" placeholder="Filter name, group, URL…" autocomplete="off" style="margin-bottom:0.65rem">
+      <input type="search" id="cmSearch" class="search-input" placeholder="Filter name, group, URL, logo…" autocomplete="off" style="margin-bottom:0.65rem">
     </div>
     <div class="cm-table-wrap">
       <table class="cm-table">
@@ -477,6 +494,7 @@
             <th style="width:32px" title="Drag to reorder"><i class="fas fa-grip-vertical" style="color:#64748b;font-size:0.75rem"></i></th>
             <th style="width:36px"><input type="checkbox" id="cmSelectAll" title="Page"></th>
             <th style="width:36px">#</th>
+            <th style="width:52px">Logo</th>
             <th>Name / group</th>
             <th style="width:52px">Type</th>
             <th>Stream URL</th>
@@ -509,7 +527,18 @@
           <datalist id="cmEdGroupDatalist"></datalist>
         </div>
         <div class="cm-field" style="grid-column:1/-1"><label>Stream URL</label><input type="text" id="cmEdUrl" class="field-input" style="margin-bottom:0"></div>
-        <div class="cm-field"><label>Logo URL (optional)</label><input type="text" id="cmEdLogo" class="field-input" style="margin-bottom:0" placeholder="https://…"></div>
+        <div class="cm-field" style="grid-column:1/-1">
+          <label>Logo (optional)</label>
+          <p class="cm-group-hint">Paste an <strong>https://</strong> image URL, or choose a local file — large images are compressed; embedded data is not shown as raw text in the box below.</p>
+          <p id="cmEdLogoEmbeddedHint" class="cm-group-hint" style="display:none;margin-top:0.35rem;color:#7dd3fc"></p>
+          <p id="cmEdLogoFileMeta" class="cm-group-hint" style="display:none;margin-top:0;color:#a78bfa"></p>
+          <textarea id="cmEdLogo" class="field-input" rows="2" style="margin-bottom:0.45rem; min-height:3.5rem; resize:vertical; font-family:ui-monospace,monospace; font-size:0.76rem" placeholder="https://… (leave empty if using embedded file above)" spellcheck="false" autocomplete="off"></textarea>
+          <input type="file" id="cmEdLogoFile" class="field-input cm-logo-file-input" style="margin-bottom:0" accept="image/*">
+          <div class="cm-logo-preview-row">
+            <span class="cm-group-hint" style="display:block;margin:0.5rem 0 0.25rem">Preview</span>
+            <img id="cmEdLogoPreview" class="cm-logo-preview" alt="">
+          </div>
+        </div>
         <div class="cm-field"><label>Type</label>
           <select id="cmEdType" class="field-input" style="margin-bottom:0">
             <option value="live">Live</option>
@@ -566,6 +595,7 @@
   let profileTier = 'global';
   let cmPage = 1;
   const CM_PAGE_SIZE = 40;
+  let cmPendingLogoDataUrl = null;
 
   function normalizeSyncKeyInput(s) {
     const raw = String(s || '').trim();
@@ -938,8 +968,114 @@
 
   const CM_GROUP_NEW = '__new_custom__';
 
+  function cmLogoHintElements() {
+    return {
+      embedded: document.getElementById('cmEdLogoEmbeddedHint'),
+      fileMeta: document.getElementById('cmEdLogoFileMeta'),
+    };
+  }
+
+  function cmHideLogoHints() {
+    const { embedded, fileMeta } = cmLogoHintElements();
+    if (embedded) {
+      embedded.style.display = 'none';
+      embedded.textContent = '';
+    }
+    if (fileMeta) {
+      fileMeta.style.display = 'none';
+      fileMeta.textContent = '';
+    }
+  }
+
   function closeCmEditor() {
+    cmPendingLogoDataUrl = null;
+    const lf = document.getElementById('cmEdLogoFile');
+    if (lf) lf.value = '';
+    cmHideLogoHints();
+    const prev = document.getElementById('cmEdLogoPreview');
+    if (prev) {
+      prev.classList.remove('visible');
+      prev.removeAttribute('src');
+    }
     document.getElementById('cmEditor').classList.remove('open');
+  }
+
+  /** Preview uses embedded (pending) first, then textarea (https or pasted data URL). */
+  function syncCmEdLogoPreview() {
+    const logoTa = document.getElementById('cmEdLogo');
+    const preview = document.getElementById('cmEdLogoPreview');
+    if (!logoTa || !preview) return;
+    const ta = (logoTa.value || '').trim();
+    const v = (cmPendingLogoDataUrl && String(cmPendingLogoDataUrl).trim()) || ta;
+    if (!v || (!v.startsWith('data:image/') && !/^https?:\/\//i.test(v))) {
+      preview.classList.remove('visible');
+      preview.removeAttribute('src');
+      return;
+    }
+    preview.src = v;
+    preview.classList.add('visible');
+    preview.onerror = () => {
+      preview.classList.remove('visible');
+      preview.removeAttribute('src');
+    };
+  }
+
+  /** Resize + JPEG compress for Firebase; cap length for browser textarea limits. */
+  function cmDownscaleImageFile(file) {
+    const MAX_DATA_URL_CHARS = 450000;
+    const maxSides = [512, 384, 320, 256, 200, 160, 128];
+    const qualities = [0.88, 0.8, 0.72, 0.64, 0.55, 0.48, 0.42, 0.36, 0.32];
+    return new Promise((resolve, reject) => {
+      const blobUrl = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(blobUrl);
+        const nw = img.naturalWidth || img.width;
+        const nh = img.naturalHeight || img.height;
+        if (!nw || !nh) {
+          reject(new Error('Invalid image dimensions.'));
+          return;
+        }
+        try {
+          let best = '';
+          for (const maxSide of maxSides) {
+            const scale = Math.min(1, maxSide / Math.max(nw, nh));
+            const dw = Math.max(1, Math.round(nw * scale));
+            const dh = Math.max(1, Math.round(nh * scale));
+            const canvas = document.createElement('canvas');
+            canvas.width = dw;
+            canvas.height = dh;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              reject(new Error('Could not use canvas in this browser.'));
+              return;
+            }
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, dw, dh);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, dw, dh);
+            for (const q of qualities) {
+              const dataUrl = canvas.toDataURL('image/jpeg', q);
+              best = dataUrl;
+              if (dataUrl.length <= MAX_DATA_URL_CHARS) {
+                resolve(dataUrl);
+                return;
+              }
+            }
+          }
+          if (best) resolve(best);
+          else reject(new Error('Could not encode image.'));
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(blobUrl);
+        reject(new Error('Could not read image file.'));
+      };
+      img.src = blobUrl;
+    });
   }
 
   function getDistinctChannelGroups() {
@@ -1017,7 +1153,24 @@
     }
     if (ch || !options.pickGroup) syncCmGroupPresetSelectToGroupField();
     document.getElementById('cmEdUrl').value = ch ? (ch.url || '') : '';
-    document.getElementById('cmEdLogo').value = ch ? (ch.logo || '') : '';
+    cmPendingLogoDataUrl = null;
+    const logoFile = document.getElementById('cmEdLogoFile');
+    if (logoFile) logoFile.value = '';
+    cmHideLogoHints();
+    const rawLogo = ch ? String(ch.logo || '').trim() : '';
+    const { embedded: embHint } = cmLogoHintElements();
+    if (rawLogo.startsWith('data:image/')) {
+      cmPendingLogoDataUrl = rawLogo;
+      document.getElementById('cmEdLogo').value = '';
+      if (embHint) {
+        const kb = Math.max(1, Math.round(rawLogo.length / 1024));
+        embHint.textContent = `Embedded image loaded (~${kb} KB). Paste an https URL or choose a file to replace it.`;
+        embHint.style.display = 'block';
+      }
+    } else {
+      document.getElementById('cmEdLogo').value = rawLogo;
+    }
+    syncCmEdLogoPreview();
     document.getElementById('cmEdType').value = ch && ch.type === 'vod' ? 'vod' : (ch && ch.type === 'series' ? 'series' : 'live');
     document.getElementById('cmEdHidden').checked = !!(ch && ch.hidden);
     document.getElementById('cmEdAdult').checked = !!(ch && ch.adult);
@@ -1062,7 +1215,8 @@
       !q ||
       (c.name && c.name.toLowerCase().includes(q)) ||
       (c.group && c.group.toLowerCase().includes(q)) ||
-      (c.url && c.url.toLowerCase().includes(q))
+      (c.url && c.url.toLowerCase().includes(q)) ||
+      (c.logo && String(c.logo).toLowerCase().includes(q))
     );
   }
 
@@ -1100,6 +1254,7 @@
         <td class="cm-drag-cell"><span class="cm-drag-handle" draggable="true" data-id="${escapeHtml(ch.id)}" title="Drag to reorder"><i class="fas fa-grip-vertical"></i></span></td>
         <td><input type="checkbox" class="cmRowCb" data-id="${escapeHtml(ch.id)}"></td>
         <td style="color:var(--text-muted);font-weight:600">${globalIdx}</td>
+        <td class="cm-logo-cell"></td>
         <td><strong style="color:#e2e8f0">${escapeHtml(ch.name)}</strong><br><small style="color:#64748b">${escapeHtml(ch.group || 'General')}</small></td>
         <td><span class="cm-type ${typeClass}">${escapeHtml(ty)}</span></td>
         <td><div class="cm-url-cell" title="${escapeHtml(ch.url || '')}">${escapeHtml(ch.url || '')}</div></td>
@@ -1112,6 +1267,26 @@
           <button type="button" class="action-btn cm-mini cm-edit" data-id="${escapeHtml(ch.id)}"><i class="fas fa-pen"></i></button>
           <button type="button" class="action-btn danger cm-mini cm-del" data-id="${escapeHtml(ch.id)}"><i class="fas fa-trash"></i></button>
         </td>`;
+      const logoTd = tr.querySelector('.cm-logo-cell');
+      const lg = (ch.logo && String(ch.logo).trim()) || '';
+      if (lg.startsWith('data:image/') || /^https?:\/\//i.test(lg)) {
+        const img = document.createElement('img');
+        img.className = 'cm-logo-thumb';
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.src = lg;
+        img.onerror = () => {
+          logoTd.textContent = '×';
+          logoTd.title = 'Image failed to load';
+        };
+        logoTd.appendChild(img);
+      } else if (lg.length > 0) {
+        logoTd.textContent = '●';
+        logoTd.title = 'Logo set (open Edit to view)';
+      } else {
+        logoTd.innerHTML = '<span style="color:#475569">—</span>';
+      }
       tbody.appendChild(tr);
     });
 
@@ -1343,6 +1518,53 @@
     }
   });
   document.getElementById('cmEdGroup').addEventListener('blur', () => syncCmGroupPresetSelectToGroupField());
+  document.getElementById('cmEdLogo').addEventListener('input', () => {
+    cmPendingLogoDataUrl = null;
+    cmHideLogoHints();
+    const lf = document.getElementById('cmEdLogoFile');
+    if (lf) lf.value = '';
+    syncCmEdLogoPreview();
+  });
+  document.getElementById('cmEdLogoFile').addEventListener('change', () => {
+    const run = async () => {
+      const fileInput = document.getElementById('cmEdLogoFile');
+      const logoTa = document.getElementById('cmEdLogo');
+      const { embedded: embHint, fileMeta } = cmLogoHintElements();
+      const file = fileInput && fileInput.files && fileInput.files[0];
+      if (!file) return;
+      const maxBytes = 18 * 1024 * 1024;
+      if (file.type && !/^image\//i.test(file.type)) {
+        showToast('Logo file must be an image', true);
+        fileInput.value = '';
+        return;
+      }
+      if (file.size > maxBytes) {
+        showToast('Logo file too large (max ~18 MB)', true);
+        fileInput.value = '';
+        return;
+      }
+      try {
+        const dataUrl = await cmDownscaleImageFile(file);
+        cmPendingLogoDataUrl = dataUrl;
+        logoTa.value = '';
+        if (embHint) {
+          embHint.style.display = 'none';
+          embHint.textContent = '';
+        }
+        if (fileMeta) {
+          const kb = Math.max(1, Math.round(dataUrl.length / 1024));
+          fileMeta.textContent = `Using file: ${file.name} (~${kb} KB stored as image data).`;
+          fileMeta.style.display = 'block';
+        }
+        syncCmEdLogoPreview();
+        showToast('Logo loaded — Apply to keep, then Save to Firebase');
+      } catch (e) {
+        showToast((e && e.message) ? e.message : 'Could not process logo', true);
+        fileInput.value = '';
+      }
+    };
+    run();
+  });
   document.getElementById('cmEdCancel').addEventListener('click', closeCmEditor);
   document.getElementById('cmEdApply').addEventListener('click', () => {
     const id = document.getElementById('cmEdId').value;
@@ -1350,7 +1572,10 @@
     const url = document.getElementById('cmEdUrl').value.trim();
     if (!name || !url) return showToast('Name and URL required', true);
     const group = document.getElementById('cmEdGroup').value.trim() || 'General';
-    const logo = document.getElementById('cmEdLogo').value.trim();
+    const fromTa = document.getElementById('cmEdLogo').value.trim();
+    const hasPending = cmPendingLogoDataUrl != null && String(cmPendingLogoDataUrl).trim() !== '';
+    const logo = fromTa || (hasPending ? String(cmPendingLogoDataUrl).trim() : '');
+    cmPendingLogoDataUrl = null;
     const type = document.getElementById('cmEdType').value;
     const hidden = document.getElementById('cmEdHidden').checked;
     const adult = document.getElementById('cmEdAdult').checked;
