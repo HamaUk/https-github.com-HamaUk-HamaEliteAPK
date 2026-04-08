@@ -29,11 +29,11 @@ interface ChannelsDao {
     suspend fun getFavorites(): List<ChannelEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertChannels(channels: List<ChannelEntity>)
+    suspend fun insertChannels(channels: List<ChannelEntity>): Unit
 
     @Query("UPDATE channels SET isFavorite = :isFav WHERE url = :url")
-    suspend fun updateFavorite(url: String, isFav: Boolean)
+    suspend fun updateFavorite(url: String, isFav: Boolean): Unit
 
     @Query("DELETE FROM channels")
-    suspend fun clearAll()
+    suspend fun clearAll(): Unit
 }

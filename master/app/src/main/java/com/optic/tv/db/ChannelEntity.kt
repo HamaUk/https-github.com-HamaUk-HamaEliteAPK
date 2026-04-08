@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "channels", indices = arrayOf(Index(value = arrayOf("type", "groupName"))))
+@Entity(tableName = "channels", indices = [Index(value = ["type", "groupName"])])
 data class ChannelEntity(
     @PrimaryKey
     val url: String,

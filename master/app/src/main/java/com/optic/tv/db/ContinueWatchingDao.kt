@@ -11,5 +11,5 @@ interface ContinueWatchingDao {
     suspend fun getAll(): List<ContinueWatchingEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(progress: ContinueWatchingEntity)
+    suspend fun insert(progress: ContinueWatchingEntity): Unit
 }
