@@ -1,6 +1,8 @@
 [versions]
 agp = "8.13.1"
 kotlin = "2.2.21"
+# Must match Kotlin per https://github.com/google/ksp/releases
+ksp = "2.2.21-2.0.5"
 jsoup = "1.21.2"
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -26,6 +28,6 @@ squareup-picasso = { module = "com.squareup.picasso:picasso", version.ref = "squ
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 
