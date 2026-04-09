@@ -17,8 +17,8 @@ android {
         applicationId = "com.optic.tv"
         minSdk = 21
         targetSdk = 35
-        versionCode = 13
-        versionName = "1.0.20"
+        versionCode = 14
+        versionName = "1.0.21"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
